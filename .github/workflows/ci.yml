@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install Python modules
+        run: >-
+          python -m pip install
+          -e 'apps/api[dev]'
+          -e 'services/workflow[dev]'
+          -e 'services/knowledge[dev]'
+          -e 'services/evaluation[dev]'
+          -e 'services/ml[dev]'
+      - name: Test API
+        run: python -m pytest apps/api/tests
+      - name: Test workflow
+        run: python -m pytest services/workflow/tests
+      - name: Test knowledge
+        run: python -m pytest services/knowledge/tests
+      - name: Test evaluation
+        run: python -m pytest services/evaluation/tests
+      - name: Test ML contracts
+        run: python -m pytest services/ml/tests
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck:web
+      - run: npm run lint:web
+      - run: npm run build:web

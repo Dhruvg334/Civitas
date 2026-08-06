@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civitas.local/schemas/common-error.schema.json",
+  "title": "CommonError",
+  "type": "object",
+  "required": ["code", "message", "trace_id"],
+  "properties": {
+    "code": { "type": "string" },
+    "message": { "type": "string" },
+    "details": { "type": "object" },
+    "trace_id": { "type": "string" }
+  },
+  "additionalProperties": false
+}

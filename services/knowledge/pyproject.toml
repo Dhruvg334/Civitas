@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "civitas-knowledge"
+version = "0.1.0"
+description = "Policy and playbook grounding for Civitas."
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.10,<3.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3,<9.0", "ruff>=0.9,<1.0", "mypy>=1.14,<2.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
