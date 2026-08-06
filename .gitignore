@@ -1,0 +1,82 @@
+# Team-internal reference material
+team reference/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs and runtime
+*.log
+logs/
+*.pid
+.tmp/
+tmp/
+
+# Local databases and Supabase state
+*.db
+*.sqlite
+*.sqlite3
+.supabase/
+supabase/.temp/
+
+# ML artifacts and generated datasets
+artifacts/
+checkpoints/
+models/local/
+mlruns/
+wandb/
+datasets/generated/
+datasets/private/
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.joblib
+*.pkl
+
+# Media uploads and demo exports
+uploads/
+media/local/
+demo-exports/
+video-project/
+
+# Test outputs
+playwright-report/
+test-results/
+reports/generated/
+
+# Deployment
+.vercel/
+.render/
