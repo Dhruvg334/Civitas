@@ -50,9 +50,19 @@ from civitas_geo.models import (  # noqa: E402
 from civitas_geo.reasoning import compute_exposure  # noqa: E402
 from civitas_geo.retrieval import NearbyRetriever  # noqa: E402
 from civitas_geo.validation import gate_for_pipeline  # noqa: E402
-from civitas_risk import RiskAssessor, RiskContext, SeverityAssessor  # noqa: E402
+from civitas_risk import (  # noqa: E402
+    ConsolidatedIncident,
+    IncidentVisualEvidence,
+    PriorityModel,
+    RiskAssessor,
+    RiskContext,
+    SeverityAssessor,
+    SeverityModel,
+    build_incident_features,
+)
 from civitas_vision.benchmark import gaussian_blur, make_image  # noqa: E402
 from civitas_vision.detector import VisualIntelligencePipeline  # noqa: E402
+from civitas_vision.features import extract_features  # noqa: E402
 
 T0 = datetime(2026, 3, 1, 8, 0, tzinfo=timezone.utc)
 
@@ -368,6 +378,65 @@ def main() -> None:
         verdict = "merge" if row.is_duplicate else ("review" if row.requires_review else "reject")
         print(f"     [{row.label:9s}] score {row.score:.2f} -> {verdict:6s} | {row.note}")
     print(f"  {labelled_ev.summary()}")
+
+    print("\n== 10. Consolidated incident severity (Phase 6) ==")
+    print("  Question: how bad is the merged incident CL-018?")
+    print("  Visual evidence (from the CV pipeline on R1's photo) + geospatial")
+    print("  intelligence (landmark index around the spot) + context.")
+    r1_scene = make_image("water_leakage", 7101)
+    r1_visual = vision.analyze_image(r1_scene)
+    incident_visual = IncidentVisualEvidence.from_evidence(
+        primary_category=r1_visual.primary_category,
+        observed_evidence=list(r1_visual.observable_evidence),
+        water_coverage=extract_features(r1_scene)["blue_smooth_share"],
+    )
+    incident_point = GeoPoint(latitude=engine_reports[0].latitude,
+                              longitude=engine_reports[0].longitude)
+    incident_nearby = NearbyRetriever(executor=None).retrieve(
+        SpatialSearchSpec(center=incident_point, radius_m=800, limit=10),
+        memory_incidents=engine_density_records,
+    )
+    incident_exposure = compute_exposure(
+        incident_point, landmarks=landmarks, nearby=incident_nearby
+    )
+    incident = ConsolidatedIncident(
+        incident_id=main_cluster.cluster_id,
+        category="water leak",
+        visual=incident_visual,
+        exposure=incident_exposure,
+        report_count=main_cluster.member_count,
+        duration_hours=(
+            (engine_reports[-1].submitted_at - engine_reports[0].submitted_at)
+            .total_seconds() / 3600.0
+        ),
+    )
+    incident_features6 = build_incident_features(incident)
+    print("  engineered severity features (evidence only):")
+    feature_lines = [
+        ("active_water_flow", lambda v: f"active_water_flow = {v}"),
+        ("water_coverage", lambda v: f"water_coverage = {v:.2f} (flooded-area share)"),
+        ("school_distance_m", lambda v: f"school_distance = {v:.0f} m"),
+        ("hospital_distance_m", lambda v: f"hospital_distance = {v:.0f} m"),
+        ("traffic_exposure", lambda v: f"traffic_exposure = {v}"),
+        ("report_count", lambda v: f"report_count = {v}"),
+        ("duration_hours", lambda v: f"duration = {v:.1f} h"),
+    ]
+    for key, fmt in feature_lines:
+        value = getattr(incident_features6, key)
+        print(f"    {fmt(value) if value is not None else f'{key} = <absent> (recorded, not guessed)'}")
+    print("  SeverityModel (one incident -> how bad?):")
+    severity6 = SeverityModel().assess(incident_features6)
+    print(f"    Severity score: {severity6.score}")
+    print(f"    Severity level: {severity6.level.upper()}")
+    print("    Contributing factors:")
+    for c in severity6.contributing_factors:
+        print(f"      - {c.factor} (+{c.points} pts; {c.evidence})")
+    print("  PriorityModel (separate decision -> how urgent?):")
+    priority6 = PriorityModel().assess(incident_features6, severity6)
+    print(f"    Priority score: {priority6.score} | tier {priority6.tier}")
+    print("    Contributing factors:")
+    for c in priority6.contributing_factors:
+        print(f"      - {c.factor} (+{c.points} pts; {c.evidence})")
 
 
 if __name__ == "__main__":

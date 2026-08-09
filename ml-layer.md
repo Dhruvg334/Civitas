@@ -161,6 +161,63 @@ background, so the model does not claim they are identical).
   human-readable); `ml-layer.md` is the implementation record (what exists,
   where, verified how). Both must stay in sync when numbers move.
 
+## Phase 6 — Severity feature engineering (COMMIT <phase6-hash>)
+
+The 90-second version: the water leak outside Sunrise School is now ONE
+incident (CL-018, three reports merged in Phase 5). Phase 6 asks the next
+question: **how bad is it?** The incident feature engineer pulls the three
+evidence families together — what the camera saw (standing water, ~49% of
+the road surface flooded), where it is (at the school gate, 584 m from the
+hospital, moderate traffic), and what the crowd says (3 neighbours reported
+it in 75 minutes). That becomes typed features: `active_water_flow = 1`,
+`water_coverage = 0.49`, `school_distance = 0 m`, `traffic_exposure =
+moderate`, `report_count = 3`, `duration = 1.2 h`. The severity model turns
+them into **Severity score 78 / level HIGH** with named contributing
+factors — *active road flooding*, *slip hazard*, *significant affected
+area*, *near school*, *crowd corroboration*, *protracted exposure* — each
+with the points it earned and the evidence line that earned them. A
+**separate priority model** then answers "how urgently do we respond?"
+without reusing the severity model's internals: priority 68, tier P2, its
+own contributing factors (children exposure to a school at the site,
+hospital 584 m away, crowd pressure, time unresolved).
+
+- `ml/risk/src/civitas_risk/incident_features.py` — the feature
+  engineering layer (evidence only, no decisions):
+  - `IncidentVisualEvidence` — what the CV pipeline observed on the
+    incident's photo; `from_evidence` maps the evidence strings
+    ("standing water", "water flowing across road") onto the typed
+    `active_water_flow` 0/1 flag and carries the flooded-area share.
+  - `ConsolidatedIncident` — the Phase 5 cluster as one typed object:
+    category, visual evidence, `ExposureContext` from the geospatial
+    layer, report count, duration (first to last report), rain context.
+  - `IncidentFeatures` — the typed feature vector: `active_water_flow`,
+    `water_coverage`, `school_distance_m`, `hospital_distance_m`,
+    `traffic_exposure`, `junction_density_1km`, `report_count`,
+    `duration_hours`, `rain_intensity_mm_h`, plus a `provenance` string
+    per feature. Missing signals are `None` with "recorded as absent,
+    never invented" provenance entries — a missing school distance never
+    becomes a "school 1000 m away" guess.
+- `severity_model.py` — `SeverityModel` (model_version `severity-model-v1`):
+  deterministic points per contributing factor (documented constants:
+  category base, active flow 12, significant coverage 8, slip hazard 5,
+  near-school 10, traffic 5-7, crowd up to 9, duration up to 8, heavy rain
+  5), diminishing-returns squash (scale 66) so the score stays 0-100, and
+  level bands (<35 low, 35-59 medium, 60-79 high, >=80 critical). Every
+  factor carries `(factor name, points, evidence)` — the demo shows all of
+  them. The demo incident totals 100 points -> 78 HIGH.
+- `priority_model.py` — `PriorityModel` (model_version `priority-model-v1`),
+  a **separate object with separate weights and factors**: 0.45 severity +
+  0.30 urgency (children/emergency-asset/traffic exposure) + 0.15 crowd
+  pressure + 0.10 time unresolved, tiers P1 >= 80, P2 >= 60, P3 >= 40.
+  Separateness is the point of the project requirement: severity says how
+  bad, priority says how urgent, and neither model can answer for the
+  other (changing one never silently changes the other).
+- Demo step 10 (`ml/demo_end_to_end.py`) walks the whole story: the CV
+  pipeline is re-run on R1's photo for the evidence strings, the landmark
+  index supplies the exposure, and both models print their scores, levels
+  and factor lists with evidence lines. Division of labour stays as in
+  Phase 5: the demo is the narrated walk-through, this file is the record.
+
 ## Verification (all passing)
 
 ```bash
@@ -173,7 +230,10 @@ cd ml/duplicates && python -m mypy src           # clean (12 files)
 cd ml/vision && python -m pytest tests           # 27 passed
 cd ml/vision && python -m ruff check src tests   # clean
 cd ml/vision && python -m mypy src               # clean (9 files)
-python ml/demo_end_to_end.py                     # full trace incl. CV + Phase 4 + Phase 5 steps
+cd ml/risk && python -m pytest tests             # 47 passed
+cd ml/risk && python -m ruff check src tests     # clean
+cd ml/risk && python -m mypy src/civitas_risk    # clean (11 files)
+python ml/demo_end_to_end.py                     # full trace incl. CV + Phase 4 + 5 + 6 steps
 ```
 
 Note: `civitas-vision` is a regular dev dependency of the duplicates
@@ -190,3 +250,5 @@ duplicates tests exercise the real image paths instead of skipping them.
 - `5aed379` Fix feature hash constants in phase notes
 - `c7ca129` Phase 4/12 completed
 - `f16faad` Record Phase 4 commit hash in progress notes
+- `288b1b8` Phase 5/12 completed
+- `c5ed976` Record Phase 5 commit hash in progress notes
