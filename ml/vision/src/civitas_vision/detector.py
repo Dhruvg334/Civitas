@@ -105,6 +105,7 @@ class VisualIntelligencePipeline:
             secondary_categories=secondary_categories(merged.probabilities, merged.primary_category),
             observable_evidence=evidence,
             confidence=merged.confidence,
+            ood_ratio=merged.ood_ratio,
             media_usable=True,
             frames_selected=len(per_frame),
             quality=frames[0][1],

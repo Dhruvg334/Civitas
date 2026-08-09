@@ -192,4 +192,6 @@ class TestVerifyResolution:
     def test_deterministic(self):
         before = make_image("water_leakage", 7101, "flow")
         after = make_image("water_leakage", 7101, "default")
-        assert verify_resolution(before, after) == verify_resolution(before, after)
+        first = verify_resolution(before, after, incident_id="CL-018")
+        second = verify_resolution(before, after, incident_id="CL-018")
+        assert first.model_dump(exclude={"trace_id"}) == second.model_dump(exclude={"trace_id"})

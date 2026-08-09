@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-for rel in ("ml/duplicates/src", "ml/risk/src", "ml/vision/src", "ml/resolution/src", "ml/service/src", "geospatial/src"):
+for rel in ("ml/duplicates/src", "ml/risk/src", "ml/vision/src", "ml/resolution/src", "services/ml/src", "geospatial/src"):
     sys.path.insert(0, str(REPO / rel))
 
 try:  # Phase 5 reasons use the "✓" check mark; force UTF-8 on cp1252 consoles

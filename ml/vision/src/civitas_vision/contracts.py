@@ -56,6 +56,12 @@ class ClassificationProbs(BaseModel):
     probabilities: dict[str, float] = Field(default_factory=dict)
     primary_category: str | None = None
     confidence: float = Field(default=0.0, ge=0, le=1)
+    ood_ratio: float | None = Field(
+        default=None,
+        ge=0,
+        description="mean nearest-prototype distance / corpus median distance; "
+        "> 2.0 means the input is far outside the training manifold (uncertain)",
+    )
     basis: list[str] = Field(default_factory=list)
 
 
@@ -72,6 +78,11 @@ class VisualClassificationResult(BaseModel):
     secondary_categories: list[str] = Field(default_factory=list)
     observable_evidence: list[str] = Field(default_factory=list)
     confidence: float = Field(default=0.0, ge=0, le=1)
+    ood_ratio: float | None = Field(
+        default=None,
+        ge=0,
+        description="out-of-distribution ratio of the media (see ClassificationProbs)",
+    )
     media_usable: bool = True
     frames_selected: int = Field(default=0, ge=0)
     quality: SceneQuality | None = None
