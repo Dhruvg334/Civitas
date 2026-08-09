@@ -339,7 +339,7 @@ evidence and outright contradictions.
   (CONFLICTING) and a blurry photo (UNVERIFIABLE, quality gate rejects
   the media).
 
-## Phase 9 — One ML service (COMMIT <phase9>)
+## Phase 9 — One ML service (COMMIT beae511)
 
 The 90-second version: each phase so far shipped its own model with its
 own function. Phase 9 turns the whole layer into **one ML service with
@@ -453,3 +453,5 @@ duplicates tests exercise the real image paths instead of skipping them.
 - `f5732c4` Phase 7/12 completed
 - `e2827f7` Record Phase 7 commit hash in progress notes
 - `9949f4c` Phase 8/12 completed
+- `5f00ead` Record Phase 8 commit hash in progress notes
+- `beae511` Phase 9/12 completed
