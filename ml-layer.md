@@ -161,7 +161,7 @@ background, so the model does not claim they are identical).
   human-readable); `ml-layer.md` is the implementation record (what exists,
   where, verified how). Both must stay in sync when numbers move.
 
-## Phase 6 — Severity feature engineering (COMMIT <phase6-hash>)
+## Phase 6 — Severity feature engineering (COMMIT c177c39)
 
 The 90-second version: the water leak outside Sunrise School is now ONE
 incident (CL-018, three reports merged in Phase 5). Phase 6 asks the next
@@ -252,3 +252,4 @@ duplicates tests exercise the real image paths instead of skipping them.
 - `f16faad` Record Phase 4 commit hash in progress notes
 - `288b1b8` Phase 5/12 completed
 - `c5ed976` Record Phase 5 commit hash in progress notes
+- `c177c39` Phase 6/12 completed
