@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-for rel in ("ml/duplicates/src", "ml/risk/src", "geospatial/src"):
+for rel in ("ml/duplicates/src", "ml/risk/src", "ml/vision/src", "geospatial/src"):
     sys.path.insert(0, str(REPO / rel))
 
 from civitas_duplicates import DuplicateDetector, ReportLike  # noqa: E402
@@ -35,8 +35,16 @@ from civitas_geo.reasoning import compute_exposure  # noqa: E402
 from civitas_geo.retrieval import NearbyRetriever  # noqa: E402
 from civitas_geo.validation import gate_for_pipeline  # noqa: E402
 from civitas_risk import RiskAssessor, RiskContext, SeverityAssessor  # noqa: E402
+from civitas_vision.benchmark import gaussian_blur, make_image  # noqa: E402
+from civitas_vision.detector import VisualIntelligencePipeline  # noqa: E402
 
 T0 = datetime(2026, 3, 1, 8, 0, tzinfo=timezone.utc)
+
+
+def run_benchmark_evaluation():
+    from civitas_vision.benchmark import run_evaluation
+
+    return run_evaluation()
 
 
 def main() -> None:
@@ -163,6 +171,33 @@ def main() -> None:
     print(f"  score {pair.score:.2f} duplicate={pair.is_duplicate} review={pair.requires_review}")
     for line in pair.decision_basis:
         print(f"    - {line}")
+
+    print("\n== 5. Computer vision (image and video media) ==")
+    vision = VisualIntelligencePipeline()
+    water_image = make_image("water_leakage", 7000, "flow")
+    water_result = vision.analyze_image(water_image)
+    print(f"  image -> {water_result.as_json()}")
+    for line in water_result.basis[:3]:
+        print(f"    - {line}")
+    video_sharp = make_image("broken_streetlight", 7001)
+    video_result = vision.analyze_video(
+        "media/video.mp4",
+        video_extra_frames=[video_sharp, gaussian_blur(video_sharp, 5.0)],
+    )
+    print(f"  video -> {video_result.as_json()} (frames selected {video_result.frames_selected})")
+    blur_gate = vision.analyze_image(gaussian_blur(water_image, 5.0))
+    print(f"  blurred media usable={blur_gate.media_usable}: {blur_gate.quality.reasons[0] if blur_gate.quality else ''}")
+
+    print("\n== 6. Benchmark evaluation (measurable CV performance) ==")
+    evaluation = run_benchmark_evaluation()
+    print(f"  accuracy {evaluation.accuracy:.3f} | macro-F1 {evaluation.macro_f1:.3f} "
+          f"| {evaluation.n_samples} held-out images")
+    for cat, m in evaluation.per_class.items():
+        print(f"    {cat:22s} precision {m['precision']:.2f} recall {m['recall']:.2f} f1 {m['f1']:.2f}")
+
+
+if __name__ == "__main__":
+    main()
 
 
 if __name__ == "__main__":
