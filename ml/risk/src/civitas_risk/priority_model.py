@@ -1,31 +1,35 @@
-"""Phase 6: priority model for the consolidated incident.
+"""Phase 7: priority model for the consolidated incident.
 
-Priority answers "how urgently must the authority respond?" — a separate
-decision from severity with its own model, weights, tiers and contributing
-factors. Priority blends the severity verdict (what is at stake) with
-operational urgency (children near school, emergency assets, traffic load)
-and pressure (crowd corroboration, time unresolved):
+Priority answers "how urgently should the municipality respond?" — a
+separate decision from severity (Phase 6) with its own feature vector
+(`priority_features.PriorityFeatures`), its own weights and its own output
+shape: a score out of 100, a plain-language level, and named reasons with
+the evidence lines that earned them.
 
-    priority = 0.45 * severity + 0.30 * urgency
-               + 0.15 * crowd pressure + 0.10 * protraction
+The ten engineered signals are combined with explicit weights (sum 1.0,
+validated): severity verdict, school proximity, hospital proximity, traffic
+exposure, population exposure, repeated reports, incident duration, nearby
+incident density, category urgency and time sensitivity. This is the
+GeoGPT-style pattern the project follows: spatial and physical
+characteristics become engineered features, and a weighted model turns them
+into a risk prediction — here "risk" is municipal urgency.
 
-Tiers: P1 >= 80, P2 >= 60, P3 >= 40, P4 below. Every tier is explained in
-`contributing_factors`.
+Level bands: <40 low, 40-59 medium, 60-79 high, >=80 critical. The band is
+a human-readable name for the score, not a separate computation.
 """
 
 from __future__ import annotations
 
-import math
-
 from pydantic import BaseModel, Field
 
-from civitas_risk.contracts import PriorityTier
-from civitas_risk.incident_features import IncidentFeatures
-from civitas_risk.severity_model import SeverityAssessment
+from civitas_risk.contracts import SeverityLevel
+from civitas_risk.priority_features import PriorityFeatures
+
+PriorityLevel = SeverityLevel  # low | medium | high | critical
 
 
-class PriorityContribution(BaseModel):
-    """One named contributing factor with its points and evidence."""
+class PriorityReason(BaseModel):
+    """One named reason with the points it contributed and its evidence."""
 
     factor: str
     points: int
@@ -33,146 +37,96 @@ class PriorityContribution(BaseModel):
 
 
 class PriorityAssessment(BaseModel):
-    """How urgently the authority should respond to the incident."""
+    """The priority verdict for one consolidated incident."""
 
     incident_id: str
     score: int = Field(ge=0, le=100)
-    tier: PriorityTier
-    contributing_factors: list[PriorityContribution] = Field(default_factory=list)
+    level: PriorityLevel
+    reasons: list[PriorityReason] = Field(default_factory=list)
     severity_score: int = Field(ge=0, le=100)
-    model_version: str = "priority-model-v1"
+    model_version: str = "priority-model-v2"
+
+
+REASON_FACTORS = {
+    "severity_score": "incident severity",
+    "school_proximity": "school nearby",
+    "hospital_proximity": "hospital proximity",
+    "traffic_exposure": "traffic exposure",
+    "population_exposure": "population exposure",
+    "repeated_reports": "multiple independent reports",
+    "incident_duration": "time unresolved",
+    "nearby_density": "nearby incident density",
+    "category_urgency": "category urgency",
+    "time_sensitivity": "time sensitivity",
+}
+
+
+def priority_level_for(score: int) -> PriorityLevel:
+    if score >= 80:
+        return "critical"
+    if score >= 60:
+        return "high"
+    if score >= 40:
+        return "medium"
+    return "low"
 
 
 class PriorityModel:
-    """Deterministic priority model, separate from the severity model."""
+    """Deterministic 10-signal priority model; every point is explainable."""
 
-    model_version = "priority-model-v1"
-
-    # Blend weights (sum to 1.0, validated in __post_init__ style at use).
-    weight_severity = 0.45
-    weight_urgency = 0.30
-    weight_crowd = 0.15
-    weight_protraction = 0.10
+    model_version = "priority-model-v2"
+    WEIGHTS: dict[str, float] = {
+        "severity_score": 0.25,
+        "school_proximity": 0.18,
+        "hospital_proximity": 0.08,
+        "traffic_exposure": 0.12,
+        "population_exposure": 0.07,
+        "repeated_reports": 0.10,
+        "incident_duration": 0.05,
+        "nearby_density": 0.05,
+        "category_urgency": 0.05,
+        "time_sensitivity": 0.05,
+    }
 
     def __init__(self) -> None:
-        total = (
-            self.weight_severity + self.weight_urgency
-            + self.weight_crowd + self.weight_protraction
-        )
+        total = sum(self.WEIGHTS.values())
         if abs(total - 1.0) > 1e-6:
             raise ValueError(f"priority weights must sum to 1.0, got {total}")
 
-    def assess(self, features: IncidentFeatures, severity: SeverityAssessment) -> PriorityAssessment:
-        contributions: list[PriorityContribution] = []
-        urgency, urgency_contributions = self._urgency(features)
+    def assess(self, features: PriorityFeatures) -> PriorityAssessment:
+        signals: dict[str, float] = {
+            "severity_score": features.severity_score / 100.0,
+            "school_proximity": features.school_proximity,
+            "hospital_proximity": features.hospital_proximity,
+            "traffic_exposure": features.traffic_exposure,
+            "population_exposure": features.population_exposure,
+            "repeated_reports": features.repeated_reports,
+            "incident_duration": features.incident_duration,
+            "nearby_density": features.nearby_density,
+            "category_urgency": features.category_urgency,
+            "time_sensitivity": features.time_sensitivity,
+        }
+        score = round(100.0 * sum(self.WEIGHTS[k] * signals[k] for k in self.WEIGHTS))
+        score = max(0, min(100, score))
 
-        crowd = 1.0 - math.exp(-max(0, features.report_count - 1) / 2.0)
-        protraction = math.tanh(features.duration_hours / 24.0)
-
-        score = int(round(100.0 * (
-            self.weight_severity * severity.score / 100.0
-            + self.weight_urgency * urgency
-            + self.weight_crowd * crowd
-            + self.weight_protraction * protraction
-        )))
-
-        contributions.append(
-            PriorityContribution(
-                factor="incident severity",
-                points=int(round(100.0 * self.weight_severity * severity.score / 100.0)),
-                evidence=(
-                    f"severity model scored {severity.score}/100 ({severity.level}); "
-                    f"weight {self.weight_severity:.2f}"
-                ),
-            )
-        )
-        contributions.extend(urgency_contributions)
-        if crowd > 0.001:
-            contributions.append(
-                PriorityContribution(
-                    factor="crowd pressure",
-                    points=int(round(100.0 * self.weight_crowd * crowd)),
-                    evidence=features.provenance.get(
-                        "report_count", f"{features.report_count} merged report(s)"
-                    ),
-                )
-            )
-        if protraction > 0.001:
-            contributions.append(
-                PriorityContribution(
-                    factor="time unresolved",
-                    points=int(round(100.0 * self.weight_protraction * protraction)),
-                    evidence=features.provenance.get(
-                        "duration_hours", f"{features.duration_hours:.1f} h"
-                    ),
+        reasons: list[PriorityReason] = []
+        for key in self.WEIGHTS:
+            points = round(100.0 * self.WEIGHTS[key] * signals[key])
+            if points < 1:
+                continue
+            reasons.append(
+                PriorityReason(
+                    factor=REASON_FACTORS[key],
+                    points=points,
+                    evidence=features.provenance[key],
                 )
             )
 
         return PriorityAssessment(
             incident_id=features.incident_id,
             score=score,
-            tier=self.tier_for(score),
-            contributing_factors=contributions,
-            severity_score=severity.score,
+            level=priority_level_for(score),
+            reasons=reasons,
+            severity_score=features.severity_score,
             model_version=self.model_version,
         )
-
-    @staticmethod
-    def _urgency(features: IncidentFeatures) -> tuple[float, list[PriorityContribution]]:
-        """Operational urgency: who and what is exposed right now.
-
-        urgency = 0.5 * school + 0.3 * hospital + 0.2 * traffic, and the whole
-        family carries `weight_urgency = 0.30` of the final priority score.
-        """
-        school = features.school_distance_m
-        hospital = features.hospital_distance_m
-        school_sig = 1.0 if school is not None and school <= 300 else (
-            0.5 if school is not None and school <= 1000 else 0.0
-        )
-        hospital_sig = 1.0 if hospital is not None and hospital <= 500 else (
-            0.5 if hospital is not None and hospital <= 2000 else 0.0
-        )
-        traffic_sig = 0.0
-        if features.traffic_exposure == "high":
-            traffic_sig = 1.0
-        elif features.traffic_exposure == "moderate":
-            traffic_sig = 0.5
-        elif features.traffic_exposure == "low":
-            traffic_sig = 0.0
-
-        urgency = 0.5 * school_sig + 0.3 * hospital_sig + 0.2 * traffic_sig
-        family_weight = PriorityModel.weight_urgency
-        contributions = [
-            PriorityContribution(
-                factor="children exposure",
-                points=int(round(100.0 * family_weight * 0.5 * school_sig)),
-                evidence=(
-                    f"school at {school:.0f} m" if school is not None
-                    else "no school in exposure"
-                ),
-            ),
-            PriorityContribution(
-                factor="emergency asset",
-                points=int(round(100.0 * family_weight * 0.3 * hospital_sig)),
-                evidence=(
-                    f"hospital at {hospital:.0f} m" if hospital is not None
-                    else "no hospital in exposure"
-                ),
-            ),
-            PriorityContribution(
-                factor="traffic load",
-                points=int(round(100.0 * family_weight * 0.2 * traffic_sig)),
-                evidence=features.provenance["traffic_exposure"],
-            ),
-        ]
-        return round(urgency, 4), contributions
-
-    @staticmethod
-    def tier_for(score: int) -> PriorityTier:
-        if score >= 80:
-            return "P1"
-        if score >= 60:
-            return "P2"
-        if score >= 40:
-            return "P3"
-        return "P4"

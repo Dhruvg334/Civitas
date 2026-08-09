@@ -7,6 +7,8 @@ water-leak incident, active flow, covered road, school 37 m, moderate
 traffic, 3 reports, 1.2 h -> severity 78 HIGH.
 """
 
+from datetime import datetime, timezone
+
 import pytest
 from pydantic import ValidationError
 
@@ -15,9 +17,12 @@ from civitas_risk import (
     ConsolidatedIncident,
     IncidentFeatures,
     IncidentVisualEvidence,
+    PriorityContext,
     PriorityModel,
     SeverityModel,
     build_incident_features,
+    build_priority_features,
+    priority_level_for,
 )
 from civitas_risk.severity_model import severity_level_for
 
@@ -176,47 +181,77 @@ class TestPriorityModel:
     def test_priority_is_a_separate_decision(self):
         features = demo_features()
         severity = SeverityModel().assess(features)
-        priority = PriorityModel().assess(features, severity)
+        priority = PriorityModel().assess(
+            build_priority_features(PriorityContext(
+                incident=demo_incident(),
+                severity_score=severity.score,
+                population_density_proxy=0.255,
+                nearby_density_norm=0.10,
+                current_time=datetime(2026, 3, 1, 12, 0, tzinfo=timezone.utc),
+            ))
+        )
         assert priority.score != severity.score
-        assert priority.tier == "P2"  # 0.45*78 + 0.30*urgency + ... lands P2
+        assert priority.level == "high"  # 10-signal model on the demo incident
         assert priority.severity_score == severity.score
-        names = [c.factor for c in priority.contributing_factors]
+        names = [r.factor for r in priority.reasons]
         assert "incident severity" in names
-        assert "children exposure" in names
-        assert "crowd pressure" in names
+        assert "school nearby" in names
+        assert "multiple independent reports" in names
 
     def test_priority_escalates_with_severity(self):
-        features = demo_features()
         model = PriorityModel()
-        low = model.assess(features, SeverityModel().assess(build_incident_features(
-            ConsolidatedIncident(incident_id="c", category="streetlight")
-        )))
-        high = model.assess(features, SeverityModel().assess(features))
-        assert high.score > low.score
 
-    def test_tier_boundaries(self):
-        assert PriorityModel.tier_for(79) == "P2"
-        assert PriorityModel.tier_for(80) == "P1"
-        assert PriorityModel.tier_for(39) == "P4"
-        assert PriorityModel.tier_for(40) == "P3"
+        def assess(severity: int) -> int:
+            return model.assess(build_priority_features(PriorityContext(
+                incident=demo_incident(),
+                severity_score=severity,
+                population_density_proxy=0.255,
+                nearby_density_norm=0.10,
+                current_time=datetime(2026, 3, 1, 12, 0, tzinfo=timezone.utc),
+            ))).score
+
+        assert assess(78) > assess(41)
+
+    def test_level_boundaries(self):
+        assert priority_level_for(39) == "low"
+        assert priority_level_for(40) == "medium"
+        assert priority_level_for(59) == "medium"
+        assert priority_level_for(60) == "high"
+        assert priority_level_for(79) == "high"
+        assert priority_level_for(80) == "critical"
 
     def test_priority_deterministic(self):
-        features = demo_features()
-        model = PriorityModel()
-        a = model.assess(features, SeverityModel().assess(features))
-        b = model.assess(features, SeverityModel().assess(features))
+        context = PriorityContext(
+            incident=demo_incident(), severity_score=78,
+            population_density_proxy=0.255, nearby_density_norm=0.10,
+            current_time=datetime(2026, 3, 1, 12, 0, tzinfo=timezone.utc),
+        )
+        a = PriorityModel().assess(build_priority_features(context))
+        b = PriorityModel().assess(build_priority_features(context))
         assert a == b
 
     def test_urgency_reflects_school_distance(self):
-        features = demo_features()
-        priority = PriorityModel().assess(features, SeverityModel().assess(features))
-        far = build_incident_features(demo_incident(
-            exposure=DEMO_EXPOSURE.model_copy(update={"nearest_school_m": 5000.0})
-        ))
-        far_priority = PriorityModel().assess(far, SeverityModel().assess(far))
-        assert far_priority.score < priority.score
+        model = PriorityModel()
 
-    def test_point_math_is_consistent_with_blend(self):
-        features = demo_features()
-        priority = PriorityModel().assess(features, SeverityModel().assess(features))
-        assert priority.score - sum(c.points for c in priority.contributing_factors) <= 2
+        def assess_for(school_m: float) -> int:
+            incident = demo_incident(exposure=DEMO_EXPOSURE.model_copy(
+                update={"nearest_school_m": school_m}
+            ))
+            return model.assess(build_priority_features(PriorityContext(
+                incident=incident,
+                severity_score=78,
+                population_density_proxy=0.255,
+                nearby_density_norm=0.10,
+                current_time=datetime(2026, 3, 1, 12, 0, tzinfo=timezone.utc),
+            ))).score
+
+        assert assess_for(37.0) > assess_for(5000.0)
+
+    def test_reason_points_are_consistent_with_score(self):
+        context = PriorityContext(
+            incident=demo_incident(), severity_score=78,
+            population_density_proxy=0.255, nearby_density_norm=0.10,
+            current_time=datetime(2026, 3, 1, 12, 0, tzinfo=timezone.utc),
+        )
+        priority = PriorityModel().assess(build_priority_features(context))
+        assert priority.score - sum(r.points for r in priority.reasons) <= 2

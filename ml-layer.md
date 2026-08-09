@@ -218,6 +218,71 @@ hospital 584 m away, crowd pressure, time unresolved).
   and factor lists with evidence lines. Division of labour stays as in
   Phase 5: the demo is the narrated walk-through, this file is the record.
 
+## Phase 7 — Priority feature engineering (COMMIT <fill-on-commit>)
+
+The 90-second version: Phase 6 said **how bad** the leak is; Phase 7
+answers **how urgently the municipality must respond** — with a feature
+engineer and model of its own. The engineer takes the same consolidated
+incident (CL-018) and builds a separate ten-signal vector: severity
+verdict (one-way input), school proximity, hospital proximity, traffic
+exposure, population exposure, repeated reports, incident duration,
+nearby incident density, category urgency, time sensitivity. Missing
+inputs are recorded as 0 with a "not computed" provenance line — a
+missing exposure never becomes a guessed "moderate traffic".
+
+The priority model blends ten weights (severity 0.25, school 0.18,
+hospital 0.08, traffic 0.12, population 0.07, reports 0.10, duration
+0.05, density 0.05, category 0.05, time 0.05; the sum is validated to
+1.0) into a 0-100 score with named reasons, each citing the exact
+evidence it saw. Levels: <40 low, 40-59 medium, 60-79 high, >=80
+critical. Demo: CL-018 at noon scores **Priority 64 HIGH** — school at
+0 m, 3 merged reports, moderate traffic, population proxy 0.25, water
+leak, daytime peak. This v2 model **supersedes the Phase 6 v1 blend**
+(0.45/0.30/0.15/0.10 weights, P1-P4 tiers); the severity model is untouched.
+
+Honesty guardrail: the score is computed, never curated. "What if it were
+worse?" is answered in demo section 11 as a **labelled sensitivity walk**
+(heavy-traffic junction + rain + 6 reports -> 81 CRITICAL; multi-day worst
+case, 9 reports -> 91 CRITICAL) — hypothetical contexts, printed as
+what-ifs, never attributed to the observed incident. A CRITICAL verdict
+still goes to a human reviewer.
+
+- `ml/risk/src/civitas_risk/priority_features.py` — Phase 7 feature
+  engineering:
+  - `PriorityContext` — the engineer's typed input: the consolidated
+    incident plus severity verdict, population-density proxy, nearby
+    density norm and the scenario clock. `PriorityFeatures` — the typed
+    ten-signal vector, one field per signal, with a `provenance` string
+    per signal.
+  - `build_priority_features` — same raw facts as severity engineering,
+    different question; every signal cites its source ("school at 0 m",
+    "3 merged report(s) -> independent-pressure 0.63", "12:00 — daytime
+    peak activity window").
+  - `category_urgency_signal` — urgency per category (garbage overflow
+    0.8, water leak 0.6, streetlight 0.2; unknown categories get the
+    neutral 0.4 with a "neutral for unknown category" entry).
+  - `time_sensitivity_signal` — daytime peak 07:00-19:00 = 0.8, evening
+    19-22 = 0.4, night = 0.2; heavy rain (>= 20 mm/h) raises the signal
+    by 0.2 (capped); an unknown hour is neutral 0.5. Deliberately
+    weekday-agnostic: no hidden school-holiday assumptions.
+- `priority_model.py` — `PriorityModel` (model_version
+  `priority-model-v2`): `WEIGHTS` (sum validated to 1.0),
+  `assess()` -> `PriorityAssessment(score, level, reasons)` where each
+  `PriorityReason` is `(factor, points, evidence)`, and
+  `priority_level_for`. `PriorityLevel` reuses the severity level
+  literal (low/medium/high/critical) so both models speak one language.
+- `tests/test_phase7_priority.py` — the pinned demo scenario: severity
+  78, school 37 m, hospital 584 m, moderate traffic, population proxy
+  0.255, 3 reports, 1.2 h, density 0.10, water leak, noon -> **63 HIGH**;
+  saturated corner (9 reports, 96 h, dense cell) -> **>= 85 CRITICAL**;
+  band boundaries 39/40/59/60/79/80; missing signals stay neutral; rain
+  escalates time sensitivity; determinism; score equals the weighted sum.
+- Demo steps 10+11 (`ml/demo_end_to_end.py`): step 10 reruns the whole
+  evidence chain (CV on R1's photo, landmark index, nearby density) and
+  prints both models with evidence-citing reasons; step 11 prints the
+  ten-signal table, the model verdict (Priority 64 HIGH on the real
+  grid-cell values) and the labelled what-if walk.
+
 ## Verification (all passing)
 
 ```bash
@@ -230,10 +295,10 @@ cd ml/duplicates && python -m mypy src           # clean (12 files)
 cd ml/vision && python -m pytest tests           # 27 passed
 cd ml/vision && python -m ruff check src tests   # clean
 cd ml/vision && python -m mypy src               # clean (9 files)
-cd ml/risk && python -m pytest tests             # 47 passed
+cd ml/risk && python -m pytest tests             # 62 passed
 cd ml/risk && python -m ruff check src tests     # clean
-cd ml/risk && python -m mypy src/civitas_risk    # clean (11 files)
-python ml/demo_end_to_end.py                     # full trace incl. CV + Phase 4 + 5 + 6 steps
+cd ml/risk && python -m mypy src/civitas_risk    # clean (12 files)
+python ml/demo_end_to_end.py                     # full trace incl. CV + Phase 4 + 5 + 6 + 7 steps
 ```
 
 Note: `civitas-vision` is a regular dev dependency of the duplicates

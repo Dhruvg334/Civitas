@@ -53,12 +53,14 @@ from civitas_geo.validation import gate_for_pipeline  # noqa: E402
 from civitas_risk import (  # noqa: E402
     ConsolidatedIncident,
     IncidentVisualEvidence,
+    PriorityContext,
     PriorityModel,
     RiskAssessor,
     RiskContext,
     SeverityAssessor,
     SeverityModel,
     build_incident_features,
+    build_priority_features,
 )
 from civitas_vision.benchmark import gaussian_blur, make_image  # noqa: E402
 from civitas_vision.detector import VisualIntelligencePipeline  # noqa: E402
@@ -432,11 +434,75 @@ def main() -> None:
     for c in severity6.contributing_factors:
         print(f"      - {c.factor} (+{c.points} pts; {c.evidence})")
     print("  PriorityModel (separate decision -> how urgent?):")
-    priority6 = PriorityModel().assess(incident_features6, severity6)
-    print(f"    Priority score: {priority6.score} | tier {priority6.tier}")
-    print("    Contributing factors:")
-    for c in priority6.contributing_factors:
-        print(f"      - {c.factor} (+{c.points} pts; {c.evidence})")
+    incident_geo = GeospatialFeatureEngine(landmarks=landmarks).compute(
+        CivicIncidentContext(
+            latitude=engine_reports[0].latitude,
+            longitude=engine_reports[0].longitude,
+            submitted_at=engine_reports[0].submitted_at,
+            category=engine_reports[0].category,
+            nearby_reports=incident_nearby.incidents,
+        )
+    )
+    priority7_context = PriorityContext(
+        incident=incident,
+        severity_score=severity6.score,
+        population_density_proxy=incident_geo.features["population_density_proxy"],
+        nearby_density_norm=incident_geo.features["incident_density_1km"],
+        current_time=day + timedelta(minutes=90),  # 12:00 scenario clock
+    )
+    priority_features7 = build_priority_features(priority7_context)
+    priority7 = PriorityModel().assess(priority_features7)
+    print(f"    Priority score: {priority7.score}")
+    print(f"    Priority level: {priority7.level.upper()}")
+    print("    Reasons (each cites the evidence it saw):")
+    for r in priority7.reasons:
+        print(f"      - {r.factor} (+{r.points} pts; {r.evidence})")
+
+    print("\n== 11. Priority feature engineering (Phase 7) ==")
+    print("  Question: how urgently must the municipality respond to CL-018?")
+    print("  Ten signals drive a model separate from severity, so urgency stays")
+    print("  independent of danger. Engineered feature vector (evidence only):")
+    table = [
+        ("severity_score", priority_features7.severity_score, "severity verdict (one-way input)"),
+        ("school_proximity", priority_features7.school_proximity, "school at 0 m - children in the street"),
+        ("hospital_proximity", priority_features7.hospital_proximity, "hospital 584 m away"),
+        ("traffic_exposure", priority_features7.traffic_exposure, "moderate"),
+        ("population_exposure", priority_features7.population_exposure, "sparse block (proxy)"),
+        ("repeated_reports", priority_features7.repeated_reports, "3 independent reports corroborate"),
+        ("incident_duration", priority_features7.incident_duration, "1.25 h old"),
+        ("nearby_density", priority_features7.nearby_density, "grid-cell density norm, quiet neighbourhood"),
+        ("category_urgency", priority_features7.category_urgency, "water leak = flooding risk"),
+        ("time_sensitivity", priority_features7.time_sensitivity, "noon = school hours, worst time to flood"),
+    ]
+    for name, value, basis in table:
+        print(f"    {name:22s} = {value:.2f}   ({basis})")
+    print("  PriorityModel -> how urgent:")
+    print(f"    Priority score: {priority7.score}")
+    print(f"    Priority level: {priority7.level.upper()}")
+    for r in priority7.reasons:
+        print(f"      - {r.factor} (+{r.points} pts; {r.evidence})")
+    print("  Sensitivity walk (hypothetical what-ifs - labelled, never applied")
+    print("  to the observed incident; the walk shows where CRITICAL comes from):")
+    walk_rows = [
+        ("A", "same leak at a heavy-traffic junction, 6 reports, rain, 3 h old", dict(
+            severity_score=80, school_proximity=1.0, hospital_proximity=1.0,
+            traffic_exposure=1.0, population_exposure=0.5, repeated_reports=0.92,
+            incident_duration=0.12, nearby_density=0.4, category_urgency=0.6,
+            time_sensitivity=1.0)),
+        ("B", "multi-day worst case: 9 reports, 96 h old, dense cell, severity critical", dict(
+            severity_score=80, school_proximity=1.0, hospital_proximity=1.0,
+            traffic_exposure=1.0, population_exposure=0.85, repeated_reports=0.98,
+            incident_duration=1.0, nearby_density=0.9, category_urgency=0.6,
+            time_sensitivity=1.0)),
+    ]
+    for label, story, signals in walk_rows:
+        walked = PriorityModel().assess(priority_features7.model_copy(
+            update={k: v for k, v in signals.items()}
+        ))
+        print(f"    what-if {label}: {story}")
+        print(f"      -> Priority score: {walked.score} | level {walked.level.upper()}")
+    print("  (>80 CRITICAL always goes to a human reviewer; the score is the sum")
+    print("   of ten weighted signals, each shown with its evidence.)")
 
 
 if __name__ == "__main__":

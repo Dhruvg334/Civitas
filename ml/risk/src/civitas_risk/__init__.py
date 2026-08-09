@@ -11,7 +11,19 @@ from civitas_risk.incident_features import (
 )
 from civitas_risk.ml_models import LogisticCalibrator
 from civitas_risk.priority import PriorityAssessor, PriorityConfig, tier_for
-from civitas_risk.priority_model import PriorityAssessment, PriorityContribution, PriorityModel
+from civitas_risk.priority_features import (
+    PriorityContext,
+    PriorityFeatures,
+    build_priority_features,
+    category_urgency_signal,
+    time_sensitivity_signal,
+)
+from civitas_risk.priority_model import (
+    PriorityAssessment,
+    PriorityModel,
+    PriorityReason,
+    priority_level_for,
+)
 from civitas_risk.severity import SeverityAssessor, rule_severity, severity_level
 from civitas_risk.severity_model import (
     SeverityAssessment,
@@ -39,9 +51,15 @@ __all__ = [
     "IncidentFeatures",
     "IncidentVisualEvidence",
     "build_incident_features",
+    "PriorityContext",
+    "PriorityFeatures",
+    "build_priority_features",
+    "category_urgency_signal",
+    "time_sensitivity_signal",
     "PriorityAssessment",
-    "PriorityContribution",
     "PriorityModel",
+    "PriorityReason",
+    "priority_level_for",
     "SeverityAssessment",
     "SeverityContribution",
     "SeverityModel",
