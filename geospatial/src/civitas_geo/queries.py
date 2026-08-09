@@ -14,7 +14,14 @@ Expected schema (see geospatial/README.md for the setup SQL):
 
 from __future__ import annotations
 
-from civitas_geo.models import CandidateSearchSpec, GeoPoint, OperationalBoundary, SpatialSearchSpec
+from datetime import datetime
+
+from civitas_geo.models import (
+    CandidateSearchSpec,
+    GeoPoint,
+    OperationalBoundary,
+    SpatialSearchSpec,
+)
 
 
 def ensure_postgis_sql() -> str:
@@ -218,5 +225,53 @@ def incident_region_bbox_sql(incident_id: str, radius_m: float = 800.0) -> tuple
         "ST_Y(ST_Centroid(ST_Envelope(ST_Buffer("
         f"{_bound_geog_param('center')}::geometry, %(radius_m)s)))) AS lat "
         f"FROM {_safe_ident('incidents')} i WHERE i.incident_id = %(incident_id)s",
+        params,
+    )
+
+
+def reports_per_cell_sql(
+    cell_size_m: float = 200.0,
+    since: datetime | None = None,
+    boundary: OperationalBoundary | None = None,
+) -> tuple[str, dict[str, object]]:
+    """Reports-per-cell density aggregate query (Phase 4).
+
+    Groups incidents by ST_SnapToGrid cell of the configured size (degrees =
+    metres / 111320 at this latitude) with one row per (cell, category), so
+    both the cell count and the per-category distribution come from the same
+    geometry. The grid origin is (0, 0) — identical to the memory-mode
+    floor-anchored math, so cell_id matches across modes.
+
+    Returns: per (snapped lat, snapped lon, category) count rows; the
+    aggregate facade merges them into DensityCell records.
+    """
+    params: dict[str, object] = {"span_deg": cell_size_m / 111_320.0}
+    filters: list[str] = ["i.location_geom IS NOT NULL"]
+    if since is not None:
+        params["since"] = since
+        filters.append("i.reported_at >= %(since)s")
+    if boundary is not None:
+        min_lat, min_lon, max_lat, max_lon = boundary.bbox
+        params.update(
+            {
+                "b_min_lat": min_lat,
+                "b_min_lon": min_lon,
+                "b_max_lat": max_lat,
+                "b_max_lon": max_lon,
+            }
+        )
+        filters.append(
+            "i.location_geom && ST_MakeEnvelope("
+            "%(b_min_lon)s, %(b_min_lat)s, %(b_max_lon)s, %(b_max_lat)s, 4326)"
+        )
+    return (
+        "SELECT "
+        "ST_Y(ST_SnapToGrid(i.location_geom, %(span_deg)s)) AS latitude, "
+        "ST_X(ST_SnapToGrid(i.location_geom, %(span_deg)s)) AS longitude, "
+        "i.category AS category, "
+        "COUNT(*) AS report_count "
+        f"FROM {_safe_ident('incidents')} i "
+        "WHERE " + " AND ".join(filters) + " "
+        "GROUP BY latitude, longitude, i.category",
         params,
     )

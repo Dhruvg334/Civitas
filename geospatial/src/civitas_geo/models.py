@@ -184,6 +184,48 @@ class PipelineGateDecision(BaseModel):
     validation: LocationValidationResult | None = None
 
 
+class DensityCell(BaseModel):
+    """One grid cell with its observed report count (Phase 4).
+
+    The cell key derives from the snapped coordinate pair (ST_SnapToGrid
+    alignment in postgis mode; identical floor-anchored math in memory mode)
+    so both modes produce the same cell_id for the same physical cell.
+    """
+
+    cell_id: str
+    anchor_lat: float
+    anchor_lon: float
+    center_lat: float
+    center_lon: float
+    cell_span_m: float = Field(gt=0)
+    report_count: int = Field(ge=0)
+    category_distribution: dict[str, int] = Field(default_factory=dict)
+
+
+class DensityAggregateResult(BaseModel):
+    """Reports-per-cell transactional density aggregate (Phase 4).
+
+    Represents the cell's density window (count of reports landed in that
+    cell over the configured recency window and cell size) plus the
+    per-category breakdown. Mode labels the geometry provenance exactly like
+    the Phase 2 candidate retrieval stages.
+    """
+
+    cell_size_m: float = Field(gt=0)
+    cells: list[DensityCell] = Field(default_factory=list)
+    total_reports: int = Field(default=0, ge=0)
+    window_hours: float | None = Field(default=None, ge=0)
+    mode: Literal["postgis", "memory", "unavailable"] = "memory"
+    basis: list[str] = Field(default_factory=list)
+
+    def top_cells(self, limit: int = 5) -> list[DensityCell]:
+        """Cells with the highest report counts, descending."""
+        return sorted(self.cells, key=lambda c: c.report_count, reverse=True)[:limit]
+
+    def cell_count(self) -> int:
+        return len(self.cells)
+
+
 class SpatialSearchSpec(BaseModel):
     """Input contract for PostGIS-backed spatial queries."""
 

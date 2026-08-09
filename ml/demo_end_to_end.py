@@ -19,7 +19,16 @@ REPO = Path(__file__).resolve().parents[1]
 for rel in ("ml/duplicates/src", "ml/risk/src", "ml/vision/src", "geospatial/src"):
     sys.path.insert(0, str(REPO / rel))
 
-from civitas_duplicates import DuplicateDetector, ReportLike  # noqa: E402
+from civitas_duplicates import (  # noqa: E402
+    ClassicalImageEmbedder,
+    DuplicateDetector,
+    HashNgramEmbedder,
+    ReportLike,
+    build_report_embeddings,
+    incident_similarity,
+)
+from civitas_duplicates.benchmark import make_synthetic_pairs  # noqa: E402
+from civitas_geo.aggregates import DensityAggregator  # noqa: E402
 from civitas_geo.candidates import CandidateRetriever  # noqa: E402
 from civitas_geo.feature_engineering import (
     CivicIncidentContext,
@@ -195,9 +204,84 @@ def main() -> None:
     for cat, m in evaluation.per_class.items():
         print(f"    {cat:22s} precision {m['precision']:.2f} recall {m['recall']:.2f} f1 {m['f1']:.2f}")
 
+    print("\n== 7. Embeddings + same-incident similarity (Phase 4) ==")
+    text_embedder = HashNgramEmbedder()
+    image_embedder = ClassicalImageEmbedder()
 
-if __name__ == "__main__":
-    main()
+    emb_a = build_report_embeddings(
+        report_id="rep-1",
+        description=reports[0].description,
+        text_embedder=text_embedder,
+        image=make_image("water_leakage", 7021),
+        image_embedder=image_embedder,
+        gps=(reports[0].latitude, reports[0].longitude),
+        submitted_at=reports[0].submitted_at.isoformat(),
+        category=reports[0].category,
+        landmark_ids=["lm-school-1"],
+    )
+    emb_b = build_report_embeddings(
+        report_id="rep-2",
+        description=reports[1].description,
+        text_embedder=text_embedder,
+        image=make_image("water_leakage", 7022),
+        image_embedder=image_embedder,
+        gps=(reports[1].latitude, reports[1].longitude),
+        submitted_at=reports[1].submitted_at.isoformat(),
+        category=reports[1].category,
+        landmark_ids=["lm-school-1"],
+    )
+    emb_c = build_report_embeddings(
+        report_id="rep-3",
+        description=reports[2].description,
+        text_embedder=text_embedder,
+        image=make_image("broken_streetlight", 7023),
+        image_embedder=image_embedder,
+        gps=(reports[2].latitude, reports[2].longitude),
+        submitted_at=reports[2].submitted_at.isoformat(),
+        category=reports[2].category,
+        landmark_ids=["lm-metro-station-1"],
+    )
+    print(f"  image embedding: {image_embedder.method} "
+          f"(dim {len(emb_a.image_embedding or [])})")
+    answer = incident_similarity(emb_a, emb_b)
+    print(f"  rep-1 vs rep-2 (same leak) -> duplicate={answer.is_duplicate} "
+          f"score={answer.score:.2f} review={answer.requires_review}")
+    for line in answer.decision_basis[:3]:
+        print(f"    - {line}")
+    answer_far = incident_similarity(emb_a, emb_c)
+    print(f"  rep-1 vs rep-3 (different incident) -> duplicate={answer_far.is_duplicate} "
+          f"score={answer_far.score:.2f}")
+    for line in answer_far.decision_basis[:2]:
+        print(f"    - {line}")
+    synthetic_pairs = make_synthetic_pairs(seed=7, n_duplicates=10, n_distinct=10)
+    agree = sum(
+        int(incident_similarity(a, b).is_duplicate) == label
+        for a, b, label in synthetic_pairs
+    )
+    print(f"  synthetic pair check: {agree}/20 same-incident answers correct")
+
+    print("\n== 8. Reports-per-cell density aggregates (Phase 4) ==")
+    memory_incidents = [
+        {"incident_id": f"inc-{i}", "latitude": r.latitude, "longitude": r.longitude,
+         "category": r.category, "duplicates_seen": 1, "reported_at": r.submitted_at}
+        for i, r in enumerate(reports)
+    ]
+    density = DensityAggregator(cell_size_m=200).reports_per_cell(memory_incidents)
+    print(f"  density: {density.cell_count()} non-empty 200 m cells "
+          f"over {density.total_reports} report(s) ({density.mode})")
+    for cell in density.top_cells(3):
+        print(f"    cell {cell.cell_id}: {cell.report_count} report(s), "
+              f"categories {cell.category_distribution}")
+    grid_features = GeospatialFeatureEngine(landmarks=landmarks).compute(
+        CivicIncidentContext(
+            latitude=rep.latitude, longitude=rep.longitude,
+            submitted_at=rep.submitted_at, category=rep.category,
+            nearby_reports=nearby.incidents,
+            cell_report_density=density.cells[0].report_count if density.cells else None,
+        )
+    )
+    print(f"  cell_report_density_norm = {grid_features.features['cell_report_density_norm']:.3f} "
+          f"({grid_features.provenance['cell_report_density_norm']})")
 
 
 if __name__ == "__main__":

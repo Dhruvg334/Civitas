@@ -12,7 +12,9 @@ from __future__ import annotations
 import math
 import re
 from collections import Counter
-from typing import Callable, Protocol
+from typing import Any, Callable, Protocol
+
+from pydantic import BaseModel, Field
 
 _TEXT_DIM = 512
 _NGRAM_MIN = 2
@@ -103,3 +105,188 @@ class ProviderEmbedder:
         if self._embed_image is None:
             raise NotImplementedError("image embedding provider not configured")
         return self._embed_image(image_bytes)
+
+
+# ---------------------------------------------------------------------------
+# Phase 4: real image embeddings + per-report embedding sets.
+# ---------------------------------------------------------------------------
+
+class ImageEmbedding(BaseModel):
+    """Embedding record with full provenance (Phase 4)."""
+
+    vector: list[float]
+    method: str
+    basis: list[str] = Field(default_factory=list)
+
+    @property
+    def dim(self) -> int:
+        return len(self.vector)
+
+
+class ReportEmbeddings(BaseModel):
+    """The embedding layer's output for one report (Phase 4).
+
+    Combines the two learned/derived modalities (text, image) with the raw
+    geospatial signals (GPS, timestamp, category, landmarks) so the similarity
+    layer can answer the product question: "do these two reports describe the
+    same real-world incident?" — not "do these sentences look similar?".
+    """
+
+    report_id: str
+    text_embedding: list[float] = Field(default_factory=list)
+    image_embedding: list[float] | None = None
+    gps: tuple[float, float] | None = None
+    submitted_at: str | None = None
+    category: str | None = None
+    landmark_ids: list[str] = Field(default_factory=list)
+    basis: list[str] = Field(default_factory=list)
+
+
+class ClassicalImageEmbedder:
+    """Deterministic image embedding from classical CV measurements (Phase 4).
+
+    Vector = the civitas-vision pixel-feature measurements concatenated with a
+    32-bin hue histogram and a 32-bin saturation histogram, L2 normalized.
+    Real measurements, reproducible offline, and documented — no GPU provider
+    required. Production can swap in CLIP via `ProviderEmbedder`.
+    """
+
+    HUE_BINS = 32
+    SAT_BINS = 32
+
+    def __init__(self) -> None:
+        try:
+            from civitas_vision.features import FEATURE_NAMES  # type: ignore[import-not-found]
+
+            self._feature_names: tuple[str, ...] = tuple(FEATURE_NAMES)
+        except ImportError:  # pragma: no cover - guarded fallback
+            self._feature_names = _VISION_FEATURE_ORDER
+        self.method = (
+            f"classical-features({len(self._feature_names)})"
+            f"+hue{self.HUE_BINS}+sat{self.SAT_BINS}, L2-normalized"
+        )
+
+    def embed_image(self, image: Any) -> ImageEmbedding:
+        """Embed a PIL image (or bytes / numpy array) into a vector."""
+        arr = self._to_array(image)
+        features_basis: list[str] = []
+        feat: dict[str, float] = {}
+        try:
+            from civitas_vision.features import extract_features  # type: ignore[import-not-found]
+
+            from PIL import Image as PILImage
+
+            feat = extract_features(PILImage.fromarray((arr * 255).astype("uint8"), mode="RGB"))
+            features_basis = [f"vision measurements: {len(feat)} classical pixel features"]
+        except ImportError:
+            features_basis = ["civitas-vision unavailable; colour-only embedding"]
+        vector = [float(feat.get(k, 0.0)) for k in self._feature_names]
+        vector.extend(self._histogram(arr, self.HUE_BINS, hue=True))
+        vector.extend(self._histogram(arr, self.SAT_BINS, hue=False))
+        norm = math.sqrt(sum(v * v for v in vector))
+        if norm > 0.0:
+            vector = [v / norm for v in vector]
+        return ImageEmbedding(
+            vector=vector,
+            method=self.method,
+            basis=features_basis + [
+                f"dim {len(vector)}: {len(self._feature_names)} classical + "
+                f"{self.HUE_BINS} hue + {self.SAT_BINS} saturation histogram bins"
+            ],
+        )
+
+    def embed(self, image_bytes: bytes) -> list[float]:  # protocol compat
+        from PIL import Image as PILImage
+        import io
+
+        return self.embed_image(PILImage.open(io.BytesIO(image_bytes))).vector
+
+    @staticmethod
+    def _to_array(image: Any) -> Any:
+        import io
+
+        import numpy as np
+        from PIL import Image as PILImage
+
+        if isinstance(image, bytes):
+            image = PILImage.open(io.BytesIO(image))
+        if isinstance(image, PILImage.Image):
+            arr = np.asarray(image.convert("RGB"), dtype=np.float64) / 255.0
+        else:
+            arr = np.asarray(image, dtype=np.float64) / 255.0
+        return arr
+
+    @staticmethod
+    def _histogram(arr: Any, bins: int, hue: bool) -> list[float]:
+        import numpy as np
+
+        if arr.size == 0:
+            return [0.0] * bins
+        mx = arr.max(axis=2)
+        mn = arr.min(axis=2)
+        delta = mx - mn
+        eps = 1e-6
+        with np.errstate(divide="ignore", invalid="ignore"):
+            if hue:
+                r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
+                out = np.zeros_like(mx)
+                mask = delta > eps
+                np.copyto(out, np.mod(60.0 * (g - b) / np.maximum(delta, eps), 360.0), where=mask & (mx == r))
+                np.copyto(out, np.mod(60.0 * (b - r) / np.maximum(delta, eps) + 120.0, 360.0), where=mask & (mx == g))
+                np.copyto(out, np.mod(60.0 * (r - g) / np.maximum(delta, eps) + 240.0, 360.0), where=mask & (mx == b))
+                hist, _ = np.histogram(out, bins=bins, range=(0.0, 360.0))
+            else:
+                sat = delta / np.maximum(mx, eps)
+                hist, _ = np.histogram(sat, bins=bins, range=(0.0, 1.0))
+        total = float(hist.sum())
+        return [float(c / total) if total > 0 else 0.0 for c in hist]
+
+
+_VISION_FEATURE_ORDER: tuple[str, ...] = (
+    "laplacian_variance", "edge_density", "vertical_edge_ratio", "flow_edge_ratio",
+    "flow_blue_ratio", "band_dark_ratio", "luminance_mean", "luminance_std",
+    "saturation_mean", "saturation_std", "hue_variance", "blue_dominance",
+    "green_dominance", "blue_smooth_share", "color_scatter", "bright_peak_mean",
+    "bright_upper_share", "dark_lowtexture_share", "contrast_ratio",
+)
+
+
+def build_report_embeddings(
+    report_id: str,
+    description: str,
+    text_embedder: TextEmbedder,
+    image: Any | None = None,
+    image_embedder: ClassicalImageEmbedder | ProviderEmbedder | None = None,
+    gps: tuple[float, float] | None = None,
+    submitted_at: str | None = None,
+    category: str | None = None,
+    landmark_ids: list[str] | None = None,
+) -> ReportEmbeddings:
+    """Produce the full embedding set for one report (Phase 4).
+
+    Text embedding always; image embedding only when an image and an embedder
+    are supplied (missing modality is recorded, never fabricated).
+    """
+    basis = [f"text embedding: {text_embedder.__class__.__name__}"]
+    image_vec: list[float] | None = None
+    if image is not None and image_embedder is not None:
+        if isinstance(image_embedder, ClassicalImageEmbedder):
+            emb = image_embedder.embed_image(image)
+            image_vec = emb.vector
+            basis.append(f"image embedding ({emb.method})")
+        else:
+            image_vec = image_embedder.embed_image(image)
+            basis.append("image embedding (provider)")
+    else:
+        basis.append("no image supplied; image modality absent")
+
+    return ReportEmbeddings(
+        report_id=report_id,
+        text_embedding=text_embedder.embed(description),
+        image_embedding=image_vec,
+        gps=gps,
+        submitted_at=submitted_at,
+        category=category,
+        landmark_ids=list(landmark_ids or []),
+        basis=basis,
+    )

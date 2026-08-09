@@ -1,6 +1,7 @@
 """Civitas geospatial intelligence package."""
 
 from civitas_geo import (
+    aggregates,
     boundary,
     candidates,
     distance,
@@ -10,6 +11,13 @@ from civitas_geo import (
     reasoning,
     retrieval,
     validation,
+)
+from civitas_geo.aggregates import (
+    DEFAULT_CELL_SIZE_M,
+    DensityAggregator,
+    cell_id_for,
+    reports_per_cell_memory,
+    reports_per_cell_postgis,
 )
 from civitas_geo.boundary import DEFAULT_BOUNDARY
 from civitas_geo.candidates import (
@@ -27,6 +35,8 @@ from civitas_geo.models import (
     CandidateListResult,
     CandidateRecord,
     CandidateSearchSpec,
+    DensityAggregateResult,
+    DensityCell,
     ExposureContext,
     GeoPoint,
     Landmark,
@@ -41,6 +51,7 @@ from civitas_geo.models import (
 from civitas_geo.validation import gate_for_pipeline
 
 __all__ = [
+    "aggregates",
     "boundary",
     "candidates",
     "distance",
@@ -50,6 +61,11 @@ __all__ = [
     "reasoning",
     "retrieval",
     "validation",
+    "DEFAULT_CELL_SIZE_M",
+    "DensityAggregator",
+    "cell_id_for",
+    "reports_per_cell_memory",
+    "reports_per_cell_postgis",
     "DEFAULT_BOUNDARY",
     "CandidateRetriever",
     "enrich_landmark_context",
@@ -61,6 +77,8 @@ __all__ = [
     "CandidateListResult",
     "CandidateRecord",
     "CandidateSearchSpec",
+    "DensityAggregateResult",
+    "DensityCell",
     "ExposureContext",
     "GeoPoint",
     "Landmark",

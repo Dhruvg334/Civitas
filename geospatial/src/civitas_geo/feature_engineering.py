@@ -72,6 +72,11 @@ class CivicIncidentContext(BaseModel):
 
     nearby_reports: spatial retrieval output (NearbyIncident records) within
     the retrieval radius around this point.
+    cell_report_density: the reports-per-cell transactional density history
+    (Phase 4) for this point's grid cell — the count of reports that landed
+    in the same cell over the density window. None means no density
+    aggregate was supplied (the module then records that as a provenance
+    note rather than fabricating a value).
     """
 
     latitude: float = Field(ge=-90, le=90)
@@ -79,6 +84,7 @@ class CivicIncidentContext(BaseModel):
     submitted_at: datetime
     category: str | None = None
     nearby_reports: list[NearbyIncident] = Field(default_factory=list)
+    cell_report_density: float | None = Field(default=None, ge=0)
 
 
 class GeospatialFeatureVector(BaseModel):
@@ -259,6 +265,23 @@ class GeospatialFeatureEngine:
             f"{repeated} merged report sighting(s) across {count} nearby record(s)"
         )
 
+        # 6b. Transactional density history (Phase 4): reports-per-cell count.
+        # GeoGPT "aggregated terrain": a cell's running report history over
+        # its grid cell, capped so 50+ reports saturate at 1.0.
+        if ctx.cell_report_density is not None:
+            features["cell_report_density_norm"] = round(_cap1(ctx.cell_report_density / 50.0), 4)
+            raw["cell_report_density_cell_count"] = int(ctx.cell_report_density)
+            provenance["cell_report_density_norm"] = (
+                f"min(1, {int(ctx.cell_report_density)} / 50): reports-per-cell "
+                "density history for this grid cell"
+            )
+        else:
+            features["cell_report_density_norm"] = 0.0
+            raw["cell_report_density_cell_count"] = -1
+            provenance["cell_report_density_norm"] = (
+                "no reports-per-cell density aggregate supplied; feature set to 0"
+            )
+
         times_applied = False
         if reports:
             times = [
@@ -324,8 +347,14 @@ class GeospatialFeatureEngine:
         category: str | None = None,
         retriever: NearbyRetriever | None = None,
         memory_incidents: list[dict[str, object]] | None = None,
+        cell_size_m: float = 200.0,
     ) -> GeospatialFeatureVector:
-        """One-call: retrieve nearby reports then compute the vector."""
+        """One-call: retrieve nearby reports, aggregate cell density, compute.
+
+        The cell density history comes from the same memory- or postgis-backed
+        incidents; when it cannot be computed the context simply carries no
+        density and the feature provenance records that.
+        """
         point = GeoPoint(latitude=latitude, longitude=longitude)
         submitted_at = submitted_at or datetime.now(timezone.utc)
         if retriever is None:
@@ -334,6 +363,19 @@ class GeospatialFeatureEngine:
             SpatialSearchSpec(center=point, radius_m=self.nearby_radius_m, limit=50),
             memory_incidents=memory_incidents or [],
         )
+        cell_report_density: float | None = None
+        try:
+            from civitas_geo.aggregates import DensityAggregator, cell_id_for
+
+            density = DensityAggregator(cell_size_m=cell_size_m).reports_per_cell(
+                memory_incidents or []
+            )
+            for cell in density.cells:
+                if cell.cell_id == cell_id_for(latitude, longitude, cell_size_m):
+                    cell_report_density = float(cell.report_count)
+                    break
+        except Exception:  # noqa: BLE001 - density is best-effort evidence
+            pass
         return self.compute(
             CivicIncidentContext(
                 latitude=latitude,
@@ -341,6 +383,7 @@ class GeospatialFeatureEngine:
                 submitted_at=submitted_at,
                 category=category,
                 nearby_reports=nearby.incidents,
+                cell_report_density=cell_report_density,
             )
         )
 
