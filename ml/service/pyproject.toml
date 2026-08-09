@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "civitas-ml"
+version = "0.1.0"
+description = "Civitas unified ML interface: one clean, typed, stable surface composing vision, embeddings, duplicates, severity, priority and resolution verification for LangGraph agents."
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.10,<3.0", "Pillow>=10.0"]
+
+[project.optional-dependencies]
+full = [
+    "civitas-vision>=0.1.0",
+    "civitas-duplicates>=0.1.0",
+    "civitas-risk>=0.1.0",
+    "civitas-resolution>=0.1.0",
+    "civitas-geospatial>=0.1.0",
+]
+dev = ["pytest>=8.3,<9.0", "ruff>=0.9,<1.0", "mypy>=1.14,<2.0", "numpy>=1.24"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = [
+    "src",
+    "../vision/src",
+    "../duplicates/src",
+    "../risk/src",
+    "../resolution/src",
+    "../../geospatial/src",
+]
+testpaths = ["tests"]
+
+[[tool.mypy.overrides]]
+module = [
+    "civitas_vision",
+    "civitas_vision.*",
+    "civitas_duplicates",
+    "civitas_duplicates.*",
+    "civitas_risk",
+    "civitas_risk.*",
+    "civitas_resolution",
+    "civitas_resolution.*",
+    "civitas_geo",
+    "civitas_geo.*",
+    "PIL",
+    "PIL.*",
+    "cv2",
+]
+ignore_missing_imports = true

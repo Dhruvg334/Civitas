@@ -82,10 +82,17 @@ class ResolutionReason(BaseModel):
 
 
 class ResolutionVerdict(BaseModel):
-    """The model's answer for one before/after pair, fully explainable."""
+    """The model's answer for one before/after pair, fully explainable.
+
+    `confidence` is a computed quantity, never curated: alignment between
+    the tracks and the verdict, weighted by each track's margin (how far
+    its measurement is from flipping) and compressed by signal richness,
+    so a single binary signal can never reach high confidence.
+    """
 
     incident_id: str
     outcome: Outcome
+    confidence: float = Field(ge=0.0, le=1.0)
     resolved_signals: int = Field(ge=0)
     total_signals: int = Field(ge=0)
     reasons: list[ResolutionReason]
@@ -96,6 +103,14 @@ class ResolutionModel:
     """Deterministic before/after comparison; every verdict is explainable."""
 
     model_version = "resolution-model-v1"
+
+    # Per-track probative weight (relative evidence strength); weights of
+    # the tracks present are renormalized to 1.0 before alignment.
+    TRACK_WEIGHTS: dict[str, float] = {
+        "active water flow": 0.55,
+        "standing water / coverage": 0.30,
+        "hazard evidence": 0.15,
+    }
 
     def assess(
         self, before: ResolutionEvidence, after: ResolutionEvidence
@@ -138,7 +153,74 @@ class ResolutionModel:
         else:
             outcome = "resolved"
         resolved = sum(1 for r in reasons if r.status == "resolved")
-        return self._verdict(before, outcome, reasons, resolved, len(reasons), basis)
+        return self._verdict(
+            before, outcome, reasons, resolved, len(reasons), basis,
+            confidence=self._confidence(outcome, reasons, before, after),
+        )
+
+    def _confidence(
+        self,
+        outcome: Outcome,
+        reasons: list[ResolutionReason],
+        before: ResolutionEvidence,
+        after: ResolutionEvidence,
+    ) -> float:
+        """Computed confidence, never curated.
+
+        confidence = alignment x margin-mean x richness, where:
+        - alignment: weight share of tracks supporting the verdict
+          (supporting sets: RESOLVED -> resolved; PARTIAL -> resolved OR
+          partial, both mean "in progress"; CONFLICTING -> unchanged OR
+          worsened);
+        - margin: how far each track's measurement is from flipping to
+          another verdict (binary tracks: 1.0 when decisive, 0.0 when the
+          hazard is at full strength; the standing track measures distance
+          from the growth-conflict boundary, and distance below the 0.20
+          observable minimum when resolved);
+        - richness: n/(n+1), so a single binary signal can never reach
+          high confidence (cap 0.75 today with two water signals).
+        """
+        if outcome == "unverifiable":
+            return 0.0
+        supporting_sets: dict[Outcome, set[str]] = {
+            "resolved": {"resolved"},
+            "partial": {"resolved", "partial"},
+            "conflicting": {"unchanged", "worsened"},
+            "unverifiable": set(),
+        }
+        weights = self.TRACK_WEIGHTS
+        total = sum(weights.get(r.factor, 0.1) for r in reasons)
+        aligned = sum(
+            weights.get(r.factor, 0.1)
+            for r in reasons
+            if r.status in supporting_sets[outcome]
+        )
+        margins = [self._track_margin(r, before, after) for r in reasons]
+        n = len(reasons)
+        margin_mean = sum(margins) / max(n, 1)
+        richness = n / (n + 1)
+        return round(min(max((aligned / total) if total else 0.0, 0.0), 1.0) * margin_mean * richness, 2)
+
+    def _track_margin(
+        self, reason: ResolutionReason, before: ResolutionEvidence, after: ResolutionEvidence
+    ) -> float:
+        factor = reason.factor
+        if factor == "active water flow":
+            return 1.0 if reason.status == "resolved" else 0.0
+        if factor == "standing water / coverage":
+            boundary = before.water_coverage * COVERAGE_GROWTH_CONFLICT_RATIO
+            if reason.status == "resolved":
+                if before.water_coverage <= 0.0:
+                    return 1.0
+                below = (STANDING_WATER_EVIDENCE_MIN - after.water_coverage) / STANDING_WATER_EVIDENCE_MIN
+                return float(min(max(below, 0.0), 1.0))
+            if reason.status == "partial":
+                if boundary <= before.water_coverage:
+                    return 1.0
+                progress = (boundary - after.water_coverage) / (boundary - before.water_coverage)
+                return float(min(max(1.0 - progress, 0.0), 1.0))
+            return 0.0
+        return 1.0 if reason.status == "resolved" else 0.0
 
     def _media_guard(
         self, before: ResolutionEvidence, after: ResolutionEvidence
@@ -270,10 +352,12 @@ class ResolutionModel:
         resolved: int,
         total: int,
         basis: list[str],
+        confidence: float = 0.0,
     ) -> ResolutionVerdict:
         return ResolutionVerdict(
             incident_id=before.incident_id,
             outcome=outcome,
+            confidence=confidence,
             resolved_signals=resolved,
             total_signals=total,
             reasons=reasons,

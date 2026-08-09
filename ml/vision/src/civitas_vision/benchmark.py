@@ -80,6 +80,10 @@ def make_scene(category: str, seed: int, variant: str = "default") -> np.ndarray
         return np.clip(img, 0.0, 1.0)
 
     if category == "water_leakage":
+        if variant == "dry":  # repaired road: faint damp patch, below evidence thresholds
+            patch = _poly((int(rng.uniform(110, 190)), int(rng.uniform(170, 210))), 30, 12, 0)
+            img[patch] = np.clip(img[patch] * 0.75 + np.array([0.08, 0.12, 0.20]), 0.0, 1.0)
+            return np.clip(img, 0.0, 1.0)
         flow = variant == "flow"
         y_start = int(rng.uniform(70, 130))
         water = np.zeros_like(img)

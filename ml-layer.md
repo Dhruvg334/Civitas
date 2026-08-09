@@ -321,9 +321,11 @@ evidence and outright contradictions.
     (present -> unchanged/conflicting; absent -> resolved);
   - outcome precedence (worst wins): unchanged/worsened -> CONFLICTING,
     reduced-but-present -> PARTIAL, everything gone -> RESOLVED.
-- `tests/test_phase8_resolution.py` — 21 tests: unit level covers all four
+- `tests/test_phase8_resolution.py` — 24 tests: unit level covers all four
   verdicts, thresholds (0.20 standing-water minimum, 1.10 growth ratio),
-  media rejection, no-measurable-hazard, category mismatch, determinism;
+  media rejection, no-measurable-hazard, category mismatch, determinism
+  and the confidence formula (partial 0.40, dry-road resolved 0.63,
+  conflicting 0.0, unverifiable 0.0);
   integration runs the real vision pipeline on the synthetic corpus
   (flow variant -> standing variant is exactly the user story) and pins
   the measured values (before coverage 0.481 with
@@ -332,10 +334,79 @@ evidence and outright contradictions.
 - Demo step 12 (`ml/demo_end_to_end.py`): the work order closes as
   "resolved"; the model reopens it. Prints BEFORE/AFTER evidence, the
   PARTIALLY RESOLVED verdict with reasons, and three re-checks — a
-  dry-road snapshot (RESOLVED, evidence-level with a recorded limitation:
-  the synthetic corpus has no clean-road scene), a restarted leak
+  dry-road snapshot (RESOLVED with confidence; upgraded to the real CV
+  pipeline in Phase 9 via the new dry scene variant), a restarted leak
   (CONFLICTING) and a blurry photo (UNVERIFIABLE, quality gate rejects
   the media).
+
+## Phase 9 — One ML service (COMMIT <phase9>)
+
+The 90-second version: each phase so far shipped its own model with its
+own function. Phase 9 turns the whole layer into **one ML service with
+two stable entry points** that the LangGraph agents call:
+
+    analyze_report(image, video, description, latitude, longitude, timestamp)
+        -> {vision, embeddings, duplicate, severity, priority} sections
+
+    verify_resolution(before_media, after_media)
+        -> {status, confidence, evidence}
+
+Both return typed, schema-validated models (`civitas_ml.contracts`) with
+every section carrying `available`, `basis` (which engines ran, why) and
+`reasons`/`evidence` strings citing what the model actually saw. Missing
+inputs degrade sections (`available=False` or `unknown`) with the reason
+in `basis` — the service never guesses. It also closes the two recorded
+limitations from Phase 8 and earlier: resolution verdicts now carry a
+**computed confidence**, and the dry-road RESOLVED check now runs the
+real CV pipeline on a new **dry variant** of the water-leakage scene.
+
+- `ml/service/src/civitas_ml/analyze.py` — `analyze_report` composes the
+  stack: vision (image or video via `VisualIntelligencePipeline`), report
+  embeddings (`HashNgramEmbedder` text + `ClassicalImageEmbedder` image),
+  duplicate verdict against caller-supplied incident memory (modes
+  `full`/`no-memory`/`no-geo`; verdicts `new`/`duplicate`/`unknown` with
+  top-3 candidates and review flags), then single-report severity and
+  priority (`SeverityModel`/`PriorityModel` with geospatial exposure via
+  `NearbyRetriever` + `compute_exposure`). Severity/priority here are
+  single-report by contract — the cluster-aware numbers live in the risk
+  layer this service composes; the demo says so explicitly.
+- `ml/service/src/civitas_ml/verify.py` — `verify_resolution` loads both
+  images, runs vision on each, maps to `ResolutionEvidence` with the
+  measured water coverage, and calls `ResolutionModel.assess`. Returns
+  `{status, confidence, evidence, reasons, resolved/total signals}`.
+- `ml/service/src/civitas_ml/contracts.py` — the typed output surface:
+  `ReportAnalysis` (vision/embeddings/duplicate/severity/priority
+  sections) and `ResolutionVerification`.
+- `ml/resolution/src/civitas_resolution/model.py` — objective confidence
+  (computed from what the model observed, never curated):
+  `confidence = alignment * margin-mean * richness`, where alignment
+  weights the three signal tracks (active water flow 0.55, standing
+  water/coverage 0.30, hazard evidence 0.15) by how many are resolved,
+  margin-mean averages per-track margins (binary 1.0/0.0; standing water
+  uses its distance from the conflict boundary or the 0.20 minimum), and
+  richness is n_resolved/(n_tracks+1). UNVERIFIABLE is always 0.0.
+- `ml/vision/src/civitas_vision/benchmark.py` — new `variant="dry"` of
+  the water-leakage scene: a faint damp patch below the evidence
+  threshold (coverage ≈ 0.02, zero evidence strings) so the real pipeline
+  can demonstrate a full RESOLVED cycle without a synthetic corpus hack.
+- `tests/test_phase9_service.py` — 10 tests: unit coverage of every
+  section in `analyze_report` (full media+memory+landmark stack, missing
+  media, missing coordinates, empty memory) and `verify_resolution`
+  (partial 0.40, resolved 0.63, conflicting 0.0, unverifiable 0.0,
+  blurry rejection), pinning measured values (severity 74 high; priority
+  56 medium single-report) and including the two limitations being closed.
+- Demo step 13 (`ml/demo_end_to_end.py`): calls `analyze_report` on the
+  R1 photo + text + location (duplicate verdict R2 0.85, severity 74
+  high, priority 56 medium) and `verify_resolution` on BEFORE/AFTER
+  (`{'status': 'partial', 'confidence': 0.40, ...}`) and the dry after
+  (`{'status': 'resolved', 'confidence': 0.63, ...}`). Phase 12's
+  dry-road check was upgraded from evidence-level to the real CV
+  pipeline, and the recorded limitation is now resolved.
+- Design decision, recorded rather than hidden: pixel-location gating
+  (checking whether the AFTER photo was taken at exactly the BEFORE
+  location) was considered and deliberately NOT implemented — cross-
+  camera viewpoints make pixel-exact location checks unreliable; location
+  attribution stays with the work order.
 
 ## Verification (all passing)
 
@@ -352,10 +423,13 @@ cd ml/vision && python -m mypy src               # clean (9 files)
 cd ml/risk && python -m pytest tests             # 62 passed
 cd ml/risk && python -m ruff check src tests     # clean
 cd ml/risk && python -m mypy src/civitas_risk    # clean (12 files)
-cd ml/resolution && python -m pytest tests       # 21 passed
+cd ml/resolution && python -m pytest tests       # 24 passed
 cd ml/resolution && python -m ruff check src tests  # clean
 cd ml/resolution && python -m mypy src/civitas_resolution  # clean (3 files)
-python ml/demo_end_to_end.py                     # full trace incl. CV + Phases 4 + 5 + 6 + 7 + 8 steps
+cd ml/service && python -m pytest tests          # 10 passed
+cd ml/service && python -m ruff check src tests  # clean
+cd ml/service && python -m mypy src/civitas_ml   # clean (4 files)
+python ml/demo_end_to_end.py                     # full trace incl. CV + Phases 4-8 + service steps
 ```
 
 Note: `civitas-vision` is a regular dev dependency of the duplicates

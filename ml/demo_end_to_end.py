@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-for rel in ("ml/duplicates/src", "ml/risk/src", "ml/vision/src", "ml/resolution/src", "geospatial/src"):
+for rel in ("ml/duplicates/src", "ml/risk/src", "ml/vision/src", "ml/resolution/src", "ml/service/src", "geospatial/src"):
     sys.path.insert(0, str(REPO / rel))
 
 try:  # Phase 5 reasons use the "✓" check mark; force UTF-8 on cp1252 consoles
@@ -35,6 +35,7 @@ from civitas_duplicates import (  # noqa: E402
 )
 from civitas_duplicates.benchmark import make_synthetic_pairs  # noqa: E402
 from civitas_duplicates.evaluation import build_labelled_pairs  # noqa: E402
+from civitas_ml import analyze_report, verify_resolution  # noqa: E402
 from civitas_geo.aggregates import DensityAggregator  # noqa: E402
 from civitas_geo.candidates import CandidateRetriever  # noqa: E402
 from civitas_geo.feature_engineering import (
@@ -537,12 +538,14 @@ def main() -> None:
     print("  The road is no longer flooded but puddles remain — the work order")
     print("  is NOT closed; it goes back to the field team for follow-up.")
     print("  Re-checks (same model, other before/after pairs):")
-    dry_after = ResolutionEvidence.from_evidence(
-        main_cluster.cluster_id, "after", "monitoring photo / dry road (evidence-level check)",
-        primary_category="water_leakage", observable_evidence=(), water_coverage=0.04,
+    dry_photo = make_image("water_leakage", 7101, variant="dry")
+    dry_after = ResolutionEvidence.from_vision(
+        main_cluster.cluster_id, "after", "inspector upload (dry road)",
+        vision.analyze_image(dry_photo),
+        water_coverage=extract_features(dry_photo)["blue_smooth_share"],
     )
     dry_verdict = resolution_model.assess(verification_before, dry_after)
-    print(f"    dry road after:    -> {outcome_label(dry_verdict.outcome)} (all signals gone)")
+    print(f"    dry road after:    -> {outcome_label(dry_verdict.outcome)} (all signals gone, confidence {dry_verdict.confidence:.2f})")
     fresh_after = ResolutionEvidence.from_vision(
         main_cluster.cluster_id, "after", "inspector upload (leak restarting)",
         vision.analyze_image(make_image("water_leakage", 7101, variant="flow")),
@@ -555,9 +558,39 @@ def main() -> None:
         water_coverage=extract_features(gaussian_blur(after_photo, radius=4))["blue_smooth_share"],
     )
     print(f"    blurry after photo -> {outcome_label(resolution_model.assess(verification_before, blurry_after).outcome)} (quality gate rejects media)")
-    print("  Note: the dry-road RESOLVED check is evidence-level because the")
-    print("  synthetic corpus has no clean-road scene; the other three verdicts")
-    print("  run the full vision pipeline on real generated photos.")
+
+    print("\n== 13. One ML service (Phase 9) ==")
+    print("  The pieces above are now exposed behind ONE stable ML interface")
+    print("  with typed, schema-validated outputs for the LangGraph agents:")
+    print("      analyze_report(image, video, description, lat, lng, timestamp)")
+    print("      verify_resolution(before_media, after_media)")
+    print("  analyze_report on the same R1 photo + text + location stack:")
+    service_analysis = analyze_report(
+        image=before_photo,
+        video=None,
+        description="waterlogging near school again, road flooding",
+        latitude=28.6139,
+        longitude=77.2090,
+        timestamp=T0 + timedelta(hours=4),
+        memory_incidents=engine_reports[1:],
+        landmarks=LandmarkIndex(),
+    )
+    print(f"    vision    -> {service_analysis.vision.primary_category}, media_usable={service_analysis.vision.media_usable}")
+    best = service_analysis.duplicate.best_match
+    print(f"    duplicate -> verdict={service_analysis.duplicate.verdict}, best match={best.report_id}"
+          f" (similarity {best.similarity:.2f}, {best.reasons[0]})")
+    print(f"    severity  -> score {service_analysis.severity.score:.2f} ({service_analysis.severity.level}) "
+          f"[top: {service_analysis.severity.factors[0].factor}]")
+    print(f"    priority  -> score {service_analysis.priority.score:.2f} ({service_analysis.priority.level}) "
+          f"[top: {service_analysis.priority.reasons[0].factor}] / single-report view: clustering adds the rest")
+    print("  verify_resolution on the same BEFORE/AFTER pair:")
+    service_verdict = verify_resolution(before_photo, after_photo)
+    print(f"    {{'status': '{service_verdict.status}', 'confidence': {service_verdict.confidence:.2f}, 'evidence': {service_verdict.evidence[:2]}}}")
+    dry_verdict = verify_resolution(before_photo, dry_photo)
+    print(f"    {{'status': '{dry_verdict.status}', 'confidence': {dry_verdict.confidence:.2f}, 'evidence': {dry_verdict.evidence[:2]}}} "
+          "(dry road after)")
+    print("  Note: severity/priority here are single-report (no cluster bonus);")
+    print("  the cluster-aware numbers live in the risk layer the service composes.")
 
 
 if __name__ == "__main__":

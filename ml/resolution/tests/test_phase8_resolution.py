@@ -92,6 +92,26 @@ class TestResolutionModelUnit:
         assert outcome_label(verdict.outcome) == "RESOLVED"
         assert verdict.resolved_signals == 2
         assert verdict.total_signals == 2
+        assert verdict.confidence > 0.5
+
+    def test_unverifiable_has_zero_confidence(self):
+        verdict = ResolutionModel().assess(
+            evidence(observable_evidence=("standing water",), water_coverage=0.48),
+            evidence(stage="after", media_usable=False,
+                     rejection_basis=["blurry: rejected"]),
+        )
+        assert verdict.outcome == "unverifiable"
+        assert verdict.confidence == 0.0
+
+    def test_streetlight_resolved_confidence_limited_by_richness(self):
+        before = evidence(primary_category="broken_streetlight",
+                          observable_evidence=("dark scene with a localized bright bulb region",),
+                          water_coverage=0.0)
+        fixed = evidence(stage="after", primary_category="broken_streetlight",
+                         observable_evidence=(), water_coverage=0.0)
+        verdict = ResolutionModel().assess(before, fixed)
+        assert verdict.outcome == "resolved"
+        assert verdict.confidence == 0.5  # single binary signal: never high
 
     def test_partial_user_story(self):
         verdict = ResolutionModel().assess(
@@ -232,11 +252,31 @@ class TestResolutionVisionIntegration:
         before, after = before_after
         verdict = ResolutionModel().assess(before, after)
         assert verdict.outcome == "partial"
+        assert verdict.confidence == 0.40
         statuses = {r.factor: r.status for r in verdict.reasons}
         assert statuses["active water flow"] == "resolved"
         assert statuses["standing water / coverage"] == "partial"
         assert verdict.resolved_signals == 1
         assert verdict.total_signals == 2
+
+    def test_dry_road_after_is_resolved_with_real_pipeline(self):
+        vision = VisualIntelligencePipeline()
+        flow_img = make_image("water_leakage", 7101, variant="flow")
+        before = ResolutionEvidence.from_vision(
+            "CL-018", "before", "citizen upload (R1)", vision.analyze_image(flow_img),
+            water_coverage=extract_features(flow_img)["blue_smooth_share"],
+        )
+        dry_img = make_image("water_leakage", 7101, variant="dry")
+        after = ResolutionEvidence.from_vision(
+            "CL-018", "after", "inspector upload (dry)", vision.analyze_image(dry_img),
+            water_coverage=extract_features(dry_img)["blue_smooth_share"],
+        )
+        assert after.media_usable is True
+        assert after.observable_evidence == []
+        verdict = ResolutionModel().assess(before, after)
+        assert verdict.outcome == "resolved"
+        assert verdict.confidence == 0.63
+        assert verdict.resolved_signals == 2
 
     def test_blurred_after_photo_is_unverifiable(self):
         vision = VisualIntelligencePipeline()
@@ -266,6 +306,7 @@ class TestResolutionVisionIntegration:
         )
         verdict = ResolutionModel().assess(before, again)
         assert verdict.outcome == "conflicting"
+        assert verdict.confidence == 0.0
         assert any(r.status == "unchanged" for r in verdict.reasons)
 
     def test_other_hazard_photo_is_conflicting(self):
