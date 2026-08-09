@@ -14,7 +14,7 @@ Expected schema (see geospatial/README.md for the setup SQL):
 
 from __future__ import annotations
 
-from civitas_geo.models import GeoPoint, SpatialSearchSpec
+from civitas_geo.models import CandidateSearchSpec, GeoPoint, OperationalBoundary, SpatialSearchSpec
 
 
 def ensure_postgis_sql() -> str:
@@ -70,6 +70,63 @@ def nearby_incidents_sql(spec: SpatialSearchSpec) -> tuple[str, dict[str, object
         "i.category, i.reported_at, i.duplicates_seen, "
         "ST_Distance(i.location_geom::geography, "
         f"{_bound_geog_param('center')}) AS distance_m "
+        f"FROM {_safe_ident('incidents')} i "
+        "WHERE " + " AND ".join(filters) + " "
+        "ORDER BY distance_m ASC LIMIT %(limit)s",
+        params,
+    )
+
+
+def candidate_incidents_sql(
+    spec: CandidateSearchSpec,
+    boundary: OperationalBoundary | None = None,
+) -> tuple[str, dict[str, object]]:
+    """Candidate-window query for the ML duplicate engine (Phase 2).
+
+    Retrieves incidents within `radius_m` (X metres) that were reported within
+    `within_hours` (Y hours), optionally category-filtered, ordered by
+    distance. Includes the operational-boundary envelope pre-filter so the
+    spatial scan stays inside coverage. All user input is a bound parameter.
+    """
+    params: dict[str, object] = {
+        "center_lat": spec.center.latitude,
+        "center_lon": spec.center.longitude,
+        "radius_m": spec.radius_m,
+        "hours_back": spec.within_hours,
+        "limit": spec.limit,
+    }
+    filters = [
+        f"ST_DWithin(i.location_geom::geography, {_bound_geog_param('center')}, %(radius_m)s)",
+        "i.reported_at >= now() - make_interval(hours => %(hours_back)s)",
+    ]
+    if spec.exclude_incident_ids:
+        params["exclude_ids"] = spec.exclude_incident_ids
+        filters.append("i.incident_id = ANY(%(exclude_ids)s) = false")
+    if spec.category_filter:
+        params["category"] = spec.category_filter
+        filters.append("i.category = %(category)s")
+    if boundary is not None:
+        min_lat, min_lon, max_lat, max_lon = boundary.bbox
+        params.update(
+            {
+                "b_min_lat": min_lat,
+                "b_min_lon": min_lon,
+                "b_max_lat": max_lat,
+                "b_max_lon": max_lon,
+            }
+        )
+        filters.append(
+            "i.location_geom && ST_MakeEnvelope("
+            "%(b_min_lon)s, %(b_min_lat)s, %(b_max_lon)s, %(b_max_lat)s, 4326)"
+        )
+    return (
+        "SELECT i.incident_id, "
+        "ST_Y(i.location_geom::geography::geometry) AS latitude, "
+        "ST_X(i.location_geom::geography::geometry) AS longitude, "
+        "i.category, i.reported_at, i.duplicates_seen, "
+        "ST_Distance(i.location_geom::geography, "
+        f"{_bound_geog_param('center')}) AS distance_m, "
+        "EXTRACT(EPOCH FROM (now() - i.reported_at)) / 3600.0 AS hours_since_reported "
         f"FROM {_safe_ident('incidents')} i "
         "WHERE " + " AND ".join(filters) + " "
         "ORDER BY distance_m ASC LIMIT %(limit)s",

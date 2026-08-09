@@ -9,10 +9,12 @@ signals) and `ml/features` (normalized geospatial evidence vector) packages.
 
 | Module | Responsibility |
 |---|---|
+| `civitas_geo.boundary` | PostGIS Boundary: operational-area definition shared by validation and retrieval |
+| `civitas_geo.candidates` | Candidate retrieval for the ML duplicate engine: X-metre/Y-hour windows, category, boundary, landmark context |
 | `civitas_geo.distance` | Pure-Python WGS84 great-circle distance, bearing, bbox, offsets |
 | `civitas_geo.landmarks` | Landmark index, nearest/within/overlap lookup, keyword extraction |
-| `civitas_geo.validation` | Location validation: range, city coverage, heuristics, suggestions |
-| `civitas_geo.queries` | Parameterized PostGIS SQL builders (ST_DWithin, KNN, clustering) |
+| `civitas_geo.validation` | Location validation: range, city coverage, heuristics, suggestions + pipeline gate |
+| `civitas_geo.queries` | Parameterized PostGIS SQL builders (ST_DWithin, KNN, clustering, candidate windows) |
 | `civitas_geo.retrieval` | Nearby-incident retrieval with identical PostGIS/memory contracts |
 | `civitas_geo.reasoning` | Map-based reasoning -> exposure features for severity/priority |
 | `civitas_geo.feature_engineering` | Normalized evidence feature vector for ML (validity, proximity, neighbourhood, temporal, category) |
@@ -22,11 +24,36 @@ signals) and `ml/features` (normalized geospatial evidence vector) packages.
 
 All cross-module outputs are typed pydantic models in `civitas_geo.models`
 (`GeoPoint`, `Landmark`, `LocationValidationResult`, `NearbyIncidentsResult`,
-`ExposureContext`, `SpatialSearchSpec`) plus the feature-engineering contract
-`GeospatialFeatureVector` and input `CivicIncidentContext` in
+`ExposureContext`, `SpatialSearchSpec`, plus Phase 2 contracts:
+`OperationalBoundary`, `CandidateSearchSpec`, `CandidateRecord`,
+`CandidateListResult`, `PipelineGateDecision`) and the feature-engineering
+contract `GeospatialFeatureVector` / input `CivicIncidentContext` in
 `civitas_geo.feature_engineering`. Observable geography, retrieved
 context and inference are kept on separate fields (`sources` vs `inference`)
 so callers can attribute each signal.
+
+## Spatial pipeline (Phase 2)
+
+For every new incident the spatial stage runs:
+
+    Current report -> location-validation gate -> PostGIS/memory candidate
+    windows (X m radius, Y h recency, category, boundary) -> candidate list
+    enriched with landmark context -> ML duplicate engine.
+
+- `gate_for_pipeline()` (validation) rejects missing, malformed, placeholder
+  `(0,0)` and off-coverage coordinates before they enter retrieval; rejected
+  reports go to a human-fix queue with an explicit `reason`.
+- `CandidateSearchSpec` defines the retrieval windows (radius X metres,
+  `within_hours` Y); `candidate_incidents_sql()` executes them on PostGIS with
+  `ST_DWithin` + recency `make_interval` + boundary envelope (`&&`
+  `ST_MakeEnvelope`), all bound parameters.
+- Every `CandidateRecord` carries coordinates, distance, timestamps,
+  category, `duplicates_seen`, time-window flag and nearest-landmark context
+  per kind — the complete field set the duplicate/exposure models consume.
+- `CandidateRetriever` prefers PostGIS when an executor is configured and
+  falls back to a deterministic memory scan labeled `mode="memory"`.
+- The database artifacts live in `database/migrations/0001_spatial_core.sql`
+  and `database/seed/0001_demo_landmarks.sql` (matching `DEMO_LANDMARKS`).
 
 ## PostGIS setup (production mode)
 
@@ -86,6 +113,13 @@ retrieval (marked `mode="memory"` in results).
 - The denoised feature vector and full raw statistics are produced by
   `GeospatialFeatureEngine.compute_for_point()` which automatically runs
   location validation and nearby-incident retrieval.
+- The operational boundary is observable configuration (see
+  `civitas_geo.boundary.DEFAULT_BOUNDARY`), never model inference; both the
+  validation gate and candidate SQL consume the same `OperationalBoundary`
+  so coverage is enforced identically in memory and PostGIS mode.
+- Memory-mode candidate retrieval keeps records that lack timestamps but
+  states this in `basis`; PostGIS mode always enforces recency because
+  `reported_at` is `NOT NULL` in the migration.
 
 ## Run
 

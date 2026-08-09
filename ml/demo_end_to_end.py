@@ -20,14 +20,20 @@ for rel in ("ml/duplicates/src", "ml/risk/src", "geospatial/src"):
     sys.path.insert(0, str(REPO / rel))
 
 from civitas_duplicates import DuplicateDetector, ReportLike  # noqa: E402
+from civitas_geo.candidates import CandidateRetriever  # noqa: E402
 from civitas_geo.feature_engineering import (
     CivicIncidentContext,
     GeospatialFeatureEngine,
 )
 from civitas_geo.landmarks import LandmarkIndex  # noqa: E402
-from civitas_geo.models import GeoPoint, SpatialSearchSpec  # noqa: E402
+from civitas_geo.models import (  # noqa: E402
+    CandidateSearchSpec,
+    GeoPoint,
+    SpatialSearchSpec,
+)
 from civitas_geo.reasoning import compute_exposure  # noqa: E402
 from civitas_geo.retrieval import NearbyRetriever  # noqa: E402
+from civitas_geo.validation import gate_for_pipeline  # noqa: E402
 from civitas_risk import RiskAssessor, RiskContext, SeverityAssessor  # noqa: E402
 
 T0 = datetime(2026, 3, 1, 8, 0, tzinfo=timezone.utc)
@@ -103,6 +109,35 @@ def main() -> None:
         "nearest_report_distance_sim", "repeated_reports", "time_since_first_report_norm",
     ):
         print(f"    {name:32s} = {geo_features.features[name]:.3f}  ({geo_features.provenance[name][:64]})")
+
+    print("\n== 2c. Candidate list for the ML duplicate engine ==")
+    gate = gate_for_pipeline({"latitude": rep.latitude, "longitude": rep.longitude})
+    print(f"  gate: can_enter={gate.can_enter} reason={gate.reason} "
+          f"(rejected reports go to the fix queue, not the spatial pipeline)")
+    candidate_retriever = CandidateRetriever(executor=None)  # offline memory mode
+    candidates = candidate_retriever.retrieve(
+        CandidateSearchSpec(
+            center=point, radius_m=800, within_hours=24, limit=10,
+            exclude_incident_ids=[f"inc-{reports.index(rep)}"],
+        ),
+        memory_incidents=[
+            {"incident_id": f"inc-{i}", "latitude": r.latitude, "longitude": r.longitude,
+             "category": r.category, "duplicates_seen": 1,
+             "reported_at": r.submitted_at}
+            for i, r in enumerate(reports)
+        ],
+        landmarks=landmarks,
+        now=T0 + timedelta(hours=6),  # scenario-relative clock; PostGIS uses now()
+    )
+    for cand in candidates.candidates:
+        near_landmarks = ", ".join(
+            f"{d.landmark.kind}:{d.landmark.landmark_id}@{d.distance_m:.0f}m"
+            for d in cand.landmark_context[:3]
+        )
+        print(f"  candidate {cand.incident_id}: {cand.distance_m:.0f}m away, "
+              f"reported {cand.hours_since_reported:.1f}h ago, cat='{cand.category}', "
+              f"dups={cand.duplicates_seen}, landmarks=[{near_landmarks}]")
+    print(f"  ({candidates.mode}, boundary: {candidates.boundary.description if candidates.boundary else 'none'})")
 
     print("\n== 3. Severity and priority ==")
     context = RiskContext(

@@ -1,57 +1,58 @@
-# Civitas ML Layer — Progress Notes
+# Civitas ML Layer — Implemented Work
 
-Branch: `ml-layer`. This file tracks the 12-phase plan and verification state;
-repo work is committed with phase messages.
+Branch: `ml-layer`. This file records only implemented, verified work.
 
-## Phase plan (1–12)
+## Phase 1 — Geospatial feature engineering (COMMIT ce4af51)
 
-**Geospatial foundations (this repo's `geospatial/`)**
-- [x] 1. Feature-engineering module — seed COMPLETE:
-     - `geospatial/src/civitas_geo/feature_engineering.py` (evidence-only vector, no decisions)
-     - `geospatial/tests/test_feature_engineering.py` (20 tests; package total 58 passing)
-     - Exported from `civitas_geo.__init__`, wired into `ml/demo_end_to_end.py` (step 2b)
-     - Verified: `ruff check`, `mypy src`, `pytest` — all passing
-     - Commit `ce4af51` "Phase 1/12 complete"
-- [ ] 2. Norms/comparison hooks: similar-pattern incidents (landmark-kind + category), spatial density ring features
-- [ ] 3. Endpoint routing: calibrated nearest-station/zone assignment + assignment confidence (human review for ambiguous)
+- `geospatial/src/civitas_geo/feature_engineering.py` — evidence-only
+  `GeospatialFeatureVector`: 24+ normalized `[0,1]` features, per-feature
+  provenance, warnings, basis; no decision fields.
+- Blocks: location validity, school/hospital/traffic/junction exposure,
+  population proxy, neighbourhood report stats, hour/weekend temporality,
+  canonical category one-hot.
+- `geospatial/tests/test_feature_engineering.py` + exports + demo step 2b
+  + README documentation.
 
-**Transactional density (production DB)**
-- [ ] 4. Near-neighbour aggregates derived from the incident table (reports per cell history)
-- [ ] 5. Support polygons: schools/waterlines/no-fly per-authority adjacency (validated against corpus before use)
-- [ ] 6. Threshold calibration on the crawl corpus: `raw` fields -> training features, decision thresholds, evidence basis
+## Phase 2 — Spatial foundation (PostGIS boundary, candidate retrieval, gate)
 
-**Fusion & arbitration**
-- [ ] 7. Cross-modality arbitration (GPS vs text vs image geocodes) with source credibility
-- [ ] 8. Human-in-the-loop: review queue by fusion-failure/mis-match, feedback loop into weights
-- [ ] 9. Severity "under-1-year" temporal sensitivity (seasonality candidate)
+- `geospatial/src/civitas_geo/boundary.py` + `OperationalBoundary` in
+  `models.py` — the shared PostGIS Boundary consumed by validation and every
+  retrieval query (envelope pre-filter as `&& ST_MakeEnvelope`).
+- `geospatial/src/civitas_geo/candidates.py` + `CandidateSearchSpec` /
+  `CandidateRecord` / `CandidateListResult` — retrieval windows for the ML
+  duplicate engine: reports within X metres and Y hours, category filter,
+  exclusions, boundary; ordered by distance; every candidate carries
+  coordinates, timestamps, category, `duplicates_seen`, time-window flag and
+  nearest-landmark context per kind (`enrich_landmark_context`).
+- `geospatial/src/civitas_geo/queries.py::candidate_incidents_sql()` —
+  parameterized PostGIS window query: `ST_DWithin` + recency
+  `make_interval(hours)` + boundary envelope + `hours_since_reported`.
+- `geospatial/src/civitas_geo/validation.py::gate_for_pipeline()` — detects
+  missing/malformed, placeholder and off-coverage coordinates and blocks them
+  from the spatial pipeline (reasons: `rejected_malformed`,
+  `rejected_placeholder`, `rejected_out_of_coverage`, `rejected_implausible`).
+- `database/migrations/0001_spatial_core.sql` (PostGIS + incidents + landmarks
+  + GIST indexes) and `database/seed/0001_demo_landmarks.sql` (matches
+  `DEMO_LANDMARKS`).
+- `geospatial/tests/test_boundary_candidates.py` (20 tests; package 78
+  passing) + demo step 2c (gate -> candidate list -> duplicate engine).
+- `CandidateRetriever` prefers PostGIS when an executor is supplied; memory
+  mode is labeled `mode="memory"` and reports untimestamped records in
+  `basis`.
 
-**Upstream dependent work**
-- [ ] 10. Data/evidence ingestion (transcript/translation) to archive
-- [ ] 11. Shared artifact store: crawled pages, embeddings, model params
-- [ ] 12. Public archives consumable by Authority as evidence
-
-## Completed work summary
-
-Commits on this branch: prior `7cd21fe` added duplicates + reasoning + demo. `ce4af51`
-completes Phase 1. Featured fixes: raw-typing widened to include `str` (traffic level,
-canonical category); ruff `F401` + mypy `dict` invariance fixes.
-
-## Verification commands run (Phase 1)
+## Verification (all passing)
 
 ```bash
 cd geospatial
-python -m pytest tests            # 58 passed
+python -m pytest tests            # 78 passed
 python -m ruff check src tests    # clean
-python -m mypy src                # clean (10 files)
-cd ..
-python ml/demo_end_to_end.py      # full trace incl. feature vector (step 2b)
+python -m mypy src                # clean (12 files)
+python ml/demo_end_to_end.py      # full trace incl. gate + candidate list
 ```
 
-## Open items / known limitations
+## Commits on this branch
 
-- Feature thresholds (freshness τ, density caps, RBF σ) are seeded constants,
-  intentionally uncalibrated — Phase 6 calibrates on the crawl corpus.
-- `population_density_proxy` counts landmark kinds, not residents; not fit for
-  absolute density claims.
-- Nearest-station routing and support polygons need the real DB
-  (`CIVITAS_POSTGIS_DSN`) — memory mode returns explicit `mode="memory"`.
+- `7cd21fe` Add ML intelligence layer: duplicate detection, geospatial reasoning, severity/priority
+- `ce4af51` Phase 1/12 complete
+- `32ff126` Track ML layer phase plan and progress notes
+- `PHASE2` Phase 2/12 completed

@@ -8,8 +8,15 @@ consistency. Everything beyond the pure range checks is a labelled heuristic
 from __future__ import annotations
 
 from civitas_geo import distance as geo
+from civitas_geo.boundary import DEFAULT_BOUNDARY
 from civitas_geo.landmarks import LandmarkIndex
-from civitas_geo.models import GeoPoint, LocationValidationResult, Plausibility
+from civitas_geo.models import (
+    GeoPoint,
+    LocationValidationResult,
+    OperationalBoundary,
+    PipelineGateDecision,
+    Plausibility,
+)
 
 # Default operational bounding box (Civitas demo city). Overridable per city.
 DEFAULT_CITY_BBOX: tuple[float, float, float, float] = (28.55, 77.15, 28.66, 77.27)
@@ -121,3 +128,57 @@ class LocationValidator:
         elif geo.haversine_m(a.latitude, a.longitude, b.latitude, b.longitude) < 25.0:
             out.append("Coordinates within 25 m are plausibly the same physical spot.")
         return out
+
+
+def gate_for_pipeline(
+    point: GeoPoint | dict[str, float],
+    boundary: OperationalBoundary | None = None,
+    landmarks: LandmarkIndex | None = None,
+) -> PipelineGateDecision:
+    """Gate: is a report geographically plausible enough to enter the spatial
+    pipeline (Phase 2)?
+
+    The spatial stage must not receive missing, placeholder or off-coverage
+    coordinates: those records go to a human-fix queue instead of candidate
+    retrieval. "Uncertain but inside coverage" enters with warnings intact.
+    """
+    boundary = boundary or DEFAULT_BOUNDARY
+    validator = LocationValidator(landmarks=landmarks, city_bbox=boundary.bbox)
+    result = validator.validate(point)
+
+    if result.is_valid:
+        if result.plausibility == "implausible":
+            return PipelineGateDecision(
+                can_enter=False,
+                reason="rejected_implausible",
+                warnings=result.warnings,
+                validation=result,
+            )
+        return PipelineGateDecision(
+            can_enter=True,
+            reason="approved",
+            warnings=result.warnings,
+            validation=result,
+        )
+
+    joined = " ".join(result.warnings).lower()
+    if "missing or malformed" in joined:
+        return PipelineGateDecision(
+            can_enter=False,
+            reason="rejected_malformed",
+            warnings=result.warnings,
+            validation=result,
+        )
+    if "placeholder" in joined:
+        return PipelineGateDecision(
+            can_enter=False,
+            reason="rejected_placeholder",
+            warnings=result.warnings,
+            validation=result,
+        )
+    return PipelineGateDecision(
+        can_enter=False,
+        reason="rejected_out_of_coverage",
+        warnings=result.warnings,
+        validation=result,
+    )

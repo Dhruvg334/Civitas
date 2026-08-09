@@ -95,6 +95,95 @@ class ExposureContext(BaseModel):
     inference: list[str] = Field(default_factory=list)
 
 
+class OperationalBoundary(BaseModel):
+    """The spatial boundary of an operational area (PostGIS Boundary).
+
+    Phase 2 artifact: one shared boundary definition consumed by location
+    validation (gate for spatial pipeline) and by every candidate retrieval
+    query (envelope pre-filter on the geometry column). Bounding-box for now;
+    the model is forward-compatible with polygon boundaries.
+    """
+
+    name: str
+    bbox: tuple[float, float, float, float] = (
+        28.55, 77.15, 28.66, 77.27
+    )
+    source: str = "config"
+
+    def contains(self, latitude: float, longitude: float) -> bool:
+        min_lat, min_lon, max_lat, max_lon = self.bbox
+        return min_lat <= latitude <= max_lat and min_lon <= longitude <= max_lon
+
+    @property
+    def description(self) -> str:
+        min_lat, min_lon, max_lat, max_lon = self.bbox
+        return (
+            f"{self.name} boundary [{min_lat:.3f},{min_lon:.3f}]"
+            f"..[{max_lat:.3f},{max_lon:.3f}] (source: {self.source})"
+        )
+
+
+class CandidateSearchSpec(BaseModel):
+    """Retrieval windows the ML models need (Phase 2): nearby reports within
+    X metres and reported within Y hours, plus category/exclusion filters."""
+
+    center: GeoPoint
+    radius_m: float = Field(gt=0, le=50_000)
+    within_hours: float = Field(default=168.0, gt=0, le=8_760)
+    limit: int = Field(default=25, ge=1, le=200)
+    exclude_incident_ids: list[str] = Field(default_factory=list)
+    category_filter: str | None = None
+
+
+class CandidateRecord(BaseModel):
+    """One enriched candidate fed to the ML duplicate engine.
+
+    Carries every spatial field the models consume: coordinates, distance,
+    timestamps, category, repetition count, time-window flag, and the
+    landmark/context distances used by duplicate and exposure features.
+    """
+
+    incident_id: str
+    latitude: float
+    longitude: float
+    category: str | None = None
+    distance_m: float = Field(ge=0)
+    reported_at: datetime | None = None
+    duplicates_seen: int = Field(default=1, ge=1)
+    hours_since_reported: float | None = Field(default=None, ge=0)
+    within_time_window: bool = True
+    landmark_context: list[LandmarkDistance] = Field(default_factory=list)
+
+
+class CandidateListResult(BaseModel):
+    """Spatial-stage output for the duplicate engine: ordered candidate list."""
+
+    center: GeoPoint
+    radius_m: float = Field(gt=0)
+    within_hours: float = Field(gt=0)
+    candidates: list[CandidateRecord] = Field(default_factory=list)
+    total_in_window: int = Field(default=0, ge=0)
+    mode: Literal["postgis", "memory", "unavailable"] = "memory"
+    boundary: OperationalBoundary | None = None
+    basis: list[str] = Field(default_factory=list)
+
+
+class PipelineGateDecision(BaseModel):
+    """Location-validation gate: is a report geographically plausible enough
+    to enter the spatial/retrieval pipeline (Phase 2)."""
+
+    can_enter: bool
+    reason: Literal[
+        "approved",
+        "rejected_malformed",
+        "rejected_placeholder",
+        "rejected_out_of_coverage",
+        "rejected_implausible",
+    ]
+    warnings: list[str] = Field(default_factory=list)
+    validation: LocationValidationResult | None = None
+
+
 class SpatialSearchSpec(BaseModel):
     """Input contract for PostGIS-backed spatial queries."""
 
