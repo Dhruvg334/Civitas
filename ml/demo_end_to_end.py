@@ -20,6 +20,10 @@ for rel in ("ml/duplicates/src", "ml/risk/src", "geospatial/src"):
     sys.path.insert(0, str(REPO / rel))
 
 from civitas_duplicates import DuplicateDetector, ReportLike  # noqa: E402
+from civitas_geo.feature_engineering import (
+    CivicIncidentContext,
+    GeospatialFeatureEngine,
+)
 from civitas_geo.landmarks import LandmarkIndex  # noqa: E402
 from civitas_geo.models import GeoPoint, SpatialSearchSpec  # noqa: E402
 from civitas_geo.reasoning import compute_exposure  # noqa: E402
@@ -84,6 +88,21 @@ def main() -> None:
     print(f"  exposure: school {exposure.nearest_school_m}m away, "
           f"hospital {exposure.nearest_hospital_m}m, traffic {exposure.traffic_exposure}, "
           f"junctions {exposure.junction_density_1km}/km2")
+
+    print("\n== 2b. Geospatial feature vector (evidence, no decisions) ==")
+    geo_features = GeospatialFeatureEngine(landmarks=landmarks).compute(
+        CivicIncidentContext(
+            latitude=rep.latitude, longitude=rep.longitude,
+            submitted_at=rep.submitted_at, category=rep.category,
+            nearby_reports=nearby.incidents,
+        )
+    )
+    for name in (
+        "location_validity", "school_proximity", "hospital_proximity", "traffic",
+        "population_density_proxy", "nearby_report_count", "incident_density_1km",
+        "nearest_report_distance_sim", "repeated_reports", "time_since_first_report_norm",
+    ):
+        print(f"    {name:32s} = {geo_features.features[name]:.3f}  ({geo_features.provenance[name][:64]})")
 
     print("\n== 3. Severity and priority ==")
     context = RiskContext(

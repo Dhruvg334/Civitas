@@ -3,7 +3,7 @@
 Geospatial layer for Civitas: PostGIS spatial queries, nearby-incident
 retrieval, landmark grounding, location validation and map-based exposure
 reasoning. This is the dependency of the `ml/duplicates` (GPS/landmark
-signals) and `ml/risk` (school/hospital/traffic exposure features) packages.
+signals) and `ml/features` (normalized geospatial evidence vector) packages.
 
 ## Modules
 
@@ -15,13 +15,16 @@ signals) and `ml/risk` (school/hospital/traffic exposure features) packages.
 | `civitas_geo.queries` | Parameterized PostGIS SQL builders (ST_DWithin, KNN, clustering) |
 | `civitas_geo.retrieval` | Nearby-incident retrieval with identical PostGIS/memory contracts |
 | `civitas_geo.reasoning` | Map-based reasoning -> exposure features for severity/priority |
+| `civitas_geo.feature_engineering` | Normalized evidence feature vector for ML (validity, proximity, neighbourhood, temporal, category) |
 | `civitas_geo.db` | Optional psycopg3 client (extra: `civitas-geospatial[postgres]`) |
 
 ## Contracts
 
 All cross-module outputs are typed pydantic models in `civitas_geo.models`
 (`GeoPoint`, `Landmark`, `LocationValidationResult`, `NearbyIncidentsResult`,
-`ExposureContext`, `SpatialSearchSpec`). Observable geography, retrieved
+`ExposureContext`, `SpatialSearchSpec`) plus the feature-engineering contract
+`GeospatialFeatureVector` and input `CivicIncidentContext` in
+`civitas_geo.feature_engineering`. Observable geography, retrieved
 context and inference are kept on separate fields (`sources` vs `inference`)
 so callers can attribute each signal.
 
@@ -70,6 +73,19 @@ retrieval (marked `mode="memory"` in results).
   (marine bands, `(0,0)` placeholder, exact-duplicate GPS across reports).
 - Map reasoning emits `ExposureContext` with explicit `sources` and
   `inference` lists — never asserted facts.
+- `GeospatialFeatureEngine` returns a `GeospatialFeatureVector`: all features
+  are normalized to `[0, 1]`, every feature carries a `provenance` entry
+  naming its evidence source, `basis` records the supporting observations,
+  and no decision fields (severity/priority/tier) appear anywhere — the ML
+  layer decides.
+- Feature-engineering limits on purpose: landmark datasets cover schools,
+  hospitals, metros, junctions and no-fly/road buffers; anything else is
+  `0` (no fabrication). Seeded thresholds are visible in
+  `civitas_geo.feature_engineering` and are calibration candidates for
+  Phase 6.
+- The denoised feature vector and full raw statistics are produced by
+  `GeospatialFeatureEngine.compute_for_point()` which automatically runs
+  location validation and nearby-incident retrieval.
 
 ## Run
 
