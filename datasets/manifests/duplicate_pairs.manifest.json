@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "name": "duplicate_pairs",
+  "description": "Synthetic labeled civic reports with ground-truth duplicate clusters; model pair evaluations included for detector benchmarking.",
+  "kind": "synthetic",
+  "generator": "datasets/generators/generate_duplicates.py",
+  "generation_command": "python datasets/generators/generate_duplicates.py",
+  "seed": 2026,
+  "row_count": 3081,
+  "generated_file": "datasets/generated/duplicate_pairs.jsonl",
+  "sha256": "bb098a158be22038e7cb114aa03d5ad453d827973043b2c0ce6acdb3c15468b9",
+  "columns": {
+    "reports": "report_id, description, latitude, longitude, submitted_at, category, landmark_ids, true_cluster_id, role",
+    "duplicate_evaluation": "a, b, same_cluster, model_score, model_decision, model_review"
+  },
+  "usage": "Benchmark duplicate precision/recall; calibrate ScoringConfig thresholds. Do not use as production training signal without human-review labels."
+}

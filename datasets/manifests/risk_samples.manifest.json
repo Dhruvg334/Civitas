@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "name": "risk_samples",
+  "description": "Synthetic labeled severity/priority samples for ML calibration training. Labels = rule severity + Gaussian noise.",
+  "kind": "synthetic",
+  "generator": "datasets/generators/generate_risk_dataset.py",
+  "generation_command": "python datasets/generators/generate_risk_dataset.py",
+  "seed": 7,
+  "row_count": 400,
+  "generated_file": "datasets/generated/risk_samples.jsonl",
+  "sha256": "e1b901ec7e3059054fca29d9229ac2f194721e2749a8961f367a5ed138358da2",
+  "columns": {
+    "report_id": "str",
+    "category": "canonical category",
+    "description": "str",
+    "features": "normalized features: ['category_base', 'school_proximity', 'hospital_proximity', 'traffic', 'electrical', 'public_health', 'accessibility', 'repeated_reports', 'longevity', 'weather']",
+    "rule_severity": "rule scorer output",
+    "severity_label": "rule + noise target",
+    "severity_level": "label level",
+    "open_hours": "float",
+    "repeated_reports": "int"
+  },
+  "usage": "Train ml/risk logistic calibration (train_severity.py). Synthetic labels only; swap for human-reviewed labels before production."
+}
