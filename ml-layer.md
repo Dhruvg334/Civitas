@@ -218,7 +218,7 @@ hospital 584 m away, crowd pressure, time unresolved).
   and factor lists with evidence lines. Division of labour stays as in
   Phase 5: the demo is the narrated walk-through, this file is the record.
 
-## Phase 7 — Priority feature engineering (COMMIT <fill-on-commit>)
+## Phase 7 — Priority feature engineering (COMMIT f5732c4)
 
 The 90-second version: Phase 6 said **how bad** the leak is; Phase 7
 answers **how urgently the municipality must respond** — with a feature
@@ -318,3 +318,5 @@ duplicates tests exercise the real image paths instead of skipping them.
 - `288b1b8` Phase 5/12 completed
 - `c5ed976` Record Phase 5 commit hash in progress notes
 - `c177c39` Phase 6/12 completed
+- `c0bf9dd` Record Phase 6 commit hash in progress notes
+- `f5732c4` Phase 7/12 completed
