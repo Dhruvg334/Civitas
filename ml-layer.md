@@ -283,7 +283,7 @@ still goes to a human reviewer.
   ten-signal table, the model verdict (Priority 64 HIGH on the real
   grid-cell values) and the labelled what-if walk.
 
-## Phase 8 — Resolution verification (COMMIT <fill-on-commit>)
+## Phase 8 — Resolution verification (COMMIT 9949f4c)
 
 The 90-second version: the first seven phases understand the incident —
 vision, duplicates, severity, priority — and then the municipality acts.
@@ -377,3 +377,5 @@ duplicates tests exercise the real image paths instead of skipping them.
 - `c177c39` Phase 6/12 completed
 - `c0bf9dd` Record Phase 6 commit hash in progress notes
 - `f5732c4` Phase 7/12 completed
+- `e2827f7` Record Phase 7 commit hash in progress notes
+- `9949f4c` Phase 8/12 completed
