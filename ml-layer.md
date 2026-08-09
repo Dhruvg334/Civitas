@@ -97,7 +97,7 @@ real-world incident?" — NOT "do these two sentences look similar?".
   aggregates); duplicate pair "rep-1 vs rep-2" scores 0.88,
   "rep-1 vs rep-3" 0.34 — both answered with the gate visible in the basis.
 
-## Phase 5 — Duplicate detection engine (COMMIT <phase5-hash>)
+## Phase 5 — Duplicate detection engine (COMMIT 288b1b8)
 
 The 90-second version: three citizens report the same street problem within
 75 minutes near Sunrise School — R1 "water leaking from the main pipe near
