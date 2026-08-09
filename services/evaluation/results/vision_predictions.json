@@ -1,0 +1,646 @@
+[
+  {
+    "case_id": "vis-pothole_road_damage-2000",
+    "expected": "pothole_road_damage",
+    "actual": "pothole_road_damage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.096,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.33",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2001",
+    "expected": "pothole_road_damage",
+    "actual": "pothole_road_damage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.076,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.32",
+      "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2002",
+    "expected": "pothole_road_damage",
+    "actual": "pothole_road_damage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.102,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.32",
+      "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2003",
+    "expected": "pothole_road_damage",
+    "actual": "pothole_road_damage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.118,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.32",
+      "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2004",
+    "expected": "pothole_road_damage",
+    "actual": "pothole_road_damage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.067,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.32",
+      "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2005",
+    "expected": "pothole_road_damage",
+    "actual": "pothole_road_damage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.085,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.32",
+      "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2006",
+    "expected": "pothole_road_damage",
+    "actual": "pothole_road_damage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.134,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.32",
+      "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2007",
+    "expected": "pothole_road_damage",
+    "actual": "pothole_road_damage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.11,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.33",
+      "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2008",
+    "expected": "pothole_road_damage",
+    "actual": "pothole_road_damage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.091,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.32",
+      "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2009",
+    "expected": "pothole_road_damage",
+    "actual": "pothole_road_damage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.084,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.33",
+      "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-water_leakage-2010",
+    "expected": "water_leakage",
+    "actual": "water_leakage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.242,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.41",
+      "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-water_leakage-2011",
+    "expected": "water_leakage",
+    "actual": "water_leakage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.171,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.41",
+      "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-water_leakage-2012",
+    "expected": "water_leakage",
+    "actual": "water_leakage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.253,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.42",
+      "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-water_leakage-2013",
+    "expected": "water_leakage",
+    "actual": "water_leakage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.228,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.43",
+      "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-water_leakage-2014",
+    "expected": "water_leakage",
+    "actual": "water_leakage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.47,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.44",
+      "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-water_leakage-2015",
+    "expected": "water_leakage",
+    "actual": "water_leakage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.28,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.44",
+      "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-water_leakage-2016",
+    "expected": "water_leakage",
+    "actual": "water_leakage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.356,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.42",
+      "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-water_leakage-2017",
+    "expected": "water_leakage",
+    "actual": "water_leakage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.312,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.44",
+      "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-water_leakage-2018",
+    "expected": "water_leakage",
+    "actual": "water_leakage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.223,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.42",
+      "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-water_leakage-2019",
+    "expected": "water_leakage",
+    "actual": "water_leakage",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.256,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.41",
+      "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-garbage_overflow-2020",
+    "expected": "garbage_overflow",
+    "actual": "garbage_overflow",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.121,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.33",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-garbage_overflow-2021",
+    "expected": "garbage_overflow",
+    "actual": "garbage_overflow",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.27,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.34",
+      "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-garbage_overflow-2022",
+    "expected": "garbage_overflow",
+    "actual": "garbage_overflow",
+    "media_usable": true,
+    "confidence": 0.5213,
+    "ood_ratio": 0.152,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.34",
+      "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
+      "classification over 1 usable frame(s); confidence 0.521"
+    ]
+  },
+  {
+    "case_id": "vis-garbage_overflow-2023",
+    "expected": "garbage_overflow",
+    "actual": "garbage_overflow",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.149,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.34",
+      "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-garbage_overflow-2024",
+    "expected": "garbage_overflow",
+    "actual": "garbage_overflow",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.111,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.34",
+      "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-garbage_overflow-2025",
+    "expected": "garbage_overflow",
+    "actual": "garbage_overflow",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.105,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.34",
+      "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-garbage_overflow-2026",
+    "expected": "garbage_overflow",
+    "actual": "garbage_overflow",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.185,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.33",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-garbage_overflow-2027",
+    "expected": "garbage_overflow",
+    "actual": "garbage_overflow",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.16,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.34",
+      "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-garbage_overflow-2028",
+    "expected": "garbage_overflow",
+    "actual": "garbage_overflow",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.156,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.34",
+      "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-garbage_overflow-2029",
+    "expected": "garbage_overflow",
+    "actual": "garbage_overflow",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.112,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.34",
+      "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-broken_streetlight-2030",
+    "expected": "broken_streetlight",
+    "actual": "broken_streetlight",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.111,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.18",
+      "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-broken_streetlight-2031",
+    "expected": "broken_streetlight",
+    "actual": "broken_streetlight",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.118,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.17",
+      "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-broken_streetlight-2032",
+    "expected": "broken_streetlight",
+    "actual": "broken_streetlight",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.103,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.18",
+      "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-broken_streetlight-2033",
+    "expected": "broken_streetlight",
+    "actual": "broken_streetlight",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.185,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.16",
+      "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-broken_streetlight-2034",
+    "expected": "broken_streetlight",
+    "actual": "broken_streetlight",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.118,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.17",
+      "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-broken_streetlight-2035",
+    "expected": "broken_streetlight",
+    "actual": "broken_streetlight",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.103,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.18",
+      "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-broken_streetlight-2036",
+    "expected": "broken_streetlight",
+    "actual": "broken_streetlight",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.1,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.20",
+      "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-broken_streetlight-2037",
+    "expected": "broken_streetlight",
+    "actual": "broken_streetlight",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.095,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.17",
+      "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-broken_streetlight-2038",
+    "expected": "broken_streetlight",
+    "actual": "broken_streetlight",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.132,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.17",
+      "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-broken_streetlight-2039",
+    "expected": "broken_streetlight",
+    "actual": "broken_streetlight",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.098,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.21",
+      "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-fallen_tree-2040",
+    "expected": "fallen_tree",
+    "actual": "fallen_tree",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.141,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.31",
+      "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-fallen_tree-2041",
+    "expected": "fallen_tree",
+    "actual": "fallen_tree",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.124,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.32",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-fallen_tree-2042",
+    "expected": "fallen_tree",
+    "actual": "fallen_tree",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.173,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.32",
+      "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-fallen_tree-2043",
+    "expected": "fallen_tree",
+    "actual": "fallen_tree",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.141,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.32",
+      "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-fallen_tree-2044",
+    "expected": "fallen_tree",
+    "actual": "fallen_tree",
+    "media_usable": true,
+    "confidence": 0.5814,
+    "ood_ratio": 0.123,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.32",
+      "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
+      "classification over 1 usable frame(s); confidence 0.581"
+    ]
+  },
+  {
+    "case_id": "vis-fallen_tree-2045",
+    "expected": "fallen_tree",
+    "actual": "fallen_tree",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.139,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.31",
+      "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-fallen_tree-2046",
+    "expected": "fallen_tree",
+    "actual": "fallen_tree",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.149,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.32",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-fallen_tree-2047",
+    "expected": "fallen_tree",
+    "actual": "fallen_tree",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.165,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.31",
+      "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-fallen_tree-2048",
+    "expected": "fallen_tree",
+    "actual": "fallen_tree",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.142,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.31",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  },
+  {
+    "case_id": "vis-fallen_tree-2049",
+    "expected": "fallen_tree",
+    "actual": "fallen_tree",
+    "media_usable": true,
+    "confidence": 1.0,
+    "ood_ratio": 0.138,
+    "basis": [
+      "frame quality: blur 0.0, luminance 0.32",
+      "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
+      "classification over 1 usable frame(s); confidence 1.000"
+    ]
+  }
+]

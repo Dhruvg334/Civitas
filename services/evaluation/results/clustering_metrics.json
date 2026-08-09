@@ -1,0 +1,20 @@
+{
+  "component": "incident-clustering",
+  "model_version": "duplicates-engine-v1 (clustering stage)",
+  "thresholds": {
+    "duplicate_threshold": "0.70 (edge criterion, frozen)"
+  },
+  "test_set": "test_data/clusters (4 scenarios, 16 labelled reports)",
+  "n": 4,
+  "metrics": {
+    "scenarios_fully_correct": 2.0,
+    "scenario_accuracy": 0.5,
+    "same_incident_pairs_merged": 7.0,
+    "different_incident_pairs_separated": 8.0
+  },
+  "class_wise": [],
+  "confusion": null,
+  "notes": [
+    "report-level pair accuracy separates 'merges that must happen' from 'merges that must not happen'"
+  ]
+}

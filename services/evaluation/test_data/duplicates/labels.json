@@ -1,0 +1,362 @@
+[
+  {
+    "pair_id": "dup-pos-0",
+    "kind": "positive",
+    "label": 1,
+    "hard": false,
+    "reports": [
+      {
+        "report_id": "POS-0-A",
+        "description": "water leaking from the pipe near the school gate, water across the road",
+        "latitude": 28.61,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "water_leakage"
+      },
+      {
+        "report_id": "POS-0-B",
+        "description": "water pipeline leak at the school gate, road wet and flowing",
+        "latitude": 28.6104,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T13:00:00+00:00",
+        "category": "water_leakage"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-pos-1",
+    "kind": "positive",
+    "label": 1,
+    "hard": false,
+    "reports": [
+      {
+        "report_id": "POS-1-A",
+        "description": "water leaking from the pipe near the school gate, water across the road",
+        "latitude": 28.613,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "water_leakage"
+      },
+      {
+        "report_id": "POS-1-B",
+        "description": "water pipeline leak at the school gate, road wet and flowing",
+        "latitude": 28.6134,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T13:00:00+00:00",
+        "category": "water_leakage"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-pos-2",
+    "kind": "positive",
+    "label": 1,
+    "hard": false,
+    "reports": [
+      {
+        "report_id": "POS-2-A",
+        "description": "water leaking from the pipe near the school gate, water across the road",
+        "latitude": 28.616,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "water_leakage"
+      },
+      {
+        "report_id": "POS-2-B",
+        "description": "water pipeline leak at the school gate, road wet and flowing",
+        "latitude": 28.6164,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T13:00:00+00:00",
+        "category": "water_leakage"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-pos-3",
+    "kind": "positive",
+    "label": 1,
+    "hard": false,
+    "reports": [
+      {
+        "report_id": "POS-3-A",
+        "description": "water leaking from the pipe near the school gate, water across the road",
+        "latitude": 28.619,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "water_leakage"
+      },
+      {
+        "report_id": "POS-3-B",
+        "description": "water pipeline leak at the school gate, road wet and flowing",
+        "latitude": 28.6194,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T13:00:00+00:00",
+        "category": "water_leakage"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-pos-4",
+    "kind": "positive",
+    "label": 1,
+    "hard": false,
+    "reports": [
+      {
+        "report_id": "POS-4-A",
+        "description": "water leaking from the pipe near the school gate, water across the road",
+        "latitude": 28.622,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "water_leakage"
+      },
+      {
+        "report_id": "POS-4-B",
+        "description": "water pipeline leak at the school gate, road wet and flowing",
+        "latitude": 28.6224,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T13:00:00+00:00",
+        "category": "water_leakage"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-pos-5",
+    "kind": "positive",
+    "label": 1,
+    "hard": false,
+    "reports": [
+      {
+        "report_id": "POS-5-A",
+        "description": "water leaking from the pipe near the school gate, water across the road",
+        "latitude": 28.625,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "water_leakage"
+      },
+      {
+        "report_id": "POS-5-B",
+        "description": "water pipeline leak at the school gate, road wet and flowing",
+        "latitude": 28.6254,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T13:00:00+00:00",
+        "category": "water_leakage"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-neg-0",
+    "kind": "negative",
+    "label": 0,
+    "hard": false,
+    "reports": [
+      {
+        "report_id": "NEG-0-A",
+        "description": "broken streetlight on the main road",
+        "latitude": 28.6,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "broken_streetlight"
+      },
+      {
+        "report_id": "NEG-0-B",
+        "description": "garbage pile overflowing near the market",
+        "latitude": 28.68,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T09:00:00+00:00",
+        "category": "garbage_overflow"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-neg-1",
+    "kind": "negative",
+    "label": 0,
+    "hard": false,
+    "reports": [
+      {
+        "report_id": "NEG-1-A",
+        "description": "broken streetlight on the main road",
+        "latitude": 28.610000000000003,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "broken_streetlight"
+      },
+      {
+        "report_id": "NEG-1-B",
+        "description": "garbage pile overflowing near the market",
+        "latitude": 28.69,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T09:00:00+00:00",
+        "category": "garbage_overflow"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-neg-2",
+    "kind": "negative",
+    "label": 0,
+    "hard": false,
+    "reports": [
+      {
+        "report_id": "NEG-2-A",
+        "description": "broken streetlight on the main road",
+        "latitude": 28.62,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "broken_streetlight"
+      },
+      {
+        "report_id": "NEG-2-B",
+        "description": "garbage pile overflowing near the market",
+        "latitude": 28.7,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T09:00:00+00:00",
+        "category": "garbage_overflow"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-neg-3",
+    "kind": "negative",
+    "label": 0,
+    "hard": false,
+    "reports": [
+      {
+        "report_id": "NEG-3-A",
+        "description": "broken streetlight on the main road",
+        "latitude": 28.630000000000003,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "broken_streetlight"
+      },
+      {
+        "report_id": "NEG-3-B",
+        "description": "garbage pile overflowing near the market",
+        "latitude": 28.71,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T09:00:00+00:00",
+        "category": "garbage_overflow"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-neg-4",
+    "kind": "negative",
+    "label": 0,
+    "hard": false,
+    "reports": [
+      {
+        "report_id": "NEG-4-A",
+        "description": "broken streetlight on the main road",
+        "latitude": 28.64,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "broken_streetlight"
+      },
+      {
+        "report_id": "NEG-4-B",
+        "description": "garbage pile overflowing near the market",
+        "latitude": 28.72,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T09:00:00+00:00",
+        "category": "garbage_overflow"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-hard-nearby-unrelated",
+    "kind": "nearby-unrelated",
+    "label": 0,
+    "hard": true,
+    "reports": [
+      {
+        "report_id": "H1-A",
+        "description": "water leaking at the corner shop, footpath wet",
+        "latitude": 28.62,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "water_leakage"
+      },
+      {
+        "report_id": "H1-B",
+        "description": "pothole at the corner shop, front wheel damaged",
+        "latitude": 28.6203,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T09:00:00+00:00",
+        "category": "pothole_road_damage"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-hard-similar-text-different-location",
+    "kind": "similar-text-different-location",
+    "label": 0,
+    "hard": true,
+    "reports": [
+      {
+        "report_id": "H2-A",
+        "description": "pothole near the metro pillar, repair needed badly",
+        "latitude": 28.6301,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "pothole_road_damage"
+      },
+      {
+        "report_id": "H2-B",
+        "description": "pothole near the metro pillar, repair needed badly",
+        "latitude": 28.642,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T09:00:00+00:00",
+        "category": "pothole_road_damage"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-hard-same-location-different-category",
+    "kind": "same-location-different-category",
+    "label": 0,
+    "hard": true,
+    "reports": [
+      {
+        "report_id": "H3-A",
+        "description": "fallen tree blocking the footpath exit",
+        "latitude": 28.615,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "fallen_tree"
+      },
+      {
+        "report_id": "H3-B",
+        "description": "garbage overflow pile at the footpath exit",
+        "latitude": 28.6152,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T09:00:00+00:00",
+        "category": "garbage_overflow"
+      }
+    ]
+  },
+  {
+    "pair_id": "dup-hard-different-time",
+    "kind": "different-time",
+    "label": 0,
+    "hard": true,
+    "reports": [
+      {
+        "report_id": "H4-A",
+        "description": "water leak on station road, flowing across",
+        "latitude": 28.625,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "water_leakage"
+      },
+      {
+        "report_id": "H4-B",
+        "description": "water leak on station road, flowing across",
+        "latitude": 28.6251,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-05T08:00:00+00:00",
+        "category": "water_leakage"
+      }
+    ]
+  }
+]

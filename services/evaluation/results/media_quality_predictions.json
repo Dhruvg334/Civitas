@@ -1,0 +1,166 @@
+[
+  {
+    "case_id": "mq-valid-water",
+    "kind": "valid",
+    "expected_usable": true,
+    "gate_usable": true,
+    "forced_category": "water_leakage",
+    "unusable_without_forced_category": false,
+    "rejection_basis": []
+  },
+  {
+    "case_id": "mq-valid-pothole",
+    "kind": "valid",
+    "expected_usable": true,
+    "gate_usable": true,
+    "forced_category": "pothole_road_damage",
+    "unusable_without_forced_category": false,
+    "rejection_basis": []
+  },
+  {
+    "case_id": "mq-valid-garbage",
+    "kind": "valid",
+    "expected_usable": true,
+    "gate_usable": true,
+    "forced_category": "garbage_overflow",
+    "unusable_without_forced_category": false,
+    "rejection_basis": []
+  },
+  {
+    "case_id": "mq-blur-water",
+    "kind": "blurred",
+    "expected_usable": false,
+    "gate_usable": false,
+    "forced_category": null,
+    "unusable_without_forced_category": true,
+    "rejection_basis": [
+      "media rejected: blurry: variance of Laplacian 0.0000 < 0.0010"
+    ]
+  },
+  {
+    "case_id": "mq-blur-pothole",
+    "kind": "blurred",
+    "expected_usable": false,
+    "gate_usable": false,
+    "forced_category": null,
+    "unusable_without_forced_category": true,
+    "rejection_basis": [
+      "media rejected: blurry: variance of Laplacian 0.0001 < 0.0010; near-monochrome: saturation 0.033; color evidence weak (kept for shape/texture classification)"
+    ]
+  },
+  {
+    "case_id": "mq-blur-streetlight",
+    "kind": "blurred",
+    "expected_usable": false,
+    "gate_usable": false,
+    "forced_category": null,
+    "unusable_without_forced_category": true,
+    "rejection_basis": [
+      "media rejected: blurry: variance of Laplacian 0.0000 < 0.0010; near-monochrome: saturation 0.038; color evidence weak (kept for shape/texture classification)"
+    ]
+  },
+  {
+    "case_id": "mq-tiny",
+    "kind": "tiny",
+    "expected_usable": false,
+    "gate_usable": false,
+    "forced_category": null,
+    "unusable_without_forced_category": true,
+    "rejection_basis": [
+      "media rejected: resolution 32x32px below minimum 64x64px; blurry: variance of Laplacian 0.0002 < 0.0010; near-monochrome: saturation 0.034; color evidence weak (kept for shape/texture classification)"
+    ]
+  },
+  {
+    "case_id": "mq-dark",
+    "kind": "near-black",
+    "expected_usable": false,
+    "gate_usable": false,
+    "forced_category": null,
+    "unusable_without_forced_category": true,
+    "rejection_basis": [
+      "media rejected: blurry: variance of Laplacian 0.0000 < 0.0010; near-black frame: mean luminance 0.012; near-monochrome: saturation 0.000; color evidence weak (kept for shape/texture classification)"
+    ]
+  },
+  {
+    "case_id": "mq-bright",
+    "kind": "over-exposed",
+    "expected_usable": false,
+    "gate_usable": false,
+    "forced_category": null,
+    "unusable_without_forced_category": true,
+    "rejection_basis": [
+      "media rejected: blurry: variance of Laplacian 0.0000 < 0.0010; over-exposed frame: mean luminance 0.988; near-monochrome: saturation 0.000; color evidence weak (kept for shape/texture classification)"
+    ]
+  },
+  {
+    "case_id": "mq-ambiguous-blend",
+    "kind": "ambiguous",
+    "expected_usable": true,
+    "gate_usable": true,
+    "forced_category": "water_leakage",
+    "unusable_without_forced_category": false,
+    "rejection_basis": [],
+    "low_confidence_flagged": true
+  },
+  {
+    "case_id": "mq-unsupported-bytes",
+    "kind": "unsupported",
+    "expected_usable": false,
+    "service_usable": false,
+    "forced_category": null,
+    "unusable_without_forced_category": true,
+    "rejection_basis": [
+      "C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\evaluation\\test_data\\media_quality\\mq-unsupported-bytes.bin: media bytes not decodable as an image: cannot identify image file 'C:\\\\Users\\\\Nitu Agarwal\\\\Documents\\\\Pavit\\\\BTech\\\\Hackathons\\\\Civitas\\\\services\\\\evaluation\\\\test_data\\\\media_quality\\\\mq-unsupported-bytes.bin'"
+    ],
+    "error_code": "C",
+    "basis": [
+      "no media supplied",
+      "C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\evaluation\\test_data\\media_quality\\mq-unsupported-bytes.bin: media bytes not decodable as an image: cannot identify image file 'C:\\\\Users\\\\Nitu Agarwal\\\\Documents\\\\Pavit\\\\BTech\\\\Hackathons\\\\Civitas\\\\services\\\\evaluation\\\\test_data\\\\media_quality\\\\mq-unsupported-bytes.bin'"
+    ]
+  },
+  {
+    "case_id": "mq-missing-file",
+    "kind": "missing",
+    "expected_usable": false,
+    "service_usable": false,
+    "forced_category": null,
+    "unusable_without_forced_category": true,
+    "rejection_basis": [
+      "C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\evaluation\\results\\does-not-exist.png: media file not found: C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\evaluation\\results\\does-not-exist.png"
+    ],
+    "error_code": "C",
+    "basis": [
+      "no media supplied",
+      "C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\evaluation\\results\\does-not-exist.png: media file not found: C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\evaluation\\results\\does-not-exist.png"
+    ]
+  },
+  {
+    "case_id": "mq-video-no-path",
+    "kind": "video-no-path",
+    "expected_usable": false,
+    "service_usable": false,
+    "forced_category": null,
+    "unusable_without_forced_category": true,
+    "rejection_basis": [
+      "mock:video-bytes.mp4: backend video bytes are not supported yet (code media_invalid_kind); use a local video path"
+    ],
+    "error_code": "mock",
+    "basis": [
+      "no media supplied",
+      "mock:video-bytes.mp4: backend video bytes are not supported yet (code media_invalid_kind); use a local video path"
+    ]
+  },
+  {
+    "case_id": "mq-no-media",
+    "kind": "no-media",
+    "expected_usable": false,
+    "service_usable": false,
+    "forced_category": null,
+    "unusable_without_forced_category": true,
+    "rejection_basis": [],
+    "error_code": null,
+    "basis": [
+      "no media supplied"
+    ]
+  }
+]

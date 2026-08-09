@@ -1,0 +1,194 @@
+[
+  {
+    "case_id": "sev-00",
+    "expected_level": "critical",
+    "expected_score": 82,
+    "features": {
+      "category": "water_leak",
+      "active_water_flow": 1,
+      "water_coverage": 0.5,
+      "school_distance_m": 120,
+      "hospital_distance_m": null,
+      "traffic_exposure": "high",
+      "report_count": 4,
+      "duration_hours": 20,
+      "rain_intensity_mm_h": 30
+    }
+  },
+  {
+    "case_id": "sev-01",
+    "expected_level": "high",
+    "expected_score": 77,
+    "features": {
+      "category": "water_leak",
+      "active_water_flow": 1,
+      "water_coverage": 0.4,
+      "school_distance_m": 450,
+      "hospital_distance_m": null,
+      "traffic_exposure": "moderate",
+      "report_count": 2,
+      "duration_hours": 6,
+      "rain_intensity_mm_h": null
+    }
+  },
+  {
+    "case_id": "sev-02",
+    "expected_level": "high",
+    "expected_score": 74,
+    "features": {
+      "category": "fallen_tree",
+      "active_water_flow": 0,
+      "water_coverage": 0.0,
+      "school_distance_m": null,
+      "hospital_distance_m": null,
+      "traffic_exposure": "high",
+      "report_count": 3,
+      "duration_hours": 30,
+      "rain_intensity_mm_h": null
+    }
+  },
+  {
+    "case_id": "sev-03",
+    "expected_level": "medium",
+    "expected_score": 57,
+    "features": {
+      "category": "garbage",
+      "active_water_flow": 0,
+      "water_coverage": 0.0,
+      "school_distance_m": 700,
+      "hospital_distance_m": null,
+      "traffic_exposure": "low",
+      "report_count": 1,
+      "duration_hours": 3,
+      "rain_intensity_mm_h": null
+    }
+  },
+  {
+    "case_id": "sev-04",
+    "expected_level": "medium",
+    "expected_score": 58,
+    "features": {
+      "category": "pothole",
+      "active_water_flow": 0,
+      "water_coverage": 0.0,
+      "school_distance_m": null,
+      "hospital_distance_m": null,
+      "traffic_exposure": "low",
+      "report_count": 1,
+      "duration_hours": 1,
+      "rain_intensity_mm_h": null
+    }
+  },
+  {
+    "case_id": "sev-05",
+    "expected_level": "medium",
+    "expected_score": 43,
+    "features": {
+      "category": "streetlight",
+      "active_water_flow": 0,
+      "water_coverage": 0.0,
+      "school_distance_m": null,
+      "hospital_distance_m": null,
+      "traffic_exposure": "low",
+      "report_count": 1,
+      "duration_hours": 1,
+      "rain_intensity_mm_h": null
+    }
+  },
+  {
+    "case_id": "sev-06",
+    "expected_level": "critical",
+    "expected_score": 81,
+    "features": {
+      "category": "fallen_tree",
+      "active_water_flow": 0,
+      "water_coverage": 0.0,
+      "school_distance_m": 80,
+      "hospital_distance_m": 300,
+      "traffic_exposure": "high",
+      "report_count": 5,
+      "duration_hours": 40,
+      "rain_intensity_mm_h": 25
+    }
+  },
+  {
+    "case_id": "sev-07",
+    "expected_level": "high",
+    "expected_score": 68,
+    "features": {
+      "category": "water_leak",
+      "active_water_flow": 1,
+      "water_coverage": 0.05,
+      "school_distance_m": null,
+      "hospital_distance_m": null,
+      "traffic_exposure": "high",
+      "report_count": 1,
+      "duration_hours": 1,
+      "rain_intensity_mm_h": null
+    }
+  },
+  {
+    "case_id": "sev-08",
+    "expected_level": "medium",
+    "expected_score": 55,
+    "features": {
+      "category": "water_leak",
+      "active_water_flow": 0,
+      "water_coverage": 0.0,
+      "school_distance_m": null,
+      "hospital_distance_m": null,
+      "traffic_exposure": "low",
+      "report_count": 1,
+      "duration_hours": 1,
+      "rain_intensity_mm_h": null
+    }
+  },
+  {
+    "case_id": "sev-09",
+    "expected_level": "medium",
+    "expected_score": 47,
+    "features": {
+      "category": "streetlight",
+      "active_water_flow": 0,
+      "water_coverage": 0.0,
+      "school_distance_m": null,
+      "hospital_distance_m": null,
+      "traffic_exposure": "moderate",
+      "report_count": 1,
+      "duration_hours": 1,
+      "rain_intensity_mm_h": null
+    }
+  },
+  {
+    "case_id": "sev-10",
+    "expected_level": "medium",
+    "expected_score": 51,
+    "features": {
+      "category": "garbage",
+      "active_water_flow": 0,
+      "water_coverage": 0.0,
+      "school_distance_m": null,
+      "hospital_distance_m": null,
+      "traffic_exposure": "low",
+      "report_count": 1,
+      "duration_hours": 1,
+      "rain_intensity_mm_h": null
+    }
+  },
+  {
+    "case_id": "sev-11",
+    "expected_level": "medium",
+    "expected_score": 59,
+    "features": {
+      "category": "pothole",
+      "active_water_flow": 0,
+      "water_coverage": 0.0,
+      "school_distance_m": null,
+      "hospital_distance_m": null,
+      "traffic_exposure": "low",
+      "report_count": 1,
+      "duration_hours": 2,
+      "rain_intensity_mm_h": null
+    }
+  }
+]

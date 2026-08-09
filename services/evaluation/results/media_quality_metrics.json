@@ -1,0 +1,27 @@
+{
+  "component": "media-quality-gate",
+  "model_version": "vision-knn-v1 + civitas-ml media resolution",
+  "thresholds": {
+    "max_blur_score": "0.001 (variance of Laplacian)",
+    "min_width_px": "64",
+    "min_luminance": "0.02",
+    "max_luminance": "0.98",
+    "low_vision_confidence": "0.4"
+  },
+  "test_set": "test_data/media_quality (14 cases: valid/blurred/tiny/dark/bright/ambiguous/unsupported/missing/video/no-media)",
+  "n": 14,
+  "metrics": {
+    "correct_quality_verdicts": 10.0,
+    "correct_quality_rate": 1.0,
+    "unusable_cases_without_forced_category": 10.0,
+    "ambiguous_low_confidence_flagged": 1.0,
+    "gate_rejections_of_blur_tiny_dark_bright": 6.0,
+    "valid_images_classified": 3.0
+  },
+  "class_wise": [],
+  "confusion": null,
+  "notes": [
+    "unsupported bytes / missing file / video-without-path / no-media are rejected at the service layer with structured codes (media_unreadable, media_not_found, media_invalid_kind) and never force a category",
+    "the ambiguous 50/50 blend is a derived input (committed train-prototype mix, documented in the manifest); it must be flagged low-confidence, not asserted"
+  ]
+}

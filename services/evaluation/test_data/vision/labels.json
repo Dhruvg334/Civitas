@@ -1,0 +1,302 @@
+[
+  {
+    "case_id": "vis-pothole_road_damage-2000",
+    "category": "pothole_road_damage",
+    "seed": 2000,
+    "expected": "pothole_road_damage"
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2001",
+    "category": "pothole_road_damage",
+    "seed": 2001,
+    "expected": "pothole_road_damage"
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2002",
+    "category": "pothole_road_damage",
+    "seed": 2002,
+    "expected": "pothole_road_damage"
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2003",
+    "category": "pothole_road_damage",
+    "seed": 2003,
+    "expected": "pothole_road_damage"
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2004",
+    "category": "pothole_road_damage",
+    "seed": 2004,
+    "expected": "pothole_road_damage"
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2005",
+    "category": "pothole_road_damage",
+    "seed": 2005,
+    "expected": "pothole_road_damage"
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2006",
+    "category": "pothole_road_damage",
+    "seed": 2006,
+    "expected": "pothole_road_damage"
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2007",
+    "category": "pothole_road_damage",
+    "seed": 2007,
+    "expected": "pothole_road_damage"
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2008",
+    "category": "pothole_road_damage",
+    "seed": 2008,
+    "expected": "pothole_road_damage"
+  },
+  {
+    "case_id": "vis-pothole_road_damage-2009",
+    "category": "pothole_road_damage",
+    "seed": 2009,
+    "expected": "pothole_road_damage"
+  },
+  {
+    "case_id": "vis-water_leakage-2010",
+    "category": "water_leakage",
+    "seed": 2010,
+    "expected": "water_leakage"
+  },
+  {
+    "case_id": "vis-water_leakage-2011",
+    "category": "water_leakage",
+    "seed": 2011,
+    "expected": "water_leakage"
+  },
+  {
+    "case_id": "vis-water_leakage-2012",
+    "category": "water_leakage",
+    "seed": 2012,
+    "expected": "water_leakage"
+  },
+  {
+    "case_id": "vis-water_leakage-2013",
+    "category": "water_leakage",
+    "seed": 2013,
+    "expected": "water_leakage"
+  },
+  {
+    "case_id": "vis-water_leakage-2014",
+    "category": "water_leakage",
+    "seed": 2014,
+    "expected": "water_leakage"
+  },
+  {
+    "case_id": "vis-water_leakage-2015",
+    "category": "water_leakage",
+    "seed": 2015,
+    "expected": "water_leakage"
+  },
+  {
+    "case_id": "vis-water_leakage-2016",
+    "category": "water_leakage",
+    "seed": 2016,
+    "expected": "water_leakage"
+  },
+  {
+    "case_id": "vis-water_leakage-2017",
+    "category": "water_leakage",
+    "seed": 2017,
+    "expected": "water_leakage"
+  },
+  {
+    "case_id": "vis-water_leakage-2018",
+    "category": "water_leakage",
+    "seed": 2018,
+    "expected": "water_leakage"
+  },
+  {
+    "case_id": "vis-water_leakage-2019",
+    "category": "water_leakage",
+    "seed": 2019,
+    "expected": "water_leakage"
+  },
+  {
+    "case_id": "vis-garbage_overflow-2020",
+    "category": "garbage_overflow",
+    "seed": 2020,
+    "expected": "garbage_overflow"
+  },
+  {
+    "case_id": "vis-garbage_overflow-2021",
+    "category": "garbage_overflow",
+    "seed": 2021,
+    "expected": "garbage_overflow"
+  },
+  {
+    "case_id": "vis-garbage_overflow-2022",
+    "category": "garbage_overflow",
+    "seed": 2022,
+    "expected": "garbage_overflow"
+  },
+  {
+    "case_id": "vis-garbage_overflow-2023",
+    "category": "garbage_overflow",
+    "seed": 2023,
+    "expected": "garbage_overflow"
+  },
+  {
+    "case_id": "vis-garbage_overflow-2024",
+    "category": "garbage_overflow",
+    "seed": 2024,
+    "expected": "garbage_overflow"
+  },
+  {
+    "case_id": "vis-garbage_overflow-2025",
+    "category": "garbage_overflow",
+    "seed": 2025,
+    "expected": "garbage_overflow"
+  },
+  {
+    "case_id": "vis-garbage_overflow-2026",
+    "category": "garbage_overflow",
+    "seed": 2026,
+    "expected": "garbage_overflow"
+  },
+  {
+    "case_id": "vis-garbage_overflow-2027",
+    "category": "garbage_overflow",
+    "seed": 2027,
+    "expected": "garbage_overflow"
+  },
+  {
+    "case_id": "vis-garbage_overflow-2028",
+    "category": "garbage_overflow",
+    "seed": 2028,
+    "expected": "garbage_overflow"
+  },
+  {
+    "case_id": "vis-garbage_overflow-2029",
+    "category": "garbage_overflow",
+    "seed": 2029,
+    "expected": "garbage_overflow"
+  },
+  {
+    "case_id": "vis-broken_streetlight-2030",
+    "category": "broken_streetlight",
+    "seed": 2030,
+    "expected": "broken_streetlight"
+  },
+  {
+    "case_id": "vis-broken_streetlight-2031",
+    "category": "broken_streetlight",
+    "seed": 2031,
+    "expected": "broken_streetlight"
+  },
+  {
+    "case_id": "vis-broken_streetlight-2032",
+    "category": "broken_streetlight",
+    "seed": 2032,
+    "expected": "broken_streetlight"
+  },
+  {
+    "case_id": "vis-broken_streetlight-2033",
+    "category": "broken_streetlight",
+    "seed": 2033,
+    "expected": "broken_streetlight"
+  },
+  {
+    "case_id": "vis-broken_streetlight-2034",
+    "category": "broken_streetlight",
+    "seed": 2034,
+    "expected": "broken_streetlight"
+  },
+  {
+    "case_id": "vis-broken_streetlight-2035",
+    "category": "broken_streetlight",
+    "seed": 2035,
+    "expected": "broken_streetlight"
+  },
+  {
+    "case_id": "vis-broken_streetlight-2036",
+    "category": "broken_streetlight",
+    "seed": 2036,
+    "expected": "broken_streetlight"
+  },
+  {
+    "case_id": "vis-broken_streetlight-2037",
+    "category": "broken_streetlight",
+    "seed": 2037,
+    "expected": "broken_streetlight"
+  },
+  {
+    "case_id": "vis-broken_streetlight-2038",
+    "category": "broken_streetlight",
+    "seed": 2038,
+    "expected": "broken_streetlight"
+  },
+  {
+    "case_id": "vis-broken_streetlight-2039",
+    "category": "broken_streetlight",
+    "seed": 2039,
+    "expected": "broken_streetlight"
+  },
+  {
+    "case_id": "vis-fallen_tree-2040",
+    "category": "fallen_tree",
+    "seed": 2040,
+    "expected": "fallen_tree"
+  },
+  {
+    "case_id": "vis-fallen_tree-2041",
+    "category": "fallen_tree",
+    "seed": 2041,
+    "expected": "fallen_tree"
+  },
+  {
+    "case_id": "vis-fallen_tree-2042",
+    "category": "fallen_tree",
+    "seed": 2042,
+    "expected": "fallen_tree"
+  },
+  {
+    "case_id": "vis-fallen_tree-2043",
+    "category": "fallen_tree",
+    "seed": 2043,
+    "expected": "fallen_tree"
+  },
+  {
+    "case_id": "vis-fallen_tree-2044",
+    "category": "fallen_tree",
+    "seed": 2044,
+    "expected": "fallen_tree"
+  },
+  {
+    "case_id": "vis-fallen_tree-2045",
+    "category": "fallen_tree",
+    "seed": 2045,
+    "expected": "fallen_tree"
+  },
+  {
+    "case_id": "vis-fallen_tree-2046",
+    "category": "fallen_tree",
+    "seed": 2046,
+    "expected": "fallen_tree"
+  },
+  {
+    "case_id": "vis-fallen_tree-2047",
+    "category": "fallen_tree",
+    "seed": 2047,
+    "expected": "fallen_tree"
+  },
+  {
+    "case_id": "vis-fallen_tree-2048",
+    "category": "fallen_tree",
+    "seed": 2048,
+    "expected": "fallen_tree"
+  },
+  {
+    "case_id": "vis-fallen_tree-2049",
+    "category": "fallen_tree",
+    "seed": 2049,
+    "expected": "fallen_tree"
+  }
+]

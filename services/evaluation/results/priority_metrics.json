@@ -1,0 +1,102 @@
+{
+  "component": "priority-model",
+  "model_version": "priority-model-v2",
+  "thresholds": {
+    "bands": "critical>=80, high>=60, medium>=40"
+  },
+  "test_set": "test_data/priority (12 hand-authored cases; labels computed from the documented weight table)",
+  "n": 12,
+  "metrics": {
+    "accuracy": 1.0,
+    "cohen_kappa": 1.0,
+    "critical_case_recall": 1.0,
+    "critical_labeled": 3.0,
+    "critical_caught": 3.0,
+    "explanation_consistency_violations": 0.0,
+    "engineering_faithfulness_violations": 0.0,
+    "expected_reasons_missing": 0.0
+  },
+  "class_wise": [
+    {
+      "class_name": "low",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "class_name": "medium",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "class_name": "high",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "class_name": "critical",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  ],
+  "confusion": {
+    "classes": [
+      "low",
+      "medium",
+      "high",
+      "critical"
+    ],
+    "matrix": [
+      [
+        3,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        3,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        3,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        3
+      ]
+    ],
+    "row_sums": [
+      3,
+      3,
+      3,
+      3
+    ]
+  },
+  "notes": [
+    "critical-case recall is the fraction of labelled-critical incidents the model marks critical - the urgent-attention capability",
+    "explanation consistency: a cited reason (e.g. 'school nearby') requires the corresponding engineered signal to be nonzero in the input features",
+    "engineering faithfulness: each expectation was derived from the documented signal mappings (<=300m school -> 1.0, reports -> 1-exp(-(n-1)/2), etc.) and compared against the model's engineered vector; deviations are evidence failures"
+  ]
+}

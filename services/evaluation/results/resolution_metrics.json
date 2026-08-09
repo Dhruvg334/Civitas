@@ -1,0 +1,103 @@
+{
+  "component": "resolution-verification",
+  "model_version": "resolution-model-v1",
+  "thresholds": {
+    "standing_water_evidence_min": "0.20",
+    "coverage_growth_conflict_ratio": "1.10"
+  },
+  "test_set": "test_data/resolution (16 labelled before/after cases, 4 per outcome)",
+  "n": 16,
+  "metrics": {
+    "accuracy": 0.875,
+    "cohen_kappa": 0.8333,
+    "partial_recall": 1.0,
+    "partial_accuracy": 1.0,
+    "unverifiable_recall": 1.0,
+    "unverifiable_detected": 4.0,
+    "unverifiable_labeled": 4.0,
+    "unverifiable_never_marked_resolved": 4.0,
+    "conflicting_precision": 1.0
+  },
+  "class_wise": [
+    {
+      "class_name": "resolved",
+      "tp": 4,
+      "fp": 1,
+      "fn": 0,
+      "precision": 0.8,
+      "recall": 1.0,
+      "f1": 0.8889
+    },
+    {
+      "class_name": "partial",
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "class_name": "unverifiable",
+      "tp": 4,
+      "fp": 1,
+      "fn": 0,
+      "precision": 0.8,
+      "recall": 1.0,
+      "f1": 0.8889
+    },
+    {
+      "class_name": "conflicting",
+      "tp": 2,
+      "fp": 0,
+      "fn": 2,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6667
+    }
+  ],
+  "confusion": {
+    "classes": [
+      "resolved",
+      "partial",
+      "unverifiable",
+      "conflicting"
+    ],
+    "matrix": [
+      [
+        4,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        4,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        4,
+        0
+      ],
+      [
+        1,
+        0,
+        1,
+        2
+      ]
+    ],
+    "row_sums": [
+      4,
+      4,
+      4,
+      4
+    ]
+  },
+  "notes": [
+    "the safety guard is explicit in the metrics: unverifiable evidence must never be marked fully resolved",
+    "partial is only correct when standing water (or equivalent) remains after the flow is gone"
+  ]
+}

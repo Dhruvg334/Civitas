@@ -1,0 +1,162 @@
+[
+  {
+    "case_id": "res-00",
+    "expected": "resolved",
+    "actual": "resolved",
+    "confidence": 0.63,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-01",
+    "expected": "resolved",
+    "actual": "resolved",
+    "confidence": 0.65,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-02",
+    "expected": "resolved",
+    "actual": "resolved",
+    "confidence": 0.67,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-03",
+    "expected": "resolved",
+    "actual": "resolved",
+    "confidence": 0.6,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-04",
+    "expected": "partial",
+    "actual": "partial",
+    "confidence": 0.33,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-05",
+    "expected": "partial",
+    "actual": "partial",
+    "confidence": 0.33,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-06",
+    "expected": "partial",
+    "actual": "partial",
+    "confidence": 0.33,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-07",
+    "expected": "partial",
+    "actual": "partial",
+    "confidence": 0.33,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-08",
+    "expected": "unverifiable",
+    "actual": "unverifiable",
+    "confidence": 0.0,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-09",
+    "expected": "unverifiable",
+    "actual": "unverifiable",
+    "confidence": 0.0,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-10",
+    "expected": "unverifiable",
+    "actual": "unverifiable",
+    "confidence": 0.0,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-11",
+    "expected": "unverifiable",
+    "actual": "unverifiable",
+    "confidence": 0.0,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-12",
+    "expected": "conflicting",
+    "actual": "conflicting",
+    "confidence": 0.0,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-13",
+    "expected": "conflicting",
+    "actual": "unverifiable",
+    "confidence": 0.0,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-14",
+    "expected": "conflicting",
+    "actual": "conflicting",
+    "confidence": 0.12,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  },
+  {
+    "case_id": "res-15",
+    "expected": "conflicting",
+    "actual": "resolved",
+    "confidence": 0.67,
+    "basis": [
+      "resolution-model-v1: before vs after evidence comparison",
+      "signals: active water flow, standing-water coverage, category hazard markers"
+    ]
+  }
+]
