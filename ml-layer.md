@@ -408,6 +408,117 @@ real CV pipeline on a new **dry variant** of the water-leakage scene.
   camera viewpoints make pixel-exact location checks unreliable; location
   attribution stays with the work order.
 
+## Phase 10 — One ML service, hardened for real calls (COMMIT 2465186)
+
+The 90-second version: Phase 9 gave the agents two entry points
+(`analyze_report`, `verify_resolution`); Phase 10 makes that boundary a
+*contract* and makes failures loud instead of guessed. Every output is a
+pydantic model whose JSON schema the API can publish, so the web layer can
+never receive a differently-shaped answer. If a backend (database, crawler)
+returns something that does not match the contract, the service raises a
+structured error that names the offending fixture — it never silently
+returns "no candidates". If an operational file is missing, that is a real
+outage (`FileNotFoundError`), not an invented empty result. And when the
+vision pipeline is genuinely unsure (low confidence margin or an image far
+outside everything it has seen), the service records an `uncertainty` note
+with the reason instead of asserting a category as fact.
+
+- `ml/service` moved to `services/ml` — the ML service now lives beside the
+  other services behind the API boundary (demo and tests import it from
+  there; the package gains a new `[project.optional-dependencies]` layout:
+  `full` installs all four ML packages, `http` adds the real-API adapter
+  dependency).
+- New structure inside `services/ml/src/civitas_ml`:
+  - `contracts.py` — the stable typed surface: `ReportInput`,
+    `MediaReference`, `ErrorPayload` (codes `media_unreadable` /
+    `media_not_found` / `media_invalid_kind`, mirroring the shared schema),
+    `NearbyCandidatesRequest/Response`, `VisionSection` with uncertainty
+    notes, and the composed `ReportAnalysis` / `ResolutionVerification`.
+  - `media.py` — media kinds and structured rejection (unreadable bytes,
+    missing file, unsupported video); rejected media never force a category.
+  - `errors.py` — `MalformedResponseError` and friends: backend payloads
+    that violate the contract surface as errors naming the fixture, never
+    as silent fallbacks.
+  - `pipeline.py`, `config.py`, `adapters/` — one call path with explicit
+    configuration and a backend-adapter interface (`MockBackendAdapter`
+    now, real API adapters later; the swap point is documented).
+  - `analyze.py` / `verify.py` — hardened composition of vision → embeddings
+    → duplicates → severity/priority (analyze) and resolution (verify),
+    each section still carrying `available`, `basis` and evidence strings.
+- Vision honesty upgrade: `ClassificationProbs` (and the media-level result)
+  now carry `ood_ratio` — the mean nearest-prototype distance divided by the
+  corpus median distance. Values above ~2.0 mean the input is outside the
+  training manifold, and the pipeline says so instead of pretending.
+  Confidence is now the top-1/top-2 vote-share *margin*: a unanimous scene
+  gets ~1.0, a scene that genuinely straddles categories collapses toward
+  0.0 — low confidence is an honest ambiguity signal, not a saturated
+  softmax. (This is the signal the media-quality gate uses for the
+  ambiguous-blend case in Phase 11/12.)
+- Tests `tests/test_phase9_service.py`, `tests/test_phase10_contracts.py`
+  (every output model round-trips, JSON schema generates, no unsupported
+  probability claims) and `tests/test_phase11_service_failures.py`
+  (malformed backend payload → structured error, missing file → real
+  outage, uncertain vision → recorded uncertainty): **31 passed**.
+- Demo (`ml/demo_end_to_end.py`) step 13 now imports the service from its
+  new home; nothing about the demo story changes.
+
+## Phase 11/12 — Every ML capability measured once, on a frozen test set (COMMIT eadd596)
+
+The 90-second version: until now each phase proved itself with its own
+demo and its own tests, but there was no single, honest, repeatable grade
+for the whole layer. Phase 11/12 builds that: a **frozen test set**
+(68 files, every one sha256-pinned in a manifest) that is generated ONCE,
+committed, and **never regenerated after results exist** — the CLI refuses
+loudly. Then one command (`python run_all.py`) runs every frozen model
+against the untouched test set, saves every prediction, computes metrics,
+classifies the failures (which are acceptable, which are dangerous), and
+writes a human-readable report plus the golden water-leak evidence trail.
+
+What gets measured: 50 synthetic images across the 5 categories; 14
+media-quality cases (blur, tiny, dark, bright, ambiguous blend, unsupported
+bytes, missing file, video-without-path, no media); 15 labelled duplicate
+pairs; 4 clustering scenarios (16 reports); 12 severity + 12 priority
+incidents; 16 resolution before/after pairs. All labels are synthetic and
+declared so.
+
+The headline scorecard (results/REPORT.md, regenerated every run):
+
+| component | verdict |
+|---|---|
+| vision classifier | 50/50 correct, accuracy 1.0 |
+| media-quality gate | 14/14 decisions right (the ambiguous blend is flagged low-confidence, never asserted) |
+| duplicate detection | recall 1.0; precision 0.667 — 2 false merges, both escalated-for-review hard negatives (recorded failures) |
+| incident clustering | 2/4 scenarios fully correct; 7 same-incident pairs merged, 8 different pairs kept apart (2 recorded failures) |
+| severity | 12/12, kappa 1.0, critical recall 1.0, 49 factor citations with zero unsupported explanations |
+| priority | 12/12, kappa 1.0, critical recall 1.0 (3/3), zero engineering-faithfulness deviations |
+| resolution | 14/16, kappa 0.83, 2 borderline conflicting/unverifiable calls (acceptable) |
+
+How labels stay honest: severity and priority labels are **computed at
+test-set generation from the published rule/weight tables**, and a
+drift-guard asserts those constants still equal what the models ship — so
+the scorecard proves faithful implementation and regression safety, not
+external calibration (no real-world labels exist yet; recorded
+limitation). The golden scenario (three citizens → one merged incident
+CL-1000, severity 78 HIGH, priority 55 MEDIUM, work order verified
+RESOLVED at 0.63 confidence) walks the whole chain end-to-end and is
+explicitly separated from model-performance evidence.
+
+Recorded limitations (kept visible, not hidden): images and labels are
+synthetic; severity's lowest band is unreachable by design (category base
+points put the floor at score 41 / medium, and critical needs ≥ 107 rule
+points under the squash curve); the two duplicate false-merges and two
+clustering misses mark exactly where the 0.70 threshold needs a
+street/sector prior or image evidence; two resolution calls sit at band
+edges and are marked review-candidates.
+
+- `services/evaluation/src/civitas_evaluation/` — datasets (frozen labels +
+  generation + manifest), vision/media/duplicate/clustering/risk/
+  resolution evaluators, metrics, failure analysis, report, golden trail;
+  `run_all.py` is the one documented command.
+- `results/` — every saved prediction, metric file, failures.json +
+  FAILURES.md, REPORT.md, golden/evidence_trail.json — regenerated every
+  run from the same frozen test set.
+
 ## Verification (all passing)
 
 ```bash
@@ -426,9 +537,13 @@ cd ml/risk && python -m mypy src/civitas_risk    # clean (12 files)
 cd ml/resolution && python -m pytest tests       # 24 passed
 cd ml/resolution && python -m ruff check src tests  # clean
 cd ml/resolution && python -m mypy src/civitas_resolution  # clean (3 files)
-cd ml/service && python -m pytest tests          # 10 passed
-cd ml/service && python -m ruff check src tests  # clean
-cd ml/service && python -m mypy src/civitas_ml   # clean (4 files)
+cd services/ml && python -m pytest tests           # 31 passed
+cd services/ml && python -m ruff check src tests   # clean
+cd services/ml && python -m mypy src/civitas_ml    # clean (12 files)
+cd services/evaluation && python run_all.py        # full Phase 11/12 evaluation (8 check-points)
+cd services/evaluation && python -m pytest tests   # 1 passed
+cd services/evaluation && python -m ruff check src tests  # clean
+cd services/evaluation && python -m mypy src/civitas_evaluation  # clean (14 files)
 python ml/demo_end_to_end.py                     # full trace incl. CV + Phases 4-8 + service steps
 ```
 
@@ -455,3 +570,5 @@ duplicates tests exercise the real image paths instead of skipping them.
 - `9949f4c` Phase 8/12 completed
 - `5f00ead` Record Phase 8 commit hash in progress notes
 - `beae511` Phase 9/12 completed
+- `2465186` Phase 10/12 completed
+- `eadd596` Phase 11/12 completed
