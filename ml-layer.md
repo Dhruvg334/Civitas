@@ -27,14 +27,14 @@ Branch: `ml-layer`. This file records only implemented, verified work.
 - `database/migrations/0001_spatial_core.sql`, `database/seed/0001_demo_landmarks.sql`.
 - Tests (78 package), demo step 2c (gate -> candidates -> duplicate engine).
 
-## Phase 3 — Computer vision pipeline (COMMIT <pending>)
+## Phase 3 — Computer vision pipeline (COMMIT 8d3fb95)
 
 - `ml/vision` package (`civitas-vision`, numpy + Pillow + optional OpenCV):
   - `quality` — blur gate via variance-of-Laplacian (calibrated threshold
     0.001 on [0,1] grayscale), exposure, resolution, saturation checks.
   - `frames` — video frame extraction + deterministic key-frame selection by
     sharpness/exposure.
-  - `features` — 18 real classical measurements (Laplacian variance, edge
+  - `features` — 19 real classical measurements (Laplacian variance, edge
     density, vertical/flow/banding ratios, blue/green dominance, dark
     low-texture share, bright-peak geometry, color scatter, ...).
   - `classifier` — k-NN (k=3) over z-scored features with softmax
@@ -52,14 +52,64 @@ Branch: `ml-layer`. This file records only implemented, verified work.
   macro-F1 1.000 on 40 held-out synthetic images (69 earlier runs > 0.85);
   demo steps 5 and 6.
 
+## Phase 4 — Embeddings and the same-incident layer (COMMIT c7ca129)
+
+Product question this phase answers: "do these two reports describe the same
+real-world incident?" — NOT "do these two sentences look similar?".
+
+- `ml/duplicates` — per-report embeddings combining both modalities and the
+  raw geospatial signals:
+  - `embeddings.ClassicalImageEmbedder` — deterministic image embedding:
+    the 19 civitas-vision pixel measurements + 32-bin hue + 32-bin
+    saturation histogram, L2-normalized (dim 83). Method and basis are
+    recorded on every `ImageEmbedding`; missing civitas-vision degrades to a
+    colour-only vector (recorded, never fabricated). `ProviderEmbedder`
+    remains the swap-in point for CLIP-class models.
+  - `embeddings.build_report_embeddings` / `ReportEmbeddings` — one record
+    per report fusing text embedding, image embedding, GPS, timestamp,
+    category and landmark ids.
+  - `similarity.incident_gate` — hard geospatial gate: the same-incident
+    claim must be physically plausible first (distance <= 2000 m AND time
+    delta <= 72 h) using only observed geospatial signals; language and
+    pixels are never consulted outside the gate.
+  - `similarity.incident_similarity` — the Phase 4 answer: gate -> fused
+    weighted score (text/image embeddings + category + GPS + time +
+    landmark) -> threshold decision with near-threshold and conflicting-
+    category escalations to human review. Missing GPS/timestamp -> answered
+    "cannot confirm" and escalated, never guessed. `INCIDENT_ANCHORED_WEIGHTS`
+    preset (geospatial + temporal dominate) sits beside the balanced default.
+  - `benchmark` — synthetic same-incident pairs (same cell, burst window,
+    category, landmarks; different descriptions and photo variants) vs
+    genuinely distinct pairs; precision/recall/F1/accuracy report.
+- `civitas_geo.aggregates` — reports-per-cell transactional density history:
+  - `reports_per_cell_sql` — ST_SnapToGrid grouping (metres -> degrees via
+    cell_size / 111320), recency `since` + boundary envelope filters, one row
+    per (cell, category).
+  - `reports_per_cell_memory` / `DensityAggregator` — identical floor-anchored
+    math offline; same cell_id as PostGIS mode (grid origin (0, 0));
+    mode labels geometry provenance ("postgis"/"memory"/"unavailable").
+  - Feature wiring: `cell_report_density_norm = min(1, cell_count / 50)` with
+    provenance; absent density is recorded as absent, not invented
+    (`raw.cell_report_density_cell_count = -1`).
+- Verified: 93 geospatial + 42 duplicates + 27 vision tests (162 total);
+  ruff + mypy clean (13 + 11 + 9 files); demo steps 7 (embedding +
+  same-incident answers, 20/20 synthetic pairs correct) and 8 (density
+  aggregates); duplicate pair "rep-1 vs rep-2" scores 0.88,
+  "rep-1 vs rep-3" 0.34 — both answered with the gate visible in the basis.
+
 ## Verification (all passing)
 
 ```bash
-cd geospatial && python -m pytest tests          # 78 passed
+cd geospatial && python -m pytest tests          # 93 passed
+cd geospatial && python -m ruff check src tests  # clean
+cd geospatial && python -m mypy src              # clean (13 files)
+cd ml/duplicates && python -m pytest tests       # 42 passed
+cd ml/duplicates && python -m ruff check src tests  # clean
+cd ml/duplicates && python -m mypy src           # clean (11 files)
 cd ml/vision && python -m pytest tests           # 27 passed
 cd ml/vision && python -m ruff check src tests   # clean
 cd ml/vision && python -m mypy src               # clean (9 files)
-python ml/demo_end_to_end.py                     # full trace incl. CV steps
+python ml/demo_end_to_end.py                     # full trace incl. CV + Phase 4 steps
 ```
 
 ## Commits on this branch
@@ -69,3 +119,4 @@ python ml/demo_end_to_end.py                     # full trace incl. CV steps
 - `32ff126` Track ML layer phase plan and progress notes
 - `43c7f0a` Phase 2/12 completed
 - `8d3fb95` Phase 3/12 completed
+- `5aed379` Fix feature hash constants in phase notes
