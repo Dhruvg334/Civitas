@@ -283,6 +283,60 @@ still goes to a human reviewer.
   ten-signal table, the model verdict (Priority 64 HIGH on the real
   grid-cell values) and the labelled what-if walk.
 
+## Phase 8 — Resolution verification (COMMIT <fill-on-commit>)
+
+The 90-second version: the first seven phases understand the incident —
+vision, duplicates, severity, priority — and then the municipality acts.
+Phase 8 is the **second ML moment**: it checks that the action actually
+worked. The system receives the BEFORE photo (taken at report time) and
+the AFTER photo (taken by the inspector) and answers: **RESOLVED**,
+**PARTIALLY RESOLVED**, **UNVERIFIABLE**, or **CONFLICTING**. Demo story:
+before the fix the road had *water flowing across it*; after the fix
+there is *no active flow but standing water remains* — so the verdict is
+**PARTIALLY RESOLVED**, the work order reopens, and the field team goes
+back. That is more meaningful than a classifier that just says "done" or
+"not done": it catches half-finished fixes, restarted leaks, blurry
+evidence and outright contradictions.
+
+- `ml/resolution/src/civitas_resolution/evidence.py` — `ResolutionEvidence`
+  types one side of the pair (incident, stage before/after, source, media
+  usability, CV category, evidence strings, active-water-flow flag,
+  water coverage). `from_vision` maps a `VisualClassificationResult` onto
+  it; `from_evidence` builds it from evidence strings directly (tests and
+  evidence-level checks). The flow flag derives only from *flowing*
+  markers — a leftover puddle is tracked by `water_coverage`, because
+  residual water is a partial, not an active flow.
+- `model.py` — `ResolutionModel` (model_version `resolution-model-v1`), a
+  deterministic comparison with the same house style (every reason cites
+  the evidence it saw):
+  - guards (fail fast, never guess): AFTER (or BEFORE) media rejected by
+    the quality gate -> UNVERIFIABLE; AFTER shows a different hazard with
+    its own evidence -> CONFLICTING;
+  - per-signal tracks, built only from signals present BEFORE: active
+    water flow (flow still observable -> unchanged/conflicting; gone ->
+    resolved), standing-water coverage (`water_coverage >= 0.20` mirrors
+    the vision evidence threshold; gone below -> resolved; coverage grew
+    >10% -> worsened/conflicting; residual water remains -> partial),
+    and for the other four categories a single hazard-marker track
+    (present -> unchanged/conflicting; absent -> resolved);
+  - outcome precedence (worst wins): unchanged/worsened -> CONFLICTING,
+    reduced-but-present -> PARTIAL, everything gone -> RESOLVED.
+- `tests/test_phase8_resolution.py` — 21 tests: unit level covers all four
+  verdicts, thresholds (0.20 standing-water minimum, 1.10 growth ratio),
+  media rejection, no-measurable-hazard, category mismatch, determinism;
+  integration runs the real vision pipeline on the synthetic corpus
+  (flow variant -> standing variant is exactly the user story) and pins
+  the measured values (before coverage 0.481 with
+  `['standing water', 'water flowing across road']`; after 0.491 with
+  `['standing water']`).
+- Demo step 12 (`ml/demo_end_to_end.py`): the work order closes as
+  "resolved"; the model reopens it. Prints BEFORE/AFTER evidence, the
+  PARTIALLY RESOLVED verdict with reasons, and three re-checks — a
+  dry-road snapshot (RESOLVED, evidence-level with a recorded limitation:
+  the synthetic corpus has no clean-road scene), a restarted leak
+  (CONFLICTING) and a blurry photo (UNVERIFIABLE, quality gate rejects
+  the media).
+
 ## Verification (all passing)
 
 ```bash
@@ -298,7 +352,10 @@ cd ml/vision && python -m mypy src               # clean (9 files)
 cd ml/risk && python -m pytest tests             # 62 passed
 cd ml/risk && python -m ruff check src tests     # clean
 cd ml/risk && python -m mypy src/civitas_risk    # clean (12 files)
-python ml/demo_end_to_end.py                     # full trace incl. CV + Phase 4 + 5 + 6 + 7 steps
+cd ml/resolution && python -m pytest tests       # 21 passed
+cd ml/resolution && python -m ruff check src tests  # clean
+cd ml/resolution && python -m mypy src/civitas_resolution  # clean (3 files)
+python ml/demo_end_to_end.py                     # full trace incl. CV + Phases 4 + 5 + 6 + 7 + 8 steps
 ```
 
 Note: `civitas-vision` is a regular dev dependency of the duplicates

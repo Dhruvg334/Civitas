@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-for rel in ("ml/duplicates/src", "ml/risk/src", "ml/vision/src", "geospatial/src"):
+for rel in ("ml/duplicates/src", "ml/risk/src", "ml/vision/src", "ml/resolution/src", "geospatial/src"):
     sys.path.insert(0, str(REPO / rel))
 
 try:  # Phase 5 reasons use the "✓" check mark; force UTF-8 on cp1252 consoles
@@ -50,6 +50,11 @@ from civitas_geo.models import (  # noqa: E402
 from civitas_geo.reasoning import compute_exposure  # noqa: E402
 from civitas_geo.retrieval import NearbyRetriever  # noqa: E402
 from civitas_geo.validation import gate_for_pipeline  # noqa: E402
+from civitas_resolution import (  # noqa: E402
+    ResolutionEvidence,
+    ResolutionModel,
+    outcome_label,
+)
 from civitas_risk import (  # noqa: E402
     ConsolidatedIncident,
     IncidentVisualEvidence,
@@ -503,6 +508,56 @@ def main() -> None:
         print(f"      -> Priority score: {walked.score} | level {walked.level.upper()}")
     print("  (>80 CRITICAL always goes to a human reviewer; the score is the sum")
     print("   of ten weighted signals, each shown with its evidence.)")
+
+    print("\n== 12. Resolution verification (Phase 8) ==")
+    print("  Question: did the municipality actually fix CL-018?")
+    print("  The work order was dispatched after the priority verdict and the")
+    print("  field team closed it as 'resolved'. This is the second ML moment:")
+    print("  the vision pipeline re-analyzes the AFTER photo and the model")
+    print("  compares its evidence with the BEFORE photo (R1's upload).")
+    before_photo = make_image("water_leakage", 7101, variant="flow")
+    verification_before = ResolutionEvidence.from_vision(
+        main_cluster.cluster_id, "before", "citizen upload (R1, at report time)",
+        vision.analyze_image(before_photo),
+        water_coverage=extract_features(before_photo)["blue_smooth_share"],
+    )
+    after_photo = make_image("water_leakage", 7101, variant="default")
+    verification_after = ResolutionEvidence.from_vision(
+        main_cluster.cluster_id, "after", "inspector upload (2 weeks later)",
+        vision.analyze_image(after_photo),
+        water_coverage=extract_features(after_photo)["blue_smooth_share"],
+    )
+    print(f"  BEFORE evidence: {sorted(verification_before.observable_evidence)}")
+    print(f"  AFTER evidence : {sorted(verification_after.observable_evidence)}")
+    resolution_model = ResolutionModel()
+    verdict8 = resolution_model.assess(verification_before, verification_after)
+    print(f"  ResolutionModel -> {outcome_label(verdict8.outcome)}")
+    for r in verdict8.reasons:
+        print(f"    - {r.factor}: {r.status} ({r.evidence})")
+    print("  The road is no longer flooded but puddles remain — the work order")
+    print("  is NOT closed; it goes back to the field team for follow-up.")
+    print("  Re-checks (same model, other before/after pairs):")
+    dry_after = ResolutionEvidence.from_evidence(
+        main_cluster.cluster_id, "after", "monitoring photo / dry road (evidence-level check)",
+        primary_category="water_leakage", observable_evidence=(), water_coverage=0.04,
+    )
+    dry_verdict = resolution_model.assess(verification_before, dry_after)
+    print(f"    dry road after:    -> {outcome_label(dry_verdict.outcome)} (all signals gone)")
+    fresh_after = ResolutionEvidence.from_vision(
+        main_cluster.cluster_id, "after", "inspector upload (leak restarting)",
+        vision.analyze_image(make_image("water_leakage", 7101, variant="flow")),
+        water_coverage=extract_features(make_image("water_leakage", 7101, variant="flow"))["blue_smooth_share"],
+    )
+    print(f"    leak restarting:   -> {outcome_label(resolution_model.assess(verification_before, fresh_after).outcome)} (flow still observable)")
+    blurry_after = ResolutionEvidence.from_vision(
+        main_cluster.cluster_id, "after", "inspector upload (blurry)",
+        vision.analyze_image(gaussian_blur(after_photo, radius=4)),
+        water_coverage=extract_features(gaussian_blur(after_photo, radius=4))["blue_smooth_share"],
+    )
+    print(f"    blurry after photo -> {outcome_label(resolution_model.assess(verification_before, blurry_after).outcome)} (quality gate rejects media)")
+    print("  Note: the dry-road RESOLVED check is evidence-level because the")
+    print("  synthetic corpus has no clean-road scene; the other three verdicts")
+    print("  run the full vision pipeline on real generated photos.")
 
 
 if __name__ == "__main__":
