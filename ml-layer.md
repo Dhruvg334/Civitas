@@ -68,4 +68,4 @@ python ml/demo_end_to_end.py                     # full trace incl. CV steps
 - `ce4af51` Phase 1/12 complete
 - `32ff126` Track ML layer phase plan and progress notes
 - `43c7f0a` Phase 2/12 completed
-- `<pending>` Phase 3/12 completed
+- `8d3fb95` Phase 3/12 completed
