@@ -25,10 +25,19 @@ from civitas_duplicates.similarity import (
     ScoringConfig,
     composite_score,
     decide_duplicate,
+    duplicate_reasons,
     incident_gate,
     incident_similarity,
     make_pair,
 )
+from civitas_duplicates.evaluation import (
+    EngineEvaluation,
+    LabelledPair,
+    PairRow,
+    build_labelled_pairs,
+    evaluate_engine,
+)
+from civitas_duplicates.signals import RELATED_CATEGORIES
 
 __all__ = [
     "ScoredPair",
@@ -54,7 +63,14 @@ __all__ = [
     "ScoringConfig",
     "composite_score",
     "decide_duplicate",
+    "duplicate_reasons",
     "incident_gate",
     "incident_similarity",
     "make_pair",
+    "EngineEvaluation",
+    "LabelledPair",
+    "PairRow",
+    "build_labelled_pairs",
+    "evaluate_engine",
+    "RELATED_CATEGORIES",
 ]

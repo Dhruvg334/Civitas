@@ -80,3 +80,4 @@ reports/generated/
 # Deployment
 .vercel/
 .render/
+*.egg-info/

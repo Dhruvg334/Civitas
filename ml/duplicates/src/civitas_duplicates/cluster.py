@@ -86,13 +86,21 @@ def cluster_reports(
     reports: list[ReportLike],
     scored_pairs: list[ScoredPair],
     cfg: ScoringConfig | None = None,
+    cluster_id_start: int = 1,
 ) -> list[IncidentCluster]:
     """Group reports into incident clusters from scored pairs.
 
     Edges above the composite threshold form connected components. Clusters
     with member_count == 1 are isolated reports (kept for caller symmetry).
+
+    Phase 5: clusters get the product ID scheme CL-{n:03d} (e.g. CL-018),
+    assigned deterministically in output order (largest cluster first). The
+    counter starts at `cluster_id_start`; a production registry would persist
+    it so IDs never collide across batches.
     """
     cfg = cfg or ScoringConfig()
+    if cluster_id_start < 1:
+        raise ValueError("cluster_id_start must be >= 1")
     if not reports:
         return []
     report_ids = [r.report_id for r in reports]
@@ -119,7 +127,7 @@ def cluster_reports(
         representative = max(comp, key=lambda rid: (evidence.get(rid, 0.0), rid))
         clusters.append(
             IncidentCluster(
-                cluster_id=f"cluster-{representative}",
+                cluster_id=f"CL-{len(clusters) + cluster_id_start:03d}",
                 report_ids=comp,
                 representative_report_id=representative,
                 member_count=len(comp),

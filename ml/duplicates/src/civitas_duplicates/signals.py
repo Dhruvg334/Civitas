@@ -50,6 +50,14 @@ CATEGORY_ALIASES: dict[str, str] = {
     "blocked pathway": "fallen_tree",
 }
 
+# Incident categories that are physically linked: reports in different
+# categories may describe ONE incident when the categories are causally
+# related (Phase 5 — "related categories" reason in duplicate decisions).
+RELATED_CATEGORIES: dict[frozenset[str], str] = {
+    frozenset({"water_leak", "pothole"}): "water damage erodes and wash out the road surface",
+    frozenset({"water_leak", "garbage"}): "waterlogging spreads waste and blocks drains",
+}
+
 
 def normalize_category(category: str | None) -> str | None:
     """Canonical category form so citizen/vison spellings compare equal."""
@@ -62,11 +70,30 @@ def normalize_category(category: str | None) -> str | None:
 
 
 def category_agreement(a: str | None, b: str | None) -> float:
-    """1.0 if canonical categories agree (or one is missing), else 0.0."""
+    """1.0 if canonical categories agree (or one is missing), else 0.0.
+
+    Phase 5: related categories score 0.5 (see `category_relation`); truly
+    conflicting categories score 0.0.
+    """
+    return category_relation(a, b)[0]
+
+
+def category_relation(a: str | None, b: str | None) -> tuple[float, str | None]:
+    """(score, reason): 1.0 identical/alias, 0.5 related, 0.0 conflicting.
+
+    `reason` carries the human-readable causal link ("related categories:
+    flooding undermines the road surface") used in decision basis lines —
+    never fabricated: only `RELATED_CATEGORIES` pairs produce a reason.
+    """
     ca, cb = normalize_category(a), normalize_category(b)
     if ca is None or cb is None:
-        return 1.0
-    return 1.0 if ca == cb else 0.0
+        return 1.0, None
+    if ca == cb:
+        return 1.0, None
+    note = RELATED_CATEGORIES.get(frozenset({ca, cb}))
+    if note is not None:
+        return 0.5, note
+    return 0.0, None
 
 
 def landmark_signal(

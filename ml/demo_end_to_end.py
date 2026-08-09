@@ -19,15 +19,22 @@ REPO = Path(__file__).resolve().parents[1]
 for rel in ("ml/duplicates/src", "ml/risk/src", "ml/vision/src", "geospatial/src"):
     sys.path.insert(0, str(REPO / rel))
 
+try:  # Phase 5 reasons use the "✓" check mark; force UTF-8 on cp1252 consoles
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:  # noqa: BLE001 - stdout may not be reconfigurable everywhere
+    pass
+
 from civitas_duplicates import (  # noqa: E402
     ClassicalImageEmbedder,
     DuplicateDetector,
     HashNgramEmbedder,
     ReportLike,
     build_report_embeddings,
+    evaluate_engine,
     incident_similarity,
 )
 from civitas_duplicates.benchmark import make_synthetic_pairs  # noqa: E402
+from civitas_duplicates.evaluation import build_labelled_pairs  # noqa: E402
 from civitas_geo.aggregates import DensityAggregator  # noqa: E402
 from civitas_geo.candidates import CandidateRetriever  # noqa: E402
 from civitas_geo.feature_engineering import (
@@ -282,6 +289,85 @@ def main() -> None:
     )
     print(f"  cell_report_density_norm = {grid_features.features['cell_report_density_norm']:.3f} "
           f"({grid_features.provenance['cell_report_density_norm']})")
+
+    print("\n== 9. Duplicate detection engine (Phase 5) ==")
+    print("  Three citizen reports arrive within 75 minutes around the same spot")
+    print("  (~34 m apart, near Sunrise School): R1 water leak 10:30, "
+          "R2 flooding 11:00, R3 road damage 11:45.")
+    day = T0 + timedelta(hours=2, minutes=30)  # 10:30 AM
+    spot: list[tuple[float, float]] = [
+        (28.6139, 77.2090), (28.6140, 77.2091), (28.6142, 77.2092),
+    ]
+    scene_water = "water_leakage"
+    engine_reports: list[ReportLike] = []
+    engine_density_records: list[dict[str, object]] = []
+    for i, (desc, cat, delta_min, seed) in enumerate(
+        [
+            ("water leaking from the main pipe near sunrise school gate, road is wet",
+             "water leak", 0, 7101),
+            ("flooding on the road in front of sunrise school, water across the footpath",
+             "flooding", 30, 7102),
+            ("road surface breaking up after the water, deep cracks near the school",
+             "road damage", 75, 7103),
+        ]
+    ):
+        lat, lon = spot[i]
+        scene = make_image(scene_water if i < 2 else "pothole_road_damage", seed)
+        engine_reports.append(
+            ReportLike(
+                report_id=f"R{i + 1}",
+                description=desc,
+                latitude=lat, longitude=lon,
+                submitted_at=day + timedelta(minutes=delta_min),
+                category=cat,
+                landmark_ids=["lm-school-01", "lm-junction-01"],
+                image_embedding=image_embedder.embed_image(scene).vector,
+                media_count=1,
+            )
+        )
+        engine_density_records.append(
+            {"incident_id": f"R{i + 1}", "latitude": lat, "longitude": lon,
+             "category": cat, "duplicates_seen": 1, "reported_at": day + timedelta(minutes=delta_min)}
+        )
+    print("  1) candidate retrieval (800 m / 24 h window, memory mode)")
+    engine_candidates = candidate_retriever.retrieve(
+        CandidateSearchSpec(
+            center=GeoPoint(latitude=spot[0][0], longitude=spot[0][1]),
+            radius_m=800, within_hours=24, limit=10,
+        ),
+        memory_incidents=engine_density_records,
+        landmarks=landmarks,
+        now=day + timedelta(minutes=90),
+    )
+    print(f"     candidates for R1 in window: "
+          f"{[c.incident_id for c in engine_candidates.candidates]}")
+    print("  2) pairwise features -> duplicate score with explainable reasons")
+    engine = DuplicateDetector(
+        landmark_index=landmarks,
+        density_records=engine_density_records,
+        cluster_id_start=18,
+    )
+    for i in range(3):
+        for j in range(i + 1, 3):
+            pair_result = engine.evaluate_pair(engine_reports[i], engine_reports[j])
+            print(f"     {engine_reports[i].report_id} vs {engine_reports[j].report_id}: "
+                  f"score {pair_result.score:.2f} duplicate={pair_result.is_duplicate}")
+            for reason in pair_result.reasons:
+                print(f"        {reason}")
+    print("  3) incident clustering stage")
+    engine_clusters = engine.cluster(engine_reports)
+    for cluster in engine_clusters:
+        print(f"     {' ─┐' if cluster.member_count > 1 else '     '} "
+              f"{cluster.summarizing_note} (ID {cluster.cluster_id})")
+    main_cluster = next(c for c in engine_clusters if c.member_count > 1)
+    print(f"     -> merged {main_cluster.report_ids} into incident {main_cluster.cluster_id}")
+    print("  4) labelled evaluation: positive / negative / ambiguous pairs")
+    labelled = build_labelled_pairs(seed=11, n_per_label=6, with_images=True)
+    labelled_ev = evaluate_engine(labelled, engine=engine)
+    for row in labelled_ev.rows:
+        verdict = "merge" if row.is_duplicate else ("review" if row.requires_review else "reject")
+        print(f"     [{row.label:9s}] score {row.score:.2f} -> {verdict:6s} | {row.note}")
+    print(f"  {labelled_ev.summary()}")
 
 
 if __name__ == "__main__":

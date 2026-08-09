@@ -29,7 +29,7 @@ from pydantic import BaseModel, Field
 from civitas_duplicates.contracts import PairFeatures
 from civitas_duplicates.embeddings import ReportEmbeddings, cosine_similarity
 from civitas_duplicates.geo_features import gps_similarity
-from civitas_duplicates.signals import category_agreement
+from civitas_duplicates.signals import category_relation
 from civitas_duplicates.time_features import time_similarity
 
 DEFAULT_WEIGHTS: dict[str, float] = {
@@ -43,15 +43,17 @@ DEFAULT_WEIGHTS: dict[str, float] = {
 
 # Incident-anchored preset (Phase 4): geospatial + temporal signals dominate
 # because "same incident" is a physical-place-time claim; language and pixels
-# confirm it. Replaces the balanced default when callers want the strict
-# product semantics.
+# confirm it. Phase 5 adds the transactional incident-density signal (how
+# busy the grid cell is) with its own weight. Replaces the balanced default
+# when callers want the strict product semantics.
 INCIDENT_ANCHORED_WEIGHTS: dict[str, float] = {
-    "gps_similarity": 0.35,
+    "gps_similarity": 0.30,
     "time_similarity": 0.15,
     "landmark_similarity": 0.15,
     "category_agreement": 0.10,
-    "text_similarity": 0.15,
+    "text_similarity": 0.12,
     "image_similarity": 0.10,
+    "incident_density": 0.08,
 }
 
 
@@ -167,15 +169,18 @@ def make_pair(
     if set_a and set_b:
         landmark_sim = len(set_a & set_b) / len(set_a | set_b)
 
+    category_score, relation_note = category_relation(report_a.category, report_b.category)
+
     return PairFeatures(
         text_similarity=text_sim,
         image_similarity=img_sim,
-        category_agreement=category_agreement(report_a.category, report_b.category),
+        category_agreement=category_score,
         gps_similarity=gps_sim,
         gps_distance_m=dist_m,
         time_similarity=t_sim,
         time_delta_h=delta_h,
         landmark_similarity=landmark_sim,
+        category_relation_note=relation_note,
     )
 
 
@@ -257,7 +262,42 @@ def compute_pair_features(
         "gps_similarity": pair.gps_similarity,
         "time_similarity": pair.time_similarity,
         "landmark_similarity": pair.landmark_similarity,
+        "incident_density": pair.incident_density,
     }
+
+
+def duplicate_reasons(pair: PairFeatures, cfg: ScoringConfig | None = None) -> list[str]:
+    """Human-readable ✓ checklist for a duplicate decision (Phase 5).
+
+    Ordered like the product card: physical proximity first, then shared
+    ground, then modality confirmation. Only observed signals appear; a
+    missing modality is never listed as a reason.
+    """
+    cfg = cfg or ScoringConfig()
+    reasons: list[str] = []
+    if pair.gps_distance_m <= cfg.max_reasonable_distance_m:
+        reasons.append(f"✓ {pair.gps_distance_m:.0f} m apart (inside {cfg.max_reasonable_distance_m:.0f} m incident radius)")
+    if pair.time_delta_h <= cfg.max_reasonable_delta_h:
+        reasons.append(f"✓ {pair.time_delta_h:.1f} h apart (inside {cfg.max_reasonable_delta_h:.0f} h incident window)")
+    if pair.landmark_similarity >= 0.5:
+        reasons.append(f"✓ shared landmark anchoring (overlap {pair.landmark_similarity:.2f})")
+    if pair.image_similarity is not None:
+        reasons.append(f"✓ image similarity {pair.image_similarity:.2f}")
+    reasons.append(f"✓ text similarity {pair.text_similarity:.2f}")
+    if pair.category_agreement >= 1.0:
+        reasons.append("✓ matching categories")
+    elif pair.category_agreement >= 0.5:
+        if pair.category_relation_note:
+            reasons.append(f"✓ related categories: {pair.category_relation_note}")
+        else:
+            reasons.append("✓ related categories (causally linked incident types)")
+    else:
+        reasons.append("· conflicting categories")
+    if pair.incident_density >= 0.05:
+        reasons.append(f"✓ incident density {pair.incident_density:.2f} (busy cell, repeat reports likely)")
+    else:
+        reasons.append(f"· incident density {pair.incident_density:.2f} (quiet cell)")
+    return reasons
 
 
 def composite_score(pair: PairFeatures, cfg: ScoringConfig | None = None) -> float:
@@ -297,7 +337,10 @@ def decide_duplicate(
         f"time delta {pair.time_delta_h:.1f} h (similarity {pair.time_similarity:.2f})",
         f"category agreement {pair.category_agreement:.0f}",
         f"landmark overlap {pair.landmark_similarity:.2f}",
+        f"incident density {pair.incident_density:.2f}",
     ]
+    if pair.category_relation_note:
+        basis.append(f"related categories: {pair.category_relation_note}")
     if pair.image_similarity is not None:
         basis.append(f"image cosine {pair.image_similarity:.2f}")
     else:

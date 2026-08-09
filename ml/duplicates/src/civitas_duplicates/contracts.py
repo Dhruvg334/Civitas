@@ -37,6 +37,8 @@ class PairFeatures(BaseModel):
     time_similarity: float = Field(ge=0, le=1)
     time_delta_h: float = Field(ge=0)
     landmark_similarity: float = Field(ge=0, le=1)
+    incident_density: float = Field(default=0.0, ge=0, le=1)
+    category_relation_note: str | None = Field(default=None)
 
     def contributions(self) -> dict[str, float | int | bool | str]:
         return {
@@ -46,6 +48,7 @@ class PairFeatures(BaseModel):
             "gps_similarity": self.gps_similarity,
             "time_similarity": self.time_similarity,
             "landmark_similarity": self.landmark_similarity,
+            "incident_density": self.incident_density,
         }
 
 
@@ -60,6 +63,7 @@ class DuplicateResult(BaseModel):
     feature_contributions: dict[str, float | int | bool | str] = Field(default_factory=dict)
     decision_basis: list[str] = Field(default_factory=list)
     requires_review: bool = Field(default=False)
+    reasons: list[str] = Field(default_factory=list)
 
 
 def _no_device_fallback_note() -> str:

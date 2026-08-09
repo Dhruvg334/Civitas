@@ -145,10 +145,12 @@ class ReportEmbeddings(BaseModel):
 class ClassicalImageEmbedder:
     """Deterministic image embedding from classical CV measurements (Phase 4).
 
-    Vector = the civitas-vision pixel-feature measurements concatenated with a
-    32-bin hue histogram and a 32-bin saturation histogram, L2 normalized.
-    Real measurements, reproducible offline, and documented — no GPU provider
-    required. Production can swap in CLIP via `ProviderEmbedder`.
+    Vector = the civitas-vision pixel-feature measurements (standardized by
+    benchmark-population scale constants, see `_CLASSICAL_FEATURE_SCALES`)
+    concatenated with a 32-bin hue histogram and a 32-bin saturation
+    histogram, L2 normalized. Real measurements, reproducible offline, and
+    documented — no GPU provider required. Production can swap in CLIP via
+    `ProviderEmbedder`.
     """
 
     HUE_BINS = 32
@@ -162,7 +164,7 @@ class ClassicalImageEmbedder:
         except ImportError:  # pragma: no cover - guarded fallback
             self._feature_names = _VISION_FEATURE_ORDER
         self.method = (
-            f"classical-features({len(self._feature_names)})"
+            f"classical-features({len(self._feature_names)}) standardized"
             f"+hue{self.HUE_BINS}+sat{self.SAT_BINS}, L2-normalized"
         )
 
@@ -180,7 +182,10 @@ class ClassicalImageEmbedder:
             features_basis = [f"vision measurements: {len(feat)} classical pixel features"]
         except ImportError:
             features_basis = ["civitas-vision unavailable; colour-only embedding"]
-        vector = [float(feat.get(k, 0.0)) for k in self._feature_names]
+        vector = [
+            float(feat.get(k, 0.0)) / _CLASSICAL_FEATURE_SCALES.get(k, 1.0)
+            for k in self._feature_names
+        ]
         vector.extend(self._histogram(arr, self.HUE_BINS, hue=True))
         vector.extend(self._histogram(arr, self.SAT_BINS, hue=False))
         norm = math.sqrt(sum(v * v for v in vector))
@@ -249,6 +254,35 @@ _VISION_FEATURE_ORDER: tuple[str, ...] = (
     "green_dominance", "blue_smooth_share", "color_scatter", "bright_peak_mean",
     "bright_upper_share", "dark_lowtexture_share", "contrast_ratio",
 )
+
+# Feature-wise scale constants for the classical CV measurements, estimated as
+# population standard deviations over the civitas synthetic benchmark set
+# (5 incident categories x 8 seeds, 40 images). Without standardization the
+# cosine between any two images is dominated by the highest-magnitude
+# measurements (hue_variance ~1e3-1e4, color_scatter ~1e2) and visually
+# different incidents score ~1.0. Known limitation: constants are fitted to
+# the benchmark generation family, not to real-world photos.
+_CLASSICAL_FEATURE_SCALES: dict[str, float] = {
+    "laplacian_variance": 0.0027,
+    "edge_density": 0.0347,
+    "vertical_edge_ratio": 0.1008,
+    "flow_edge_ratio": 0.1355,
+    "flow_blue_ratio": 0.0159,
+    "band_dark_ratio": 0.0136,
+    "luminance_mean": 0.0757,
+    "luminance_std": 0.0200,
+    "saturation_mean": 0.0598,
+    "saturation_std": 0.0436,
+    "hue_variance": 2175.8325,
+    "blue_dominance": 0.0609,
+    "green_dominance": 0.0217,
+    "blue_smooth_share": 0.2045,
+    "color_scatter": 117.5489,
+    "bright_peak_mean": 0.0672,
+    "bright_upper_share": 0.2286,
+    "dark_lowtexture_share": 0.2982,
+    "contrast_ratio": 0.0535,
+}
 
 
 def build_report_embeddings(

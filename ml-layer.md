@@ -97,20 +97,88 @@ real-world incident?" — NOT "do these two sentences look similar?".
   aggregates); duplicate pair "rep-1 vs rep-2" scores 0.88,
   "rep-1 vs rep-3" 0.34 — both answered with the gate visible in the basis.
 
+## Phase 5 — Duplicate detection engine (COMMIT <phase5-hash>)
+
+The 90-second version: three citizens report the same street problem within
+75 minutes near Sunrise School — R1 "water leaking from the main pipe near
+the school gate" at 10:30, R2 "flooding on the road in front of the school"
+at 11:00, R3 "road surface breaking up after the water" at 11:45. The engine
+retrieves all three as candidates (800 m / 24 h window), scores each pair,
+explains every decision with a ✓ checklist, and merges the trio into one
+incident (CL-018) instead of three. The two water reports count as "matching
+categories"; the road-damage report is caught by *related categories*
+(water damage erodes and washes out road surface) — the same physical
+incident described from its effect, not its cause. Image similarity shows
+the honest picture: 0.99 for two photos of the same leak, 0.93 for the
+water photo vs the road-damage photo (the scenes share the same road and
+background, so the model does not claim they are identical).
+
+- `ml/duplicates/src/civitas_duplicates/detector.py` — `DuplicateDetector`,
+  the first *engine* (operator-facing object) in the ML layer. It combines
+  every earlier module: candidate window, per-pair features, weighted
+  scoring, clustering, and now the evaluation harness. Constructor takes
+  `landmark_index` for landmark anchoring and `density_records` for
+  incident-density context; per-pair or per-cluster work, the demo and the
+  evaluation harness all call the same object.
+- `pair_features` (in `similarity.py`) with two new evidence families:
+  - incident density — how busy the neighbourhood cell is (quiet cell here:
+    0.03 of 1.0; a busy cell lowers confidence, it never overrides evidence).
+  - related categories — water leak ↔ flooding, garbage ↔ water leak,
+    pothole ↔ water leak are scored as *related* (0.5 weight, with an
+    explicit note "water damage erodes and wash out the road surface")
+    instead of either "match" or "unrelated". `RELATED_CATEGORIES` lives in
+    `signals.py` with the same evidence-style documentation as the CV rules.
+  - `duplicate_reasons` builds the ✓ checklist (GPS inside radius, time
+    inside window, shared landmark anchoring, image/text similarity above
+    evidence bar, matching or related categories, density context) — every
+    score change is explainable line by line.
+- `evaluation.py` — the measurable layer: deterministic `LabelledScenario`
+  (seeded, 18 pairs: 6 same-incident, 6 genuinely distinct, 6 ambiguous
+  co-located-but-different-category) and `evaluate_engine` which reports
+  precision / recall / F1 / accuracy plus the two failure types people care
+  about — false merges (auto-merged negatives) and false splits (positives
+  not merged). Ambiguous pairs are **escalated to human review, never
+  auto-merged**; the harness counts how many flagged pairs actually went to
+  review. Current result on the labelled set: precision 1.000, recall
+  1.000, F1 1.000, false merges 0, false splits 0, 6/6 ambiguous pairs sent
+  to review.
+- `cluster.py` — deterministic incident-id naming (`CL-001`, `CL-018`, ...)
+  so clusters are addressable in the product and reproducible in the demo.
+- Phase 4 embedding fix (recorded here because it surfaced during Phase 5
+  testing): the classical image feature block was not feature-wise scaled,
+  so highest-magnitude measurements (hue variance ~ 1e3-1e4) dominated the
+  L2 norm and *visually different* images scored ~1.00. The 19 classical
+  measurements are now standardized by population scale constants fitted on
+  the synthetic benchmark set (5 categories x 8 seeds, documented in
+  `embeddings._CLASSICAL_FEATURE_SCALES` as a known limitation); same-incident
+  images still score 0.99, different-category images now score 0.93. Phase 4
+  verification numbers stand except "rep-1 vs rep-3" now scores 0.31 (was
+  0.34) — still correctly "different incident".
+- Demo step 9 (`ml/demo_end_to_end.py`) walks the whole story above with
+  real numbers: candidate retrieval, the three pair explanations, the
+  CL-018 merge, and the full evaluation table. Division of labour with this
+  file: `demo_end_to_end.py` is the narrated walk-through (one scenario,
+  human-readable); `ml-layer.md` is the implementation record (what exists,
+  where, verified how). Both must stay in sync when numbers move.
+
 ## Verification (all passing)
 
 ```bash
 cd geospatial && python -m pytest tests          # 93 passed
 cd geospatial && python -m ruff check src tests  # clean
 cd geospatial && python -m mypy src              # clean (13 files)
-cd ml/duplicates && python -m pytest tests       # 42 passed
+cd ml/duplicates && python -m pytest tests       # 63 passed
 cd ml/duplicates && python -m ruff check src tests  # clean
-cd ml/duplicates && python -m mypy src           # clean (11 files)
+cd ml/duplicates && python -m mypy src           # clean (12 files)
 cd ml/vision && python -m pytest tests           # 27 passed
 cd ml/vision && python -m ruff check src tests   # clean
 cd ml/vision && python -m mypy src               # clean (9 files)
-python ml/demo_end_to_end.py                     # full trace incl. CV + Phase 4 steps
+python ml/demo_end_to_end.py                     # full trace incl. CV + Phase 4 + Phase 5 steps
 ```
+
+Note: `civitas-vision` is a regular dev dependency of the duplicates
+package (`pip install -e "ml/vision[dev]"`); with it installed the
+duplicates tests exercise the real image paths instead of skipping them.
 
 ## Commits on this branch
 
@@ -120,3 +188,5 @@ python ml/demo_end_to_end.py                     # full trace incl. CV + Phase 4
 - `43c7f0a` Phase 2/12 completed
 - `8d3fb95` Phase 3/12 completed
 - `5aed379` Fix feature hash constants in phase notes
+- `c7ca129` Phase 4/12 completed
+- `f16faad` Record Phase 4 commit hash in progress notes

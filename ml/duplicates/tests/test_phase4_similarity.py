@@ -95,6 +95,24 @@ class TestClassicalImageEmbedder:
         b = embedder.embed_image(_solid_image((200, 120, 40))).vector
         assert a != b
 
+    def test_standardized_cross_category_separation(self):
+        """Feature standardization must keep visually different scenes apart
+        (regression: high-magnitude measurements like hue_variance dominated
+        the cosine so water vs pothole images scored ~1.0)."""
+        pytest.importorskip("civitas_vision")
+        from civitas_duplicates.embeddings import cosine_similarity
+        from civitas_vision.benchmark import make_image
+
+        embedder = ClassicalImageEmbedder()
+        water_a = embedder.embed_image(make_image("water_leakage", 7101)).vector
+        water_b = embedder.embed_image(make_image("water_leakage", 7102)).vector
+        pothole = embedder.embed_image(make_image("pothole_road_damage", 7103)).vector
+        same_incident = cosine_similarity(water_a, water_b)
+        cross_category = cosine_similarity(water_a, pothole)
+        assert same_incident > 0.95
+        assert cross_category < same_incident - 0.03
+        assert "standardized" in embedder.method
+
 
 class TestReportEmbeddings:
     def test_text_always_image_optional(self):
