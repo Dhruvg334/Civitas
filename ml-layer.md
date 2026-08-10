@@ -519,6 +519,53 @@ edges and are marked review-candidates.
   FAILURES.md, REPORT.md, golden/evidence_trail.json — regenerated every
   run from the same frozen test set.
 
+## Phase 12/12 — The technical journey, documented (COMMIT "Phases 12/12 completed")
+
+The 90-second version: Phase 12 is not another model and changes **no ML
+code**. It exists so that a judge (or an interviewer) can see the whole
+story in one honest narrative: the ML layer was *measured* in Phase 11/12,
+and now it is *explained* — where the geospatial, vision, duplicate,
+severity/priority and resolution intelligence is; why a previous geospatial
+ML project (GeoGPT) is the hands-on foundation, not a prior implementation
+of Civitas; and why the Civitas numbers above are the only evidence the
+Civitas models work.
+
+- `docs/submission/MEMBER2_GEOGPT_TO_CIVITAS.md` — the full technical
+  narrative: the actual GeoGPT repository was inventoried (end-to-end
+  LiDAR → DTM → hydrology → RF/XGBoost waterlogging-risk pipeline,
+  terrain feature engineering of slope/aspect/TWI/flow-accumulation,
+  PostGIS scaffolding, measured `demo_outputs/` numbers), and every claim
+  was kept in one of two separate evidence buckets — prior-project
+  experience vs current-system evaluation — with no crossover.
+- What the narrative establishes, precisely:
+  - GeoGPT genuinely built: raw spatial data (97 M-point village LiDAR)
+    → engineered terrain/hydrology features → ML risk prediction →
+    measurable outputs; it genuinely did **not** build duplicate
+    detection, incident severity/priority, or before/after resolution
+    verification.
+  - The adapted core idea: Civitas reuses the *shape*
+    (raw input → engineered features → ML → measurable prediction) but
+    redesigned for civic incidents: vision + text embeddings + GPS + time
+    + landmark/context features → duplicate scoring and clustering →
+    separate severity and priority → resolution verification.
+  - Geospatial's bounded role: it never independently decides duplicates
+    (image+text+GPS+time+category+landmark all combine) nor severity/
+    priority (spatial/contextual evidence fuses with visual evidence).
+  - Work boundaries: PostGIS/backend retrieval is the backend member's
+    module; this contribution consumes its typed candidate/context
+    contracts and does the ML feature engineering and intelligence.
+  - The 90-second interview paragraph and the 10-link contribution chain
+    (GeoGPT experience → feature-engineering foundation → media/vision →
+    embeddings → spatial/time/context features → duplicates/clustering →
+    severity + priority → workflow consumption → resolution verification
+    → frozen-test-set evaluation).
+- Reference only, never evidence: the GeoGPT repository link
+  (`https://github.com/pavitagrawal/DTM_NatGeo_Project_GeoGPT`) appears
+  as prior-work reference; its metrics are never presented as Civitas
+  metrics.
+- Docs only: no source, model, threshold or test-set file changed in this
+  phase.
+
 ## Verification (all passing)
 
 ```bash
@@ -572,3 +619,4 @@ duplicates tests exercise the real image paths instead of skipping them.
 - `beae511` Phase 9/12 completed
 - `2465186` Phase 10/12 completed
 - `eadd596` Phase 11/12 completed
+- `Phases 12/12 completed` Phase 12/12 completed
