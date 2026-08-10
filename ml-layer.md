@@ -756,5 +756,5 @@ cd services/evaluation && python src/civitas_evaluation/real_world_probe.py
 - `eadd596` Phase 11/12 completed
 - `fb2e90c` Phases 12/12 completed
 - `c9f42cf` Image and Video Refining Tracker Refinements
-- `DOC-COMMIT` ml-layer.md: plain-words overview and Phase 13 record
+- `1361b40` ml-layer.md: plain-words overview and Phase 13 record
 - `002707f` Add real-world media accuracy track: CLIP classifier, model selection, probe
