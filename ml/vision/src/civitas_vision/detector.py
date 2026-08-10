@@ -29,6 +29,7 @@ from PIL import Image
 
 from civitas_vision import evidence as evidence_rules
 from civitas_vision.classifier import KNNClassifier, merge_media_probs, secondary_categories
+from civitas_vision.clip_classifier import CLIPZeroShotClassifier
 from civitas_vision.contracts import (
     ClassificationProbs,
     SceneQuality,
@@ -36,13 +37,18 @@ from civitas_vision.contracts import (
 )
 from civitas_vision.frames import frames_from_path, select_key_frames
 from civitas_vision.features import extract_features
+from civitas_vision.nn_classifier import NNClassifier
 from civitas_vision.quality import assess_quality
 
 
 class VisualIntelligencePipeline:
     """Configurable image/video -> structured visual intelligence."""
 
-    def __init__(self, classifier: KNNClassifier | None = None, top_frames: int = 4) -> None:
+    def __init__(
+        self,
+        classifier: KNNClassifier | NNClassifier | CLIPZeroShotClassifier | None = None,
+        top_frames: int = 4,
+    ) -> None:
         self.classifier = classifier or _default_classifier()
         self.top_frames = top_frames
 
@@ -79,7 +85,7 @@ class VisualIntelligencePipeline:
 
         for image, quality in frames:
             feats = extract_features(image)
-            probs = self.classifier.predict_proba(feats)
+            probs = classifier_predict(self.classifier, image)
             per_frame.append(probs)
             ev = evidence_rules.extract_evidence(feats)
             evidence_seen.extend(ev)
@@ -114,11 +120,38 @@ class VisualIntelligencePipeline:
         )
 
 
-def _default_classifier() -> KNNClassifier:
-    """Fitted, seeded baseline classifier (cached from the benchmark harness)."""
-    from civitas_vision.benchmark import train_default_model
+def classifier_predict(
+    classifier: KNNClassifier | NNClassifier | CLIPZeroShotClassifier, image: Image.Image
+) -> ClassificationProbs:
+    """Predict for one image via the natural entry point of the classifier.
 
-    return train_default_model()
+    The k-NN baseline consumes the classical 16-feature vector; the
+    neural classifier consumes pixels; the zero-shot CLIP classifier
+    consumes pixels through its frozen vision tower. All expose
+    `predict(image)`.
+    """
+    return classifier.predict(image)
+
+
+def _default_classifier() -> KNNClassifier | NNClassifier:
+    """Vision-nn-v1 when the trained checkpoint exists, else the k-NN baseline.
+
+    The deterministic k-NN stays the default so offline/synthetic-manifold
+    behaviour (frozen Phase 11/12 evaluation, demo walk-throughs) never
+    depends on an external model download. Callers analysing real-world
+    media select the zero-shot CLIP classifier explicitly
+    (`CLIPZeroShotClassifier.load()` / `civitas_ml.vision_model`).
+    """
+    cached = getattr(_default_classifier, "_cached", None)
+    if cached is not None:
+        return cached
+    classifier = NNClassifier.load()
+    if classifier is None:
+        from civitas_vision.benchmark import train_default_model
+
+        classifier = train_default_model()
+    _default_classifier._cached = classifier
+    return classifier
 
 
 __all__ = ["VisualIntelligencePipeline"]

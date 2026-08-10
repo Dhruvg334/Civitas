@@ -14,9 +14,10 @@ Confidence is calibrated relative to the training distance distribution
 from __future__ import annotations
 
 import numpy as np
+from PIL import Image
 
 from civitas_vision.contracts import ClassificationProbs, CIVITAS_CATEGORIES
-from civitas_vision.features import FEATURE_NAMES
+from civitas_vision.features import FEATURE_NAMES, extract_features
 
 TRAIN_SEED = 11
 K_NEIGHBOURS = 3
@@ -105,6 +106,10 @@ class KNNClassifier:
             ood_ratio=round(ood_ratio, 3),
             basis=basis,
         )
+
+    def predict(self, image: Image.Image) -> ClassificationProbs:
+        """Compat entry point shared with the neural classifier."""
+        return self.predict_proba(extract_features(image))
 
     @property
     def classes(self) -> list[str]:

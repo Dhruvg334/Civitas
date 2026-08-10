@@ -143,6 +143,7 @@ def _landmark_index(backend: BackendAdapter) -> tuple[LandmarkIndex, list[str]]:
 def run_report(
     record: ReportInput,
     backend: BackendAdapter | None = None,
+    vision_pipeline: VisualIntelligencePipeline | None = None,
 ) -> ReportAnalysis:
     """Analyse one report end-to-end through the adapter-driven pipeline."""
     trace_id = record.trace_id or _trace()
@@ -160,6 +161,7 @@ def run_report(
         video_frames=video_frames,
         video_meta=video_meta,
         no_media_note="no media supplied",
+        pipeline=vision_pipeline,
     )
     if media_errors:
         vision.basis.extend(media_errors)
@@ -232,6 +234,11 @@ def run_report(
     models = collect_models(
         severity_model, priority_model,
         text_dim=embeddings.text_dim, image_dim=embeddings.image_dim,
+        vision_model_version=(
+            vision_pipeline.classifier.model_version  # type: ignore[attr-defined]
+            if vision_pipeline is not None and getattr(vision_pipeline.classifier, "model_version", None)
+            else None
+        ),
     )
     return ReportAnalysis(
         report_id=record.report_id,
@@ -331,6 +338,7 @@ def _cluster_context(
 def run_resolution(
     record: ResolutionInput,
     backend: BackendAdapter | None = None,
+    vision_pipeline: VisualIntelligencePipeline | None = None,
 ) -> ResolutionVerification:
     """Verify BEFORE vs AFTER media: resolved / partial / conflicting / unverifiable."""
     trace_id = record.trace_id or _trace()
@@ -357,8 +365,8 @@ def run_resolution(
         )
     basis.extend(note for note in (before_note, after_note) if note)
 
-    before_result = _VISION.analyze_image(before_image)
-    after_result = _VISION.analyze_image(after_image)
+    before_result = (vision_pipeline or _VISION).analyze_image(before_image)
+    after_result = (vision_pipeline or _VISION).analyze_image(after_image)
     before_evidence = ResolutionEvidence.from_vision(
         record.incident_id, "before", record.before_source, before_result,
         water_coverage=_water_coverage(before_image),

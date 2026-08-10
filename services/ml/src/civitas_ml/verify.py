@@ -34,9 +34,15 @@ _VISION = VisualIntelligencePipeline()
 _RESOLUTION = ResolutionModel()
 
 
-def _evidence_for(media: Media, incident_id: str, stage: str, source: str) -> ResolutionEvidence:
+def _evidence_for(
+    media: Media,
+    incident_id: str,
+    stage: str,
+    source: str,
+    pipeline: VisualIntelligencePipeline | None = None,
+) -> ResolutionEvidence:
     image = media if isinstance(media, Image.Image) else Image.open(Path(media))
-    result = _VISION.analyze_image(image)
+    result = (pipeline or _VISION).analyze_image(image)
     return ResolutionEvidence.from_vision(
         incident_id, stage, source, result,
         water_coverage=extract_features(image)["blue_smooth_share"],
@@ -62,6 +68,7 @@ def verify_resolution(
     before_source: str = "citizen upload (before)",
     after_source: str = "inspector upload (after)",
     trace_id: str | None = None,
+    vision_pipeline: VisualIntelligencePipeline | None = None,
 ) -> ResolutionVerification:
     """Compare the BEFORE photo with the AFTER photo and answer.
 
@@ -70,10 +77,10 @@ def verify_resolution(
     human-readable lines behind the verdict.
     """
     before = _evidence_for(
-        before_media, incident_id, "before", before_source
+        before_media, incident_id, "before", before_source, vision_pipeline
     )
     after = _evidence_for(
-        after_media, incident_id, "after", after_source
+        after_media, incident_id, "after", after_source, vision_pipeline
     )
     verdict = _RESOLUTION.assess(before, after)
     return ResolutionVerification(

@@ -59,7 +59,6 @@ from civitas_risk import (
     build_incident_features,
     build_priority_features,
 )
-from civitas_vision.classifier import K_NEIGHBOURS, SOFTMAX_TEMPERATURE
 from civitas_vision.detector import VisualIntelligencePipeline
 from civitas_vision.features import extract_features
 from civitas_vision.quality import (
@@ -175,15 +174,17 @@ def build_vision_section(
     video_frames: list[Image.Image] | None = None,
     video_meta: dict[str, int | float | None] | None = None,
     no_media_note: str = "no media supplied",
+    pipeline: VisualIntelligencePipeline | None = None,
 ) -> tuple[VisionSection, str | None]:
     """Run the vision stack on one resolved image (or pre-decoded video frames)."""
+    vision_pipeline = pipeline or _VISION
     vision_result = None
     basis: list[str] = []
     if image is not None:
-        vision_result = _VISION.analyze_image(image)
+        vision_result = vision_pipeline.analyze_image(image)
         basis = ["analyzed image via VisualIntelligencePipeline"]
     elif video_path is not None or video_frames is not None:
-        vision_result = _VISION.analyze_video(
+        vision_result = vision_pipeline.analyze_video(
             video_path or "",
             video_extra_frames=video_frames,
         )
@@ -499,12 +500,13 @@ def collect_models(
     resolution_model: ResolutionModel | None = None,
     text_dim: int = 0,
     image_dim: int | None = None,
+    vision_model_version: str | None = None,
 ) -> list[ModelReference]:
     """The metadata block: every model that ran, with versions + thresholds."""
     models: list[ModelReference] = [
         ModelReference(
             component="vision",
-            model_version=_VISION_MODEL_VERSION,
+            model_version=vision_model_version or _VISION_MODEL_VERSION,
             thresholds={
                 "blur_max": MAX_BLUR_SCORE,
                 "min_luminance": MIN_LUMINANCE,
@@ -512,7 +514,9 @@ def collect_models(
                 "min_width_px": float(MIN_WIDTH_PX),
                 "low_confidence_floor": LOW_VISION_CONFIDENCE,
             },
-            note=f"k-NN k={K_NEIGHBOURS}, temperature {SOFTMAX_TEMPERATURE}; five frozen MVP categories only",
+            note=(
+                f"{vision_model_version or _VISION_MODEL_VERSION}; five frozen MVP categories only"
+            ),
         ),
         ModelReference(
             component="embeddings",
@@ -572,6 +576,7 @@ def analyze_report(
     memory_incidents: list[ReportLike] | None = None,
     landmarks: LandmarkIndex | None = None,
     now: datetime | None = None,
+    vision_pipeline: VisualIntelligencePipeline | None = None,
 ) -> ReportAnalysis:
     """Analyse one citizen report end-to-end with call-time context.
 
@@ -614,10 +619,19 @@ def analyze_report(
         video_path=video_path if video_frames is not None else None,
         video_frames=video_frames,
         video_meta=video_meta,
+        pipeline=vision_pipeline,
     )
     if media_rejections:
         vision.media_rejected_basis.extend(media_rejections)
         vision.basis.extend(media_rejections)
+
+    # The model version reported on the contract: whichever classifier the
+    # selected pipeline actually runs (k-NN default or the real-media CLIP).
+    try:
+        used_pipeline = vision_pipeline if vision_pipeline is not None else _VISION
+        vision_model_version = used_pipeline.classifier.model_version  # type: ignore[attr-defined]
+    except AttributeError:
+        vision_model_version = _VISION_MODEL_VERSION
 
     embeddings, report_embeddings = build_embedding_section(
         report_id, description, loaded, category, when
@@ -662,6 +676,7 @@ def analyze_report(
         priority_model,
         text_dim=embeddings.text_dim,
         image_dim=embeddings.image_dim,
+        vision_model_version=vision_model_version,
     )
 
     return ReportAnalysis(
