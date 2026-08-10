@@ -1,0 +1,11 @@
+{"landmark_id": "lm-school-01", "name": "Sunrise Public School", "kind": "school", "latitude": 28.6139, "longitude": 77.209, "radius_m": 200.0}
+{"landmark_id": "lm-school-02", "name": "City Model High School", "kind": "school", "latitude": 28.62, "longitude": 77.219, "radius_m": 200.0}
+{"landmark_id": "lm-hosp-01", "name": "Central District Hospital", "kind": "hospital", "latitude": 28.61, "longitude": 77.205, "radius_m": 300.0}
+{"landmark_id": "lm-hosp-02", "name": "Mother Teresa Clinic", "kind": "hospital", "latitude": 28.625, "longitude": 77.215, "radius_m": 150.0}
+{"landmark_id": "lm-junction-01", "name": "Kingsway Junction", "kind": "junction", "latitude": 28.616, "longitude": 77.213, "radius_m": 80.0}
+{"landmark_id": "lm-junction-02", "name": "Riverside Cross", "kind": "junction", "latitude": 28.609, "longitude": 77.21, "radius_m": 80.0}
+{"landmark_id": "lm-market-01", "name": "Old Bazaar Market", "kind": "market", "latitude": 28.612, "longitude": 77.218, "radius_m": 150.0}
+{"landmark_id": "lm-park-01", "name": "Municipal Park", "kind": "park", "latitude": 28.618, "longitude": 77.207, "radius_m": 250.0}
+{"landmark_id": "lm-water-01", "name": "Yamuna Floodplain", "kind": "waterbody", "latitude": 28.605, "longitude": 77.23, "radius_m": 400.0}
+{"landmark_id": "lm-metro-01", "name": "Civic Centre Metro", "kind": "metro_station", "latitude": 28.619, "longitude": 77.2165, "radius_m": 120.0}
+{"landmark_id": "lm-path-01", "name": "School Access Pathway", "kind": "pathway", "latitude": 28.6143, "longitude": 77.2098, "radius_m": 60.0}

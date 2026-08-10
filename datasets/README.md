@@ -1,6 +1,9 @@
 # Datasets
 
-Large datasets and media are not committed to Git. Commit only manifests, source references, label definitions, checksums, generation scripts, and small non-sensitive fixtures.
+Large datasets and media are not committed to Git **unless deliberately
+published** (see `demo_data/` — a small, open-licensed real-world corpus).
+Commit only manifests, source references, label definitions, checksums,
+generation scripts, and small non-sensitive fixtures.
 
 ## What lives here
 
@@ -8,7 +11,8 @@ Large datasets and media are not committed to Git. Commit only manifests, source
 |---|---|
 | `generators/` | Deterministic seed-controlled dataset generators |
 | `manifests/` | Committed manifests with row counts, columns and sha256 checksums |
-| `generated/` | Output artifacts (gitignored; reproducible via the generators) |
+| `generated/` | Reproducible output artifacts (currently committed so the repo is self-contained; regenerate to keep the sha256s in `manifests/` honest) |
+| `demo_data/` | Open-licensed real-world photo/video corpus with full provenance (see `demo_data/README.md`) |
 
 ## Generators
 

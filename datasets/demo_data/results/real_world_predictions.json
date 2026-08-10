@@ -1,0 +1,508 @@
+{
+  "generated_at": "2026-08-10T19:39:47.629467+00:00",
+  "rows": [
+    {
+      "file": "datasets\\demo_data\\images\\kyiv_street_pothole.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "pothole_road_damage",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "pothole_road_damage",
+      "confidence": 0.997,
+      "ood_ratio": 1.33,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [
+        "visible road cavity (pothole) with broken surface"
+      ],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:A pothole in Dilova Street in Kyiv.jpg",
+      "license": "CC0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\bengaluru_road_potholes.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "pothole_road_damage",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "pothole_road_damage",
+      "confidence": 0.9763,
+      "ood_ratio": 1.271,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [
+        "visible road cavity (pothole) with broken surface"
+      ],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Potholes in Bengaluru road.jpg",
+      "license": "CC0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\montreal_villeray_pothole.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "pothole_road_damage",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "pothole_road_damage",
+      "confidence": 0.9993,
+      "ood_ratio": 1.264,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Pothole in Villeray, Montr\u00e9al.jpg",
+      "license": "Public domain"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\huntington_creek_pothole.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "pothole_road_damage",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "pothole_road_damage",
+      "confidence": 0.3491,
+      "ood_ratio": 1.84,
+      "uncertainty": [
+        "low-confidence classification: confidence 0.35 below the 0.40 floor"
+      ],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline",
+        "low-confidence classification: confidence 0.35 below the 0.40 floor"
+      ],
+      "source": "File:Pothole on Huntington Creek Road.JPG",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\white_plains_main_break.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "water_leakage",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "water_leakage",
+      "confidence": 0.4737,
+      "ood_ratio": 1.68,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:2020 White Plains Water Main Break 20200810 (1).jpg",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\peacock_street_main_break.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "water_leakage",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "water_leakage",
+      "confidence": 0.5948,
+      "ood_ratio": 1.457,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Peacock Street water main break 986.jpg",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\water_main_break_flickr.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "water_leakage",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "water_leakage",
+      "confidence": 0.9814,
+      "ood_ratio": 1.716,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Water Main Break (17099358765).jpg",
+      "license": "CC BY 2.0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\burst_water_main_geograph.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "water_leakage",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "water_leakage",
+      "confidence": 0.9998,
+      "ood_ratio": 1.209,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Burst water main (geograph 2646387).jpg",
+      "license": "CC BY-SA 2.0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\garbage_overflow_bin_2023.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "garbage_overflow",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "garbage_overflow",
+      "confidence": 0.6174,
+      "ood_ratio": 1.561,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [
+        "mixed-color waste pile (scattered debris)"
+      ],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Garbage Overflow 1 2023-12-29.jpeg",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\hamburg_bin_overflow.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "garbage_overflow",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "garbage_overflow",
+      "confidence": 0.9994,
+      "ood_ratio": 1.362,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Overflowing Hamburg street garbage bin.jpg",
+      "license": "Public domain"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\helsinki_bin_overflow.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "garbage_overflow",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "garbage_overflow",
+      "confidence": 0.9995,
+      "ood_ratio": 1.567,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [
+        "mixed-color waste pile (scattered debris)"
+      ],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Overflowing garbage bin in Helsinki, Finland, 2019.jpg",
+      "license": "CC BY-SA 2.0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\streetlight_night_2012.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "broken_streetlight",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "broken_streetlight",
+      "confidence": 0.9999,
+      "ood_ratio": 1.401,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Street light 07092012..jpg",
+      "license": "CC BY-SA 3.0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\streetlight_amsterdam.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "broken_streetlight",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "broken_streetlight",
+      "confidence": 0.9131,
+      "ood_ratio": 1.762,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Street light, Amsterdam.jpg",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\farola_barcelona.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "broken_streetlight",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "broken_streetlight",
+      "confidence": 0.9996,
+      "ood_ratio": 1.437,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Barcelona - Farola Avenida Gaudi.jpg",
+      "license": "CC BY-SA 3.0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\fallen_tree_leamington.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "fallen_tree",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "fallen_tree",
+      "confidence": 0.8488,
+      "ood_ratio": 1.404,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Fallen Tree in Dormer Place, Leamington Spa (1).jpg",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\fallen_tree_1c.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "fallen_tree",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "fallen_tree",
+      "confidence": 0.9952,
+      "ood_ratio": 1.523,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Fallen tree - 1C.jpg",
+      "license": "CC0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\fallen_tree_greece.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "fallen_tree",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "fallen_tree",
+      "confidence": 0.9655,
+      "ood_ratio": 1.533,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline"
+      ],
+      "source": "File:Fallen tree in greece.jpg",
+      "license": "CC0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\himalayas_snow_lake.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "ood_control",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "water_leakage",
+      "confidence": 0.8684,
+      "ood_ratio": 2.083,
+      "uncertainty": [
+        "out-of-distribution media: distance ratio 2.08 above the 2.0 uncertainty floor; the category is a best-effort guess, not grounded evidence"
+      ],
+      "rejections": [],
+      "observable_evidence": [
+        "standing water",
+        "water flowing across road"
+      ],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline",
+        "out-of-distribution media: distance ratio 2.08 above the 2.0 uncertainty floor; the category is a best-effort guess, not grounded evidence"
+      ],
+      "source": "File:Mountains in snow, Mountain lake, Chola Valley, Nepal, Himalayas.jpg",
+      "license": "CC BY 4.0"
+    },
+    {
+      "file": "datasets\\demo_data\\images\\cat_on_snow.jpg",
+      "kind": "image",
+      "model_version": "vision-clip-v1",
+      "expected_category": "ood_control",
+      "media_usable": true,
+      "media_kind": "image",
+      "primary_category": "water_leakage",
+      "confidence": 0.7896,
+      "ood_ratio": 2.137,
+      "uncertainty": [
+        "out-of-distribution media: distance ratio 2.14 above the 2.0 uncertainty floor; the category is a best-effort guess, not grounded evidence"
+      ],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed image via VisualIntelligencePipeline",
+        "out-of-distribution media: distance ratio 2.14 above the 2.0 uncertainty floor; the category is a best-effort guess, not grounded evidence"
+      ],
+      "source": "File:Felis catus-cat on snow.jpg",
+      "license": "CC BY-SA 3.0"
+    },
+    {
+      "file": "datasets\\demo_data\\videos\\flood_on_street.webm",
+      "kind": "video",
+      "model_version": "vision-clip-v1",
+      "expected_category": "water_leakage",
+      "media_usable": true,
+      "media_kind": "video",
+      "primary_category": "water_leakage",
+      "confidence": 0.9418,
+      "ood_ratio": 1.598,
+      "frames_selected": 4,
+      "video_total_frames": 120,
+      "video_duration_s": 12.31,
+      "video_fps": 29.817220543806645,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed video via VisualIntelligencePipeline",
+        "decoded 120 video frame(s) before key-frame selection"
+      ],
+      "source": "File:Flood on the street.webm",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "datasets\\demo_data\\videos\\zhengzhou_flood_streets.webm",
+      "kind": "video",
+      "model_version": "vision-clip-v1",
+      "expected_category": "water_leakage",
+      "media_usable": true,
+      "media_kind": "video",
+      "primary_category": "water_leakage",
+      "confidence": 0.9716,
+      "ood_ratio": 1.705,
+      "frames_selected": 4,
+      "video_total_frames": 120,
+      "video_duration_s": 16.0,
+      "video_fps": 25.0,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed video via VisualIntelligencePipeline",
+        "decoded 120 video frame(s) before key-frame selection"
+      ],
+      "source": "File:Zhengzhou streets during the flood 2021-07-20.webm",
+      "license": "CC BY 3.0"
+    },
+    {
+      "file": "datasets\\demo_data\\videos\\leaking_roof.webm",
+      "kind": "video",
+      "model_version": "vision-clip-v1",
+      "expected_category": "water_leakage",
+      "media_usable": true,
+      "media_kind": "video",
+      "primary_category": "water_leakage",
+      "confidence": 0.6677,
+      "ood_ratio": 1.759,
+      "frames_selected": 4,
+      "video_total_frames": 120,
+      "video_duration_s": 72.36,
+      "video_fps": 27.625,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed video via VisualIntelligencePipeline",
+        "decoded 120 video frame(s) before key-frame selection"
+      ],
+      "source": "File:Leaking roof.webm",
+      "license": "CC BY-SA 4.0"
+    },
+    {
+      "file": "datasets\\demo_data\\videos\\water_dripping_bucket.webm",
+      "kind": "video",
+      "model_version": "vision-clip-v1",
+      "expected_category": "water_leakage",
+      "media_usable": true,
+      "media_kind": "video",
+      "primary_category": "water_leakage",
+      "confidence": 0.7222,
+      "ood_ratio": 1.59,
+      "frames_selected": 4,
+      "video_total_frames": 120,
+      "video_duration_s": 19.65,
+      "video_fps": 29.666666666666668,
+      "uncertainty": [],
+      "rejections": [],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed video via VisualIntelligencePipeline",
+        "decoded 120 video frame(s) before key-frame selection"
+      ],
+      "source": "File:Water Dripping into a Bucket in a Derelict Apartment in Canada.webm",
+      "license": "CC BY 4.0"
+    },
+    {
+      "file": "datasets\\demo_data\\videos\\ceiling_infiltration.webm",
+      "kind": "video",
+      "model_version": "vision-clip-v1",
+      "expected_category": "water_leakage",
+      "media_usable": false,
+      "media_kind": "video",
+      "primary_category": null,
+      "confidence": 0.0,
+      "ood_ratio": null,
+      "frames_selected": 0,
+      "video_total_frames": 120,
+      "video_duration_s": 35.53,
+      "video_fps": 30.0,
+      "uncertainty": [],
+      "rejections": [
+        "no usable frames after quality checks (blur/exposure)"
+      ],
+      "observable_evidence": [],
+      "basis": [
+        "analyzed video via VisualIntelligencePipeline",
+        "decoded 120 video frame(s) before key-frame selection"
+      ],
+      "source": "File:Teto de gesso com infiltra\u00e7\u00e3o.webm",
+      "license": "CC BY-SA 4.0"
+    }
+  ]
+}
