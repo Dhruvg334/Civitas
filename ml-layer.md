@@ -566,6 +566,47 @@ Civitas models work.
 - Docs only: no source, model, threshold or test-set file changed in this
   phase.
 
+## Image and Video Refining Track — video becomes a first-class citizen (COMMIT "Image and Video Refining Tracker Refinements")
+
+The 90-second version: Phase 10 scaffolded a video path but refused to
+actually work with videos — video *references* were rejected with a
+structured error, backend-served video bytes were explicitly "not
+supported yet", and resolution verification only accepted images. This
+refinement completes the image+video track so the service is genuinely
+ready to analyse citizen videos:
+
+- **Real decoding.** A video (local file **or** backend-served bytes)
+  now decodes to a bounded set of frames — up to 120, downscaled — via
+  OpenCV, with stream metadata measured from the container (fps, duration
+  in seconds, total frames). OpenCV is an optional dependency:
+  `pip install -e "services/ml[video]"`.
+- **Decoded once, not twice.** `analyze_report(video=...)` decodes the
+  video through the media layer and hands the frames to the vision
+  detector's key-frame selection, so a clip is never read from disk
+  twice.
+- **Structured failures, never crashes.** Missing video file →
+  `media_not_found`; bytes that are not a decodable video →
+  `media_unreadable`; OpenCV not installed → `dependency_missing` — all
+  recorded in the vision section's rejection basis.
+- **Metadata on the contract.** `VisionSection` now carries
+  `video_total_frames`, `video_duration_s`, `video_fps`, so agents and
+  the API can see exactly what was analysed and how much of it was used.
+- **Resolution verification accepts videos.** BEFORE/AFTER video uploads
+  resolve to their single best key frame (quality-ranked) and are
+  compared by the resolution model; the evidence trail records which
+  side came from video.
+- **Pipeline parity.** `run_report` handles video media references with
+  local paths or backend bytes — the old "backend video bytes are not
+  supported yet" branch is gone.
+- **Tests.** 8 new video tests (local decode, backend bytes, missing
+  file, corrupt container, resolution before/after, resolution failure)
+  → **39 passed** in the service, ruff + mypy clean.
+- **Golden evidence trail re-baselined.** The golden trail's hash changed
+  because the vision JSON gained the three new metadata fields (None on
+  image reports). A field-by-field diff against the previous golden
+  trail shows exactly those 9 additions and *nothing else* — no model
+  behaviour changed.
+
 ## Verification (all passing)
 
 ```bash
@@ -584,7 +625,7 @@ cd ml/risk && python -m mypy src/civitas_risk    # clean (12 files)
 cd ml/resolution && python -m pytest tests       # 24 passed
 cd ml/resolution && python -m ruff check src tests  # clean
 cd ml/resolution && python -m mypy src/civitas_resolution  # clean (3 files)
-cd services/ml && python -m pytest tests           # 31 passed
+cd services/ml && python -m pytest tests           # 39 passed (incl. 8 video-path tests)
 cd services/ml && python -m ruff check src tests   # clean
 cd services/ml && python -m mypy src/civitas_ml    # clean (12 files)
 cd services/evaluation && python run_all.py        # full Phase 11/12 evaluation (8 check-points)
@@ -620,3 +661,4 @@ duplicates tests exercise the real image paths instead of skipping them.
 - `2465186` Phase 10/12 completed
 - `eadd596` Phase 11/12 completed
 - `fb2e90c` Phases 12/12 completed
+- `Image and Video Refining Tracker Refinements` Image and video refining track completed

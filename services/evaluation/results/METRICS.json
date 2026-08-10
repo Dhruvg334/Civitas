@@ -669,6 +669,9 @@
               "uncertainty": [],
               "media_kind": "image",
               "frames_selected": 1,
+              "video_total_frames": null,
+              "video_duration_s": null,
+              "video_fps": null,
               "basis": [
                 "analyzed image via VisualIntelligencePipeline"
               ]
@@ -1378,6 +1381,9 @@
               "uncertainty": [],
               "media_kind": "image",
               "frames_selected": 1,
+              "video_total_frames": null,
+              "video_duration_s": null,
+              "video_fps": null,
               "basis": [
                 "analyzed image via VisualIntelligencePipeline"
               ]
@@ -2135,6 +2141,9 @@
               "uncertainty": [],
               "media_kind": "image",
               "frames_selected": 1,
+              "video_total_frames": null,
+              "video_duration_s": null,
+              "video_fps": null,
               "basis": [
                 "analyzed image via VisualIntelligencePipeline"
               ]
@@ -3164,5 +3173,5 @@
     }
   },
   "worked": [],
-  "generated_at": "2026-08-09T22:14:55.345860+00:00"
+  "generated_at": "2026-08-10T16:33:42.117880+00:00"
 }

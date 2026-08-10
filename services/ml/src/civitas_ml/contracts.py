@@ -173,6 +173,9 @@ class VisionSection(BaseModel):
     uncertainty: list[str] = Field(default_factory=list)
     media_kind: Literal["image", "video", "none"] = "none"
     frames_selected: int = Field(default=0, ge=0)
+    video_total_frames: int | None = Field(default=None, ge=0, description="decoded frames from the video stream (bounded)")
+    video_duration_s: float | None = Field(default=None, ge=0, description="container-reported duration in seconds, when available")
+    video_fps: float | None = Field(default=None, ge=0, description="container-reported frame rate, when available")
     basis: list[str] = Field(default_factory=list)
 
 

@@ -1,6 +1,6 @@
 # Civitas Phase 11/12 - ML capability evaluation (Member 2)
 
-_Generated: 2026-08-09T22:14:55.342870+00:00 by `python run_all.py` from `services/evaluation`, [worktree commit]._
+_Generated: 2026-08-10T16:33:42.093183+00:00 by `python run_all.py` from `services/evaluation`, [worktree commit]._
 
 ## The evidence chain
 

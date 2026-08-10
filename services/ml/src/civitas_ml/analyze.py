@@ -76,12 +76,14 @@ from civitas_ml.contracts import (
     EmbeddingSection,
     FactorPoint,
     GeospatialSection,
+    MediaReference,
     ModelReference,
     PrioritySection,
     ReportAnalysis,
     SeveritySection,
     VisionSection,
 )
+from civitas_ml.media import resolve_video
 
 VISION_TO_CATEGORY = {
     "water_leakage": "water leak",
@@ -170,20 +172,30 @@ def build_vision_section(
     *,
     media_kind: Literal["image", "video", "none"] = "none",
     video_path: str | None = None,
+    video_frames: list[Image.Image] | None = None,
+    video_meta: dict[str, int | float | None] | None = None,
     no_media_note: str = "no media supplied",
 ) -> tuple[VisionSection, str | None]:
-    """Run the vision stack on one resolved image (or a video path)."""
+    """Run the vision stack on one resolved image (or pre-decoded video frames)."""
     vision_result = None
     basis: list[str] = []
     if image is not None:
         vision_result = _VISION.analyze_image(image)
         basis = ["analyzed image via VisualIntelligencePipeline"]
-    elif video_path is not None:
-        vision_result = _VISION.analyze_video(video_path)
-        basis = ["analyzed video via VisualIntelligencePipeline"]
+    elif video_path is not None or video_frames is not None:
+        vision_result = _VISION.analyze_video(
+            video_path or "",
+            video_extra_frames=video_frames,
+        )
+        basis = [
+            "analyzed video via VisualIntelligencePipeline",
+            f"decoded {len(video_frames or [])} video frame(s) before key-frame selection",
+        ]
     else:
         basis = [no_media_note]
 
+    meta = video_meta or {}
+    total = meta.get("video_total_frames")
     section = VisionSection(
         media_usable=vision_result.media_usable if vision_result else False,
         media_rejected_basis=list(vision_result.basis) if vision_result and not vision_result.media_usable else [],
@@ -194,6 +206,9 @@ def build_vision_section(
         ood_ratio=vision_result.ood_ratio if vision_result else None,
         media_kind=media_kind,
         frames_selected=vision_result.frames_selected if vision_result else 0,
+        video_total_frames=int(total) if total is not None else None,
+        video_duration_s=meta.get("video_duration_s"),
+        video_fps=meta.get("video_fps"),
         basis=basis,
     )
     section.uncertainty.extend(collect_vision_uncertainty(section))
@@ -570,15 +585,39 @@ def analyze_report(
 
     loaded: Image.Image | None = None
     video_path: str | None = None
+    video_frames: list[Image.Image] | None = None
+    video_meta: dict[str, int | float | None] | None = None
     media_kind: Literal["image", "video", "none"] = "none"
+    media_rejections: list[str] = []
     if image is not None:
         loaded = _load_media(image)
         media_kind = "image"
     elif video is not None:
         video_path = str(video)
         media_kind = "video"
+        resolved = resolve_video(MediaReference(local_path=video_path, kind="video"))
+        if resolved.frames is None:
+            media_rejections.append(
+                f"video could not be resolved ({resolved.error_code}): {resolved.error_note}"
+            )
+        else:
+            video_frames = list(resolved.frames)
+            video_meta = {
+                "video_total_frames": resolved.total_frames,
+                "video_duration_s": resolved.duration_s,
+                "video_fps": resolved.fps,
+            }
 
-    vision, category = build_vision_section(loaded, media_kind=media_kind, video_path=video_path)
+    vision, category = build_vision_section(
+        loaded,
+        media_kind=media_kind,
+        video_path=video_path if video_frames is not None else None,
+        video_frames=video_frames,
+        video_meta=video_meta,
+    )
+    if media_rejections:
+        vision.media_rejected_basis.extend(media_rejections)
+        vision.basis.extend(media_rejections)
 
     embeddings, report_embeddings = build_embedding_section(
         report_id, description, loaded, category, when

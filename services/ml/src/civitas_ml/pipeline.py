@@ -54,6 +54,7 @@ from civitas_ml.contracts import (
     CandidateReport,
     ClusterSection,
     FactorPoint,
+    MediaReference,
     ModelReference,
     NearbyCandidatesRequest,
     ReportAnalysis,
@@ -61,8 +62,7 @@ from civitas_ml.contracts import (
     ResolutionInput,
     ResolutionVerification,
 )
-from civitas_ml.errors import CODE_MEDIA_INVALID_KIND
-from civitas_ml.media import resolve_media
+from civitas_ml.media import resolve_media, resolve_video
 
 _IMAGE_EMBEDDER = ClassicalImageEmbedder()
 _VISION = VisualIntelligencePipeline()
@@ -153,11 +153,12 @@ def run_report(
     ]
     when = record.submitted_at or datetime.now(timezone.utc)
 
-    primary_image, media_errors, media_kind, video_path = _resolve_media(record, backend)
+    primary_image, media_errors, media_kind, video_frames, video_meta = _resolve_media(record, backend)
     vision, category = build_vision_section(
         primary_image,
         media_kind=media_kind,
-        video_path=video_path,
+        video_frames=video_frames,
+        video_meta=video_meta,
         no_media_note="no media supplied",
     )
     if media_errors:
@@ -254,8 +255,14 @@ def run_report(
 
 def _resolve_media(
     record: ReportInput, backend: BackendAdapter
-) -> tuple[Image.Image | None, list[str], Literal["image", "video", "none"], str | None]:
-    """Resolve the report's media: first usable image, or a local video path."""
+) -> tuple[
+    Image.Image | None,
+    list[str],
+    Literal["image", "video", "none"],
+    list[Image.Image] | None,
+    dict[str, int | float | None] | None,
+]:
+    """Resolve the report's media: first usable image, or a decoded video."""
     errors: list[str] = []
     primary: Image.Image | None = None
     for ref in record.media:
@@ -269,22 +276,28 @@ def _resolve_media(
                 errors.append(
                     f"{ref.media_id or ref.local_path}: {resolved.error_note or resolved.error_code}"
                 )
-    video_path: str | None = None
+    video_frames: list[Image.Image] | None = None
+    video_meta: dict[str, int | float | None] | None = None
     for ref in record.media:
-        if ref.kind == "video":
-            if ref.local_path:
-                if video_path is None:
-                    video_path = ref.local_path
-            else:
+        if ref.kind == "video" and video_frames is None:
+            resolved_video = resolve_video(ref, backend)
+            if resolved_video.frames is None:
                 errors.append(
-                    f"{ref.media_id}: backend video bytes are not supported yet "
-                    f"(code {CODE_MEDIA_INVALID_KIND}); use a local video path"
+                    f"{ref.media_id or ref.local_path}: video could not be resolved "
+                    f"({resolved_video.error_code}): {resolved_video.error_note}"
                 )
+            else:
+                video_frames = list(resolved_video.frames)
+                video_meta = {
+                    "video_total_frames": resolved_video.total_frames,
+                    "video_duration_s": resolved_video.duration_s,
+                    "video_fps": resolved_video.fps,
+                }
     if primary is not None:
-        return primary, errors, "image", None
-    if video_path is not None:
-        return None, errors, "video", video_path
-    return None, errors, "none", None
+        return primary, errors, "image", None, None
+    if video_frames is not None:
+        return None, errors, "video", video_frames, video_meta
+    return None, errors, "none", None, None
 
 
 def _cluster_context(
@@ -324,11 +337,11 @@ def run_resolution(
     backend = backend or get_backend()
     basis: list[str] = ["civitas-ml run_resolution", "before/after vision + resolution model"]
 
-    before = resolve_media(record.before, backend)
-    after = resolve_media(record.after, backend)
-    if before.image is None or after.image is None:
-        failed = before if before.image is None else after
-        note = failed.error_note or "media could not be resolved"
+    before_image, before_note = _resolution_media(record.before, backend)
+    after_image, after_note = _resolution_media(record.after, backend)
+    if before_image is None or after_image is None:
+        failed_note = before_note or after_note
+        note = failed_note or "media could not be resolved"
         return ResolutionVerification(
             incident_id=record.incident_id,
             trace_id=trace_id,
@@ -342,16 +355,17 @@ def run_resolution(
             model_version=ResolutionModel().model_version,
             basis=[*basis, f"media resolution failed: {note}"],
         )
+    basis.extend(note for note in (before_note, after_note) if note)
 
-    before_result = _VISION.analyze_image(before.image)
-    after_result = _VISION.analyze_image(after.image)
+    before_result = _VISION.analyze_image(before_image)
+    after_result = _VISION.analyze_image(after_image)
     before_evidence = ResolutionEvidence.from_vision(
         record.incident_id, "before", record.before_source, before_result,
-        water_coverage=_water_coverage(before.image),
+        water_coverage=_water_coverage(before_image),
     )
     after_evidence = ResolutionEvidence.from_vision(
         record.incident_id, "after", record.after_source, after_result,
-        water_coverage=_water_coverage(after.image),
+        water_coverage=_water_coverage(after_image),
     )
     resolution_model = ResolutionModel()
     verdict = resolution_model.assess(before_evidence, after_evidence)
@@ -369,6 +383,39 @@ def run_resolution(
         model_version=resolution_model.model_version,
         basis=[*basis, *verdict.basis],
     )
+
+
+def _resolution_media(
+    reference: MediaReference, backend: BackendAdapter
+) -> tuple[Image.Image | None, str | None]:
+    """Resolve one BEFORE/AFTER reference (image or video) to a single frame.
+
+    Videos resolve to their single best key frame so the resolution model
+    compares one usable view per side; the note records which path ran.
+    """
+    if reference.kind == "video":
+        resolved = resolve_video(reference, backend)
+        if resolved.frames is None:
+            return None, (
+                f"{reference.media_id or reference.local_path}: video could not be resolved "
+                f"({resolved.error_code}): {resolved.error_note}"
+            )
+        from civitas_vision.frames import select_key_frames
+
+        picks = select_key_frames(resolved.frames, top_k=1)
+        if not picks:
+            return None, f"{reference.media_id or reference.local_path}: video had no usable key frame"
+        frame = resolved.frames[picks[0].index]
+        return frame, (
+            f"{reference.media_id or reference.local_path}: video resolved to best key frame "
+            f"(frame {picks[0].index} of {len(resolved.frames)} decoded)"
+        )
+    resolved_image = resolve_media(reference, backend)
+    if resolved_image.image is None:
+        return None, (
+            f"{reference.media_id or reference.local_path}: {resolved_image.error_note or resolved_image.error_code}"
+        )
+    return resolved_image.image, None
 
 
 def _resolution_model_ref() -> ModelReference:
