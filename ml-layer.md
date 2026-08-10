@@ -2,6 +2,37 @@
 
 Branch: `ml-layer`. This file records only implemented, verified work.
 
+## What this is, in plain words
+
+Civitas is a platform where residents report local problems -- a pothole, a
+burst water main, an overflowing bin, a dead street light, a fallen tree --
+usually with a photo and a short description. The *ML layer* described in this
+file is the brain behind each report: it looks at the photo, reads the text,
+and knows where the report came from, to answer:
+
+- **What is happening?** The picture is checked by a computer-vision model
+  (photos) or a video analyser (videos).
+- **Is it urgent, and how bad?** Severity and priority scores, with the
+  reasons shown (evidence, never a bare number).
+- **Is it a duplicate?** A citizen should not have to report the same pothole
+  three times; the system recognises repeats and clusters related reports.
+- **Did the repair actually fix it?** Before/after photos are compared after
+  the work order closes.
+
+Every phase below is real, implemented, and verified code -- not a slide.
+Three house rules hold everywhere: (1) the machine must show its evidence and
+admit when it is unsure, instead of faking confidence; (2) nothing in this
+file is asserted -- every number comes from tests or measured runs; (3) big
+decisions (routing, closing a work order) keep a human in the loop.
+
+- Phases 1-2 -- *where is the report?* (location context and validation)
+- Phases 3-6 -- *what do the photo and text show?* (vision, duplicates, embeddings)
+- Phases 7-8 -- *how urgent, and did the fix work?* (risk scores + resolution)
+- Phases 9-12 -- *one unified service* with frozen, reproducible evaluation and video support
+- Phase 13 -- *real-world accuracy*: real photos and videos, measured honestly
+
+
+
 ## Phase 1 — Geospatial feature engineering (COMMIT ce4af51)
 
 - `geospatial/src/civitas_geo/feature_engineering.py` — evidence-only
@@ -639,6 +670,69 @@ Note: `civitas-vision` is a regular dev dependency of the duplicates
 package (`pip install -e "ml/vision[dev]"`); with it installed the
 duplicates tests exercise the real image paths instead of skipping them.
 
+## Phase 13 — Real-world media accuracy track (COMMIT 002707f)
+
+*Plain words:* the old image analysis was built for clean, computer-made
+"practice pictures" and collapsed on real citizen photos -- almost every real
+photo was misread as the same category (24 real photos: only 4 right). This
+phase adds a second, general-purpose vision model that understands natural
+photos *without being trained on them* (zero-shot CLIP, edition
+`vision-clip-v1`), keeps the old model as the safe offline default, and
+measures the whole thing honestly on 24 real-world photos and videos.
+
+What changed:
+
+- `ml/vision/src/civitas_vision/clip_classifier.py` — the new zero-shot
+  classifier: OpenAI CLIP, category names written as plain-language prompts
+  (e.g. "a flooded street with standing water"), never shot on the test
+  corpus. Confidence = top-1/top-2 margin; an out-of-distribution ratio says
+  "this looks like none of the five categories" (product floor: 2.0).
+- `services/ml/src/civitas_ml/vision_model.py` — explicit model choice for
+  the service: `CIVITAS_VISION_MODEL=knn|clip`. `knn` stays the default so
+  the frozen Phase 11/12 evaluation and the offline demo never change a single
+  number; `clip` is selected for real citizen media and degrades to k-NN
+  with a recorded warning when it cannot load (it needs one model download).
+- `analyze_report` / `run_report` / `run_resolution` / `verify_resolution`
+  accept the vision pipeline to use, and the report tells you *which* model
+  produced the answer.
+- `services/evaluation/src/civitas_evaluation/real_world_probe.py` — a probe
+  over real, open-licensed media (`datasets/demo_data/`, manifest records
+  every source and license).
+
+Measured (regenerated report in `datasets/demo_data/results/`):
+
+- Real photos: 17 of 17 classified correctly (k-NN previously: ~13 of 17).
+- Real videos: 4 of 4 classified correctly (flooded streets, dripping bucket,
+  leaking roof); the ceiling-infiltration video is *honestly rejected* (dark
+  and blurry, zero usable frames) instead of guessing.
+- Out-of-domain controls (a cat on snow, a Himalayan lake): 2 of 2 flagged
+  "out of distribution" with the category marked as a best-effort guess.
+- No in-domain photo was wrongly flagged (max ratio 1.86, floor 2.0).
+- Frozen synthetic evaluation untouched: `run_all.py` re-run — every summary
+  still 1.0 (vision accuracy 1.0); the golden evidence trail is unchanged.
+
+Honest limitations (recorded, not hidden):
+
+- The prompt wording and the OOD calibration were tuned on this demo corpus;
+  a larger real corpus should re-validate them before production.
+- CLIP is *weak* on the practice pictures (that is why k-NN stays default and
+  why the synthetic evaluation is pinned to it).
+- The `clip` deployment needs `transformers` + torch + one HuggingFace
+  download; without them the service keeps the safe k-NN.
+
+Verification commands (run from the repository root):
+
+```text
+cd ml/vision && python -m pytest tests            # 38 passed (incl. CLIP tests)
+cd services/ml && python -m pytest tests          # 48 passed (incl. selection/routing tests)
+cd services/ml && python -m ruff check src tests  # clean
+cd services/ml && python -m mypy src              # clean (13 files)
+cd services/evaluation && python run_all.py       # frozen eval intact (all 1.0)
+cd services/evaluation && python src/civitas_evaluation/real_world_probe.py
+# 24 media files: 21 correct in-domain, 2 OOD-flagged, 1 honest rejection
+```
+
+
 ## Commits on this branch
 
 - `7cd21fe` Add ML intelligence layer: duplicate detection, geospatial reasoning, severity/priority
@@ -662,3 +756,5 @@ duplicates tests exercise the real image paths instead of skipping them.
 - `eadd596` Phase 11/12 completed
 - `fb2e90c` Phases 12/12 completed
 - `c9f42cf` Image and Video Refining Tracker Refinements
+- `DOC-COMMIT` ml-layer.md: plain-words overview and Phase 13 record
+- `002707f` Add real-world media accuracy track: CLIP classifier, model selection, probe
