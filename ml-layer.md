@@ -758,3 +758,5 @@ cd services/evaluation && python src/civitas_evaluation/real_world_probe.py
 - `c9f42cf` Image and Video Refining Tracker Refinements
 - `1361b40` ml-layer.md: plain-words overview and Phase 13 record
 - `002707f` Add real-world media accuracy track: CLIP classifier, model selection, probe
+- `ef80e26` Record Phase 13 commit hash in ml-layer.md
+- `4814ede` Publish datasets: demo_data real-world corpus, generated datasets, probe results
