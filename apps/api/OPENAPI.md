@@ -57,6 +57,59 @@ visually at `GET /docs`).
 | `GET` | `/landmarks/nearby` | open |
 | `GET` | `/incidents/nearby/density` | open |
 
+## Map-link extraction (utility)
+
+| Method | Path | Role |
+|---|---|---|
+| `POST` | `/api/v1/map-extract` | open |
+
+Accepts a Google Maps or OpenStreetMap share URL and returns the
+embedded `(latitude, longitude)`. Pure string-parsing utility — no DB,
+no private state. The intended flow is:
+
+```
+map URL  →  POST /api/v1/map-extract  →  (lat, lon)
+                                         ↓
+                              POST /api/v1/reports (with that location)
+```
+
+**Request:**
+
+```json
+{ "url": "https://www.google.com/maps/@28.6139,77.2090,15z" }
+```
+
+**Success (200):**
+
+```json
+{
+  "success": true,
+  "data": { "latitude": 28.6139, "longitude": 77.2090, "url": "..." },
+  "trace_id": "...",
+  "timestamp": "..."
+}
+```
+
+**Errors (all 422):**
+
+| Code | When |
+|---|---|
+| `VALIDATION_ERROR` | `payload.url` missing or empty |
+| `MAP_LINK_INVALID` | URL did not match a supported pattern |
+| `MAP_LINK_OUT_OF_RANGE` | Extracted coords outside [-90,90] / [-180,180] |
+
+**Supported formats:**
+
+- Google Maps `/@lat,lon,zoom` — `https://www.google.com/maps/@28.6139,77.2090,15z`
+- Google Maps `/place/.../@lat,lon,zoom` — `https://www.google.com/maps/place/Sunrise+School/@28.6139,77.2090,17z`
+- Google Maps `?q=lat,lon` — `https://maps.google.com/?q=28.6139,77.2090`
+- Google Maps `?ll=lat,lon` — `https://maps.google.com/?ll=28.6139,77.2090`
+- Google Maps `?center=lat,lon` — same shape
+- Google Maps URL-encoded — `?q=28.6139%2C77.2090`
+- OpenStreetMap `?mlat=lat&mlon=lon` — `https://www.openstreetmap.org/?mlat=28.6139&mlon=77.2090#map=15/28.6139/77.2090`
+- OpenStreetMap `?lat=lat&lon=lon` — bare form
+- Plain `lat,lon` string (no scheme) — `28.6139,77.2090`
+
 ## Ops
 
 | Method | Path | Role |

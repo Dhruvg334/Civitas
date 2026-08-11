@@ -93,4 +93,10 @@ Every authenticated route resolves the caller via `Authorization: Bearer <jwt>`.
 In dev mode (`SUPABASE_JWT_SECRET=""`) any token is accepted as long as it
 decodes to a dict with `sub`. In production the secret is required.
 
+`POST /api/v1/map-extract` is open (no role) — it accepts a Google Maps
+or OpenStreetMap share URL and returns `(latitude, longitude)` so a
+citizen can paste a map link instead of typing coordinates. The output
+feeds straight into `POST /api/v1/reports`. See `OPENAPI.md` for curl
+examples.
+
 See `docs/api/STATE_MACHINE.md` for the state-machine details.
