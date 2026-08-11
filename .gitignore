@@ -2,7 +2,7 @@
 ref/
 team reference/
 
-# Pavit's geospatial source — consumed via PYTHONPATH, not committed
+# geospatial source — consumed via PYTHONPATH, not committed
 services/spatial/
 
 # Environment and secrets
