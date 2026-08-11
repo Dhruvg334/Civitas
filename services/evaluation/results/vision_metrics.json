@@ -1,0 +1,144 @@
+{
+  "component": "vision-classifier",
+  "model_version": "vision-knn-v1",
+  "thresholds": {
+    "k": "3",
+    "softmax_temperature": "2.0",
+    "ood_uncertainty_floor": "2.0"
+  },
+  "test_set": "test_data/vision (50 images, seeds 2000-2049, disjoint from train/dev)",
+  "n": 50,
+  "metrics": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "misclassified": 0.0
+  },
+  "class_wise": [
+    {
+      "class_name": "pothole_road_damage",
+      "tp": 10,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "class_name": "water_leakage",
+      "tp": 10,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "class_name": "garbage_overflow",
+      "tp": 10,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "class_name": "broken_streetlight",
+      "tp": 10,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "class_name": "fallen_tree",
+      "tp": 10,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "class_name": "unusable",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": null,
+      "recall": null,
+      "f1": null
+    }
+  ],
+  "confusion": {
+    "classes": [
+      "pothole_road_damage",
+      "water_leakage",
+      "garbage_overflow",
+      "broken_streetlight",
+      "fallen_tree",
+      "unusable"
+    ],
+    "matrix": [
+      [
+        10,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        10,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        10,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        10,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        10,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "row_sums": [
+      10,
+      10,
+      10,
+      10,
+      10,
+      0
+    ]
+  },
+  "notes": [
+    "every image passed the quality gate (media_usable=True) and received a category",
+    "confidence = top-1/top-2 vote-share margin; ood_ratio flags out-of-manifold inputs"
+  ]
+}

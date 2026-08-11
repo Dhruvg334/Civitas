@@ -1,0 +1,100 @@
+[
+  {
+    "case_id": "mq-valid-water",
+    "kind": "valid",
+    "expected_usable": true,
+    "category": "water_leakage",
+    "note": "valid flowing-water scene"
+  },
+  {
+    "case_id": "mq-valid-pothole",
+    "kind": "valid",
+    "expected_usable": true,
+    "category": "pothole_road_damage",
+    "note": "valid pothole scene"
+  },
+  {
+    "case_id": "mq-valid-garbage",
+    "kind": "valid",
+    "expected_usable": true,
+    "category": "garbage_overflow",
+    "note": "valid garbage scene"
+  },
+  {
+    "case_id": "mq-blur-water",
+    "kind": "blurred",
+    "expected_usable": false,
+    "category": "water_leakage",
+    "note": "radius-4 gaussian blur"
+  },
+  {
+    "case_id": "mq-blur-pothole",
+    "kind": "blurred",
+    "expected_usable": false,
+    "category": "pothole_road_damage",
+    "note": "radius-4 gaussian blur"
+  },
+  {
+    "case_id": "mq-blur-streetlight",
+    "kind": "blurred",
+    "expected_usable": false,
+    "category": "broken_streetlight",
+    "note": "radius-4 gaussian blur"
+  },
+  {
+    "case_id": "mq-tiny",
+    "kind": "tiny",
+    "expected_usable": false,
+    "category": "pothole_road_damage",
+    "note": "32x32 px, below 64px minimum"
+  },
+  {
+    "case_id": "mq-dark",
+    "kind": "near-black",
+    "expected_usable": false,
+    "category": "fallen_tree",
+    "note": "flat luminance ~0.01"
+  },
+  {
+    "case_id": "mq-bright",
+    "kind": "over-exposed",
+    "expected_usable": false,
+    "category": "garbage_overflow",
+    "note": "flat luminance ~0.99"
+  },
+  {
+    "case_id": "mq-ambiguous-blend",
+    "kind": "ambiguous",
+    "expected_usable": true,
+    "category": null,
+    "note": "50/50 pixel blend of two committed training-prototype scenes (water flow + pothole); derived input, not itself a training example; must flag low confidence instead of asserting"
+  },
+  {
+    "case_id": "mq-unsupported-bytes",
+    "kind": "unsupported",
+    "expected_usable": false,
+    "category": null,
+    "note": "bytes that are not a decodable image"
+  },
+  {
+    "case_id": "mq-missing-file",
+    "kind": "missing",
+    "expected_usable": false,
+    "category": null,
+    "note": "local_path does not exist"
+  },
+  {
+    "case_id": "mq-video-no-path",
+    "kind": "video-no-path",
+    "expected_usable": false,
+    "category": null,
+    "note": "kind=video with no local path (backend video bytes unsupported)"
+  },
+  {
+    "case_id": "mq-no-media",
+    "kind": "no-media",
+    "expected_usable": false,
+    "category": null,
+    "note": "no media attached to the report"
+  }
+]

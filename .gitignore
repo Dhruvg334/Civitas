@@ -57,7 +57,6 @@ checkpoints/
 models/local/
 mlruns/
 wandb/
-datasets/generated/
 datasets/private/
 *.onnx
 *.pt
@@ -80,3 +79,4 @@ reports/generated/
 # Deployment
 .vercel/
 .render/
+*.egg-info/

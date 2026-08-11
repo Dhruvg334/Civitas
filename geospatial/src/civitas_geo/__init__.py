@@ -1,0 +1,93 @@
+"""Civitas geospatial intelligence package."""
+
+from civitas_geo import (
+    aggregates,
+    boundary,
+    candidates,
+    distance,
+    feature_engineering,
+    landmarks,
+    queries,
+    reasoning,
+    retrieval,
+    validation,
+)
+from civitas_geo.aggregates import (
+    DEFAULT_CELL_SIZE_M,
+    DensityAggregator,
+    cell_id_for,
+    reports_per_cell_memory,
+    reports_per_cell_postgis,
+)
+from civitas_geo.boundary import DEFAULT_BOUNDARY
+from civitas_geo.candidates import (
+    CandidateRetriever,
+    enrich_landmark_context,
+    retrieve_candidates_memory,
+    retrieve_candidates_postgis,
+)
+from civitas_geo.feature_engineering import (
+    CivicIncidentContext,
+    GeospatialFeatureEngine,
+    GeospatialFeatureVector,
+)
+from civitas_geo.models import (
+    CandidateListResult,
+    CandidateRecord,
+    CandidateSearchSpec,
+    DensityAggregateResult,
+    DensityCell,
+    ExposureContext,
+    GeoPoint,
+    Landmark,
+    LandmarkDistance,
+    LocationValidationResult,
+    NearbyIncident,
+    NearbyIncidentsResult,
+    OperationalBoundary,
+    PipelineGateDecision,
+    SpatialSearchSpec,
+)
+from civitas_geo.validation import gate_for_pipeline
+
+__all__ = [
+    "aggregates",
+    "boundary",
+    "candidates",
+    "distance",
+    "feature_engineering",
+    "landmarks",
+    "queries",
+    "reasoning",
+    "retrieval",
+    "validation",
+    "DEFAULT_CELL_SIZE_M",
+    "DensityAggregator",
+    "cell_id_for",
+    "reports_per_cell_memory",
+    "reports_per_cell_postgis",
+    "DEFAULT_BOUNDARY",
+    "CandidateRetriever",
+    "enrich_landmark_context",
+    "retrieve_candidates_memory",
+    "retrieve_candidates_postgis",
+    "CivicIncidentContext",
+    "GeospatialFeatureEngine",
+    "GeospatialFeatureVector",
+    "CandidateListResult",
+    "CandidateRecord",
+    "CandidateSearchSpec",
+    "DensityAggregateResult",
+    "DensityCell",
+    "ExposureContext",
+    "GeoPoint",
+    "Landmark",
+    "LandmarkDistance",
+    "LocationValidationResult",
+    "NearbyIncident",
+    "NearbyIncidentsResult",
+    "OperationalBoundary",
+    "PipelineGateDecision",
+    "SpatialSearchSpec",
+    "gate_for_pipeline",
+]

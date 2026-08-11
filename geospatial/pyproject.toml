@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "civitas-geospatial"
+version = "0.1.0"
+description = "Geospatial intelligence for Civitas: PostGIS queries, nearby-incident retrieval, landmark grounding, location validation and map-based reasoning."
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.10,<3.0"]
+
+[project.optional-dependencies]
+postgres = ["psycopg[binary]>=3.2,<4.0"]
+dev = ["pytest>=8.3,<9.0", "ruff>=0.9,<1.0", "mypy>=1.14,<2.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[[tool.mypy.overrides]]
+module = ["psycopg"]
+ignore_missing_imports = true

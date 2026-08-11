@@ -1,0 +1,232 @@
+[
+  {
+    "case_id": "sev-00",
+    "expected": "critical",
+    "expected_score": 82,
+    "actual": "critical",
+    "score": 82,
+    "factors": [
+      "category base (water_leak)",
+      "active road flooding",
+      "significant affected area",
+      "slip hazard",
+      "near school",
+      "heavy traffic exposure",
+      "crowd corroboration",
+      "protracted exposure",
+      "heavy rain escalation"
+    ],
+    "factor_points": {
+      "category base (water_leak)": 50,
+      "active road flooding": 12,
+      "significant affected area": 8,
+      "slip hazard": 5,
+      "near school": 10,
+      "heavy traffic exposure": 7,
+      "crowd corroboration": 9,
+      "protracted exposure": 8,
+      "heavy rain escalation": 5
+    }
+  },
+  {
+    "case_id": "sev-01",
+    "expected": "high",
+    "expected_score": 77,
+    "actual": "high",
+    "score": 77,
+    "factors": [
+      "category base (water_leak)",
+      "active road flooding",
+      "significant affected area",
+      "slip hazard",
+      "school zone",
+      "moderate traffic exposure",
+      "crowd corroboration",
+      "protracted exposure"
+    ],
+    "factor_points": {
+      "category base (water_leak)": 50,
+      "active road flooding": 12,
+      "significant affected area": 8,
+      "slip hazard": 5,
+      "school zone": 5,
+      "moderate traffic exposure": 5,
+      "crowd corroboration": 4,
+      "protracted exposure": 8
+    }
+  },
+  {
+    "case_id": "sev-02",
+    "expected": "high",
+    "expected_score": 74,
+    "actual": "high",
+    "score": 74,
+    "factors": [
+      "category base (fallen_tree)",
+      "heavy traffic exposure",
+      "crowd corroboration",
+      "protracted exposure"
+    ],
+    "factor_points": {
+      "category base (fallen_tree)": 65,
+      "heavy traffic exposure": 7,
+      "crowd corroboration": 8,
+      "protracted exposure": 8
+    }
+  },
+  {
+    "case_id": "sev-03",
+    "expected": "medium",
+    "expected_score": 57,
+    "actual": "medium",
+    "score": 57,
+    "factors": [
+      "category base (garbage)",
+      "school zone",
+      "protracted exposure"
+    ],
+    "factor_points": {
+      "category base (garbage)": 45,
+      "school zone": 5,
+      "protracted exposure": 6
+    }
+  },
+  {
+    "case_id": "sev-04",
+    "expected": "medium",
+    "expected_score": 58,
+    "actual": "medium",
+    "score": 58,
+    "factors": [
+      "category base (pothole)",
+      "protracted exposure"
+    ],
+    "factor_points": {
+      "category base (pothole)": 55,
+      "protracted exposure": 2
+    }
+  },
+  {
+    "case_id": "sev-05",
+    "expected": "medium",
+    "expected_score": 43,
+    "actual": "medium",
+    "score": 43,
+    "factors": [
+      "category base (streetlight)",
+      "protracted exposure"
+    ],
+    "factor_points": {
+      "category base (streetlight)": 35,
+      "protracted exposure": 2
+    }
+  },
+  {
+    "case_id": "sev-06",
+    "expected": "critical",
+    "expected_score": 81,
+    "actual": "critical",
+    "score": 81,
+    "factors": [
+      "category base (fallen_tree)",
+      "near school",
+      "near hospital",
+      "heavy traffic exposure",
+      "crowd corroboration",
+      "protracted exposure",
+      "heavy rain escalation"
+    ],
+    "factor_points": {
+      "category base (fallen_tree)": 65,
+      "near school": 10,
+      "near hospital": 4,
+      "heavy traffic exposure": 7,
+      "crowd corroboration": 9,
+      "protracted exposure": 8,
+      "heavy rain escalation": 5
+    }
+  },
+  {
+    "case_id": "sev-07",
+    "expected": "high",
+    "expected_score": 68,
+    "actual": "high",
+    "score": 68,
+    "factors": [
+      "category base (water_leak)",
+      "active road flooding",
+      "slip hazard",
+      "heavy traffic exposure",
+      "protracted exposure"
+    ],
+    "factor_points": {
+      "category base (water_leak)": 50,
+      "active road flooding": 12,
+      "slip hazard": 5,
+      "heavy traffic exposure": 7,
+      "protracted exposure": 2
+    }
+  },
+  {
+    "case_id": "sev-08",
+    "expected": "medium",
+    "expected_score": 55,
+    "actual": "medium",
+    "score": 55,
+    "factors": [
+      "category base (water_leak)",
+      "protracted exposure"
+    ],
+    "factor_points": {
+      "category base (water_leak)": 50,
+      "protracted exposure": 2
+    }
+  },
+  {
+    "case_id": "sev-09",
+    "expected": "medium",
+    "expected_score": 47,
+    "actual": "medium",
+    "score": 47,
+    "factors": [
+      "category base (streetlight)",
+      "moderate traffic exposure",
+      "protracted exposure"
+    ],
+    "factor_points": {
+      "category base (streetlight)": 35,
+      "moderate traffic exposure": 5,
+      "protracted exposure": 2
+    }
+  },
+  {
+    "case_id": "sev-10",
+    "expected": "medium",
+    "expected_score": 51,
+    "actual": "medium",
+    "score": 51,
+    "factors": [
+      "category base (garbage)",
+      "protracted exposure"
+    ],
+    "factor_points": {
+      "category base (garbage)": 45,
+      "protracted exposure": 2
+    }
+  },
+  {
+    "case_id": "sev-11",
+    "expected": "medium",
+    "expected_score": 59,
+    "actual": "medium",
+    "score": 59,
+    "factors": [
+      "category base (pothole)",
+      "protracted exposure"
+    ],
+    "factor_points": {
+      "category base (pothole)": 55,
+      "protracted exposure": 4
+    }
+  }
+]

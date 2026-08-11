@@ -1,0 +1,309 @@
+[
+  {
+    "case_id": "res-00",
+    "expected_outcome": "resolved",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [
+        "water flowing across road"
+      ],
+      "water_coverage": 0.5,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [
+        "repaired road"
+      ],
+      "water_coverage": 0.02,
+      "media_usable": true
+    }
+  },
+  {
+    "case_id": "res-01",
+    "expected_outcome": "resolved",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [
+        "water flowing across road",
+        "standing water"
+      ],
+      "water_coverage": 0.6,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [],
+      "water_coverage": 0.01,
+      "media_usable": true
+    }
+  },
+  {
+    "case_id": "res-02",
+    "expected_outcome": "resolved",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [
+        "water flowing across road"
+      ],
+      "water_coverage": 0.35,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [
+        "dry asphalt"
+      ],
+      "water_coverage": 0.0,
+      "media_usable": true
+    }
+  },
+  {
+    "case_id": "res-03",
+    "expected_outcome": "resolved",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [
+        "water flowing across road"
+      ],
+      "water_coverage": 0.45,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [],
+      "water_coverage": 0.04,
+      "media_usable": true
+    }
+  },
+  {
+    "case_id": "res-04",
+    "expected_outcome": "partial",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [
+        "water flowing across road"
+      ],
+      "water_coverage": 0.5,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [
+        "standing water"
+      ],
+      "water_coverage": 0.3,
+      "media_usable": true
+    }
+  },
+  {
+    "case_id": "res-05",
+    "expected_outcome": "partial",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [
+        "water flowing across road"
+      ],
+      "water_coverage": 0.7,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [
+        "standing water"
+      ],
+      "water_coverage": 0.22,
+      "media_usable": true
+    }
+  },
+  {
+    "case_id": "res-06",
+    "expected_outcome": "partial",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [
+        "water flowing across road",
+        "standing water"
+      ],
+      "water_coverage": 0.8,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [
+        "standing water",
+        "wet road"
+      ],
+      "water_coverage": 0.35,
+      "media_usable": true
+    }
+  },
+  {
+    "case_id": "res-07",
+    "expected_outcome": "partial",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [
+        "water flowing across road"
+      ],
+      "water_coverage": 0.55,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [
+        "standing water"
+      ],
+      "water_coverage": 0.25,
+      "media_usable": true
+    }
+  },
+  {
+    "case_id": "res-08",
+    "expected_outcome": "unverifiable",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [],
+      "water_coverage": 0.0,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [],
+      "water_coverage": 0.0,
+      "media_usable": true
+    }
+  },
+  {
+    "case_id": "res-09",
+    "expected_outcome": "unverifiable",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [
+        "standing water"
+      ],
+      "water_coverage": 0.2,
+      "media_usable": false
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [],
+      "water_coverage": 0.0,
+      "media_usable": true
+    }
+  },
+  {
+    "case_id": "res-10",
+    "expected_outcome": "unverifiable",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [],
+      "water_coverage": 0.0,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [],
+      "water_coverage": 0.0,
+      "media_usable": false
+    }
+  },
+  {
+    "case_id": "res-11",
+    "expected_outcome": "unverifiable",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [
+        "dark scene"
+      ],
+      "water_coverage": 0.0,
+      "media_usable": false
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [
+        "dark scene"
+      ],
+      "water_coverage": 0.0,
+      "media_usable": false
+    }
+  },
+  {
+    "case_id": "res-12",
+    "expected_outcome": "conflicting",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [
+        "water flowing across road"
+      ],
+      "water_coverage": 0.3,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [
+        "water flowing across road"
+      ],
+      "water_coverage": 0.6,
+      "media_usable": true
+    }
+  },
+  {
+    "case_id": "res-13",
+    "expected_outcome": "conflicting",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [],
+      "water_coverage": 0.0,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [
+        "water flowing across road"
+      ],
+      "water_coverage": 0.5,
+      "media_usable": true
+    }
+  },
+  {
+    "case_id": "res-14",
+    "expected_outcome": "conflicting",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [
+        "water flowing across road"
+      ],
+      "water_coverage": 0.4,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [
+        "standing water"
+      ],
+      "water_coverage": 0.55,
+      "media_usable": true
+    }
+  },
+  {
+    "case_id": "res-15",
+    "expected_outcome": "conflicting",
+    "before": {
+      "stage": "before",
+      "observable_evidence": [
+        "water flowing across road"
+      ],
+      "water_coverage": 0.25,
+      "media_usable": true
+    },
+    "after": {
+      "stage": "after",
+      "observable_evidence": [
+        "fallen trunk across road"
+      ],
+      "water_coverage": 0.0,
+      "media_usable": true
+    }
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "component": "duplicate-detection",
+  "model_version": "duplicates-engine-v1",
+  "thresholds": {
+    "duplicate_threshold": "0.70 (ScoringConfig, frozen)",
+    "max_reasonable_distance_m": "2000.0",
+    "max_reasonable_delta_h": "72.0"
+  },
+  "test_set": "test_data/duplicates (15 labelled pairs: 6 positive, 5 negative, 4 hard-negative)",
+  "n": 15,
+  "metrics": {
+    "decisive_pairs": 11.0,
+    "review_escalated": 4.0,
+    "review_escalated_hard": 2.0,
+    "precision": 0.6667,
+    "recall": 1.0,
+    "f1": 0.8,
+    "accuracy": 0.8182,
+    "false_merge_rate": 0.2857,
+    "false_split_rate": 0.0,
+    "false_merges": 2.0,
+    "false_splits": 0.0
+  },
+  "class_wise": [],
+  "confusion": null,
+  "notes": [
+    "escalated pairs are decisions withheld for human review (near-threshold or conflicting evidence), never counted as wrong",
+    "false-merge rate = fraction of genuinely-different pairs merged; false-split rate = fraction of same-incident pairs kept apart"
+  ]
+}

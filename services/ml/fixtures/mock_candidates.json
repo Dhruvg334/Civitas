@@ -1,0 +1,62 @@
+[
+  {
+    "report_id": "R2",
+    "description": "flooding on the road in front of sunrise school, water across the footpath",
+    "latitude": 28.614,
+    "longitude": 77.2091,
+    "submitted_at": "2026-03-01T11:00:00+00:00",
+    "category": "flooding",
+    "landmark_ids": ["lm-school-01", "lm-path-01"],
+    "media_references": [
+      { "media_id": "fixture:water_leakage@7102:default", "kind": "image", "mime_type": "image/png" }
+    ]
+  },
+  {
+    "report_id": "R3",
+    "description": "road surface breaking up after the water, deep cracks near the school",
+    "latitude": 28.6142,
+    "longitude": 77.2092,
+    "submitted_at": "2026-03-01T11:45:00+00:00",
+    "category": "road damage",
+    "landmark_ids": ["lm-school-01", "lm-path-01"],
+    "media_references": [
+      { "media_id": "fixture:pothole_road_damage@7103:default", "kind": "image", "mime_type": "image/png" }
+    ]
+  },
+  {
+    "report_id": "N1",
+    "description": "pothole near civic centre metro, right lane needs a patch",
+    "latitude": 28.619,
+    "longitude": 77.2165,
+    "submitted_at": "2026-03-01T13:30:00+00:00",
+    "category": "road damage",
+    "landmark_ids": ["lm-metro-01"],
+    "media_references": [
+      { "media_id": "fixture:pothole_road_damage@8001:default", "kind": "image", "mime_type": "image/png" }
+    ]
+  },
+  {
+    "report_id": "N2",
+    "description": "overflowing garbage bin behind old bazaar market, spill on the pavement",
+    "latitude": 28.612,
+    "longitude": 77.218,
+    "submitted_at": "2026-03-02T12:30:00+00:00",
+    "category": "garbage",
+    "landmark_ids": ["lm-market-01"],
+    "media_references": [
+      { "media_id": "fixture:garbage_overflow@8002:default", "kind": "image", "mime_type": "image/png" }
+    ]
+  },
+  {
+    "report_id": "A1",
+    "description": "water on the road again near the school",
+    "latitude": 28.6115,
+    "longitude": 77.211,
+    "submitted_at": "2026-03-03T12:00:00+00:00",
+    "category": "flooding",
+    "landmark_ids": ["lm-school-01", "lm-path-01"],
+    "media_references": [
+      { "media_id": "fixture:water_leakage@8101:default", "kind": "image", "mime_type": "image/png" }
+    ]
+  }
+]

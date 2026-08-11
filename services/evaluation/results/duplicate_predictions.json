@@ -1,0 +1,531 @@
+[
+  {
+    "pair_id": "dup-pos-0",
+    "kind": "positive",
+    "hard": false,
+    "expected": 1,
+    "predicted": 1,
+    "withheld_review": false,
+    "score": 0.8314,
+    "feature_contributions": {
+      "text_similarity": 0.6659,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.9158,
+      "time_similarity": 0.9575,
+      "landmark_similarity": 1.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 44 m apart (inside 2000 m incident radius)",
+      "\u2713 5.0 h apart (inside 72 h incident window)",
+      "\u2713 shared landmark anchoring (overlap 1.00)",
+      "\u2713 text similarity 0.67",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.83 (threshold 0.70)",
+      "text cosine 0.67",
+      "gps distance 44 m (similarity 0.92)",
+      "time delta 5.0 h (similarity 0.96)",
+      "category agreement 1",
+      "landmark overlap 1.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed"
+    ]
+  },
+  {
+    "pair_id": "dup-pos-1",
+    "kind": "positive",
+    "hard": false,
+    "expected": 1,
+    "predicted": 1,
+    "withheld_review": false,
+    "score": 0.8314,
+    "feature_contributions": {
+      "text_similarity": 0.6659,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.9158,
+      "time_similarity": 0.9575,
+      "landmark_similarity": 1.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 44 m apart (inside 2000 m incident radius)",
+      "\u2713 5.0 h apart (inside 72 h incident window)",
+      "\u2713 shared landmark anchoring (overlap 1.00)",
+      "\u2713 text similarity 0.67",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.83 (threshold 0.70)",
+      "text cosine 0.67",
+      "gps distance 44 m (similarity 0.92)",
+      "time delta 5.0 h (similarity 0.96)",
+      "category agreement 1",
+      "landmark overlap 1.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed"
+    ]
+  },
+  {
+    "pair_id": "dup-pos-2",
+    "kind": "positive",
+    "hard": false,
+    "expected": 1,
+    "predicted": 1,
+    "withheld_review": false,
+    "score": 0.8314,
+    "feature_contributions": {
+      "text_similarity": 0.6659,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.9158,
+      "time_similarity": 0.9575,
+      "landmark_similarity": 1.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 44 m apart (inside 2000 m incident radius)",
+      "\u2713 5.0 h apart (inside 72 h incident window)",
+      "\u2713 shared landmark anchoring (overlap 1.00)",
+      "\u2713 text similarity 0.67",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.83 (threshold 0.70)",
+      "text cosine 0.67",
+      "gps distance 44 m (similarity 0.92)",
+      "time delta 5.0 h (similarity 0.96)",
+      "category agreement 1",
+      "landmark overlap 1.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed"
+    ]
+  },
+  {
+    "pair_id": "dup-pos-3",
+    "kind": "positive",
+    "hard": false,
+    "expected": 1,
+    "predicted": 1,
+    "withheld_review": false,
+    "score": 0.8314,
+    "feature_contributions": {
+      "text_similarity": 0.6659,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.9158,
+      "time_similarity": 0.9575,
+      "landmark_similarity": 1.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 44 m apart (inside 2000 m incident radius)",
+      "\u2713 5.0 h apart (inside 72 h incident window)",
+      "\u2713 shared landmark anchoring (overlap 1.00)",
+      "\u2713 text similarity 0.67",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.83 (threshold 0.70)",
+      "text cosine 0.67",
+      "gps distance 44 m (similarity 0.92)",
+      "time delta 5.0 h (similarity 0.96)",
+      "category agreement 1",
+      "landmark overlap 1.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed"
+    ]
+  },
+  {
+    "pair_id": "dup-pos-4",
+    "kind": "positive",
+    "hard": false,
+    "expected": 1,
+    "predicted": 0,
+    "withheld_review": true,
+    "score": 0.6647,
+    "feature_contributions": {
+      "text_similarity": 0.6659,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.9158,
+      "time_similarity": 0.9575,
+      "landmark_similarity": 0.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 44 m apart (inside 2000 m incident radius)",
+      "\u2713 5.0 h apart (inside 72 h incident window)",
+      "\u2713 text similarity 0.67",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.66 (threshold 0.70)",
+      "text cosine 0.67",
+      "gps distance 44 m (similarity 0.92)",
+      "time delta 5.0 h (similarity 0.96)",
+      "category agreement 1",
+      "landmark overlap 0.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed",
+      "near-threshold or conflicting evidence -> requires human review"
+    ]
+  },
+  {
+    "pair_id": "dup-pos-5",
+    "kind": "positive",
+    "hard": false,
+    "expected": 1,
+    "predicted": 0,
+    "withheld_review": true,
+    "score": 0.6647,
+    "feature_contributions": {
+      "text_similarity": 0.6659,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.9158,
+      "time_similarity": 0.9575,
+      "landmark_similarity": 0.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 44 m apart (inside 2000 m incident radius)",
+      "\u2713 5.0 h apart (inside 72 h incident window)",
+      "\u2713 text similarity 0.67",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.66 (threshold 0.70)",
+      "text cosine 0.67",
+      "gps distance 44 m (similarity 0.92)",
+      "time delta 5.0 h (similarity 0.96)",
+      "category agreement 1",
+      "landmark overlap 0.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed",
+      "near-threshold or conflicting evidence -> requires human review"
+    ]
+  },
+  {
+    "pair_id": "dup-neg-0",
+    "kind": "negative",
+    "hard": false,
+    "expected": 0,
+    "predicted": 0,
+    "withheld_review": false,
+    "score": 0.3136,
+    "feature_contributions": {
+      "text_similarity": 0.2711,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.0,
+      "time_similarity": 0.9983,
+      "landmark_similarity": 0.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 1.0 h apart (inside 72 h incident window)",
+      "\u2713 text similarity 0.27",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.31 (threshold 0.70)",
+      "text cosine 0.27",
+      "gps distance 8896 m (similarity 0.00)",
+      "time delta 1.0 h (similarity 1.00)",
+      "category agreement 1",
+      "landmark overlap 0.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed"
+    ]
+  },
+  {
+    "pair_id": "dup-neg-1",
+    "kind": "negative",
+    "hard": false,
+    "expected": 0,
+    "predicted": 0,
+    "withheld_review": false,
+    "score": 0.3136,
+    "feature_contributions": {
+      "text_similarity": 0.2711,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.0,
+      "time_similarity": 0.9983,
+      "landmark_similarity": 0.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 1.0 h apart (inside 72 h incident window)",
+      "\u2713 text similarity 0.27",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.31 (threshold 0.70)",
+      "text cosine 0.27",
+      "gps distance 8896 m (similarity 0.00)",
+      "time delta 1.0 h (similarity 1.00)",
+      "category agreement 1",
+      "landmark overlap 0.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed"
+    ]
+  },
+  {
+    "pair_id": "dup-neg-2",
+    "kind": "negative",
+    "hard": false,
+    "expected": 0,
+    "predicted": 0,
+    "withheld_review": false,
+    "score": 0.3136,
+    "feature_contributions": {
+      "text_similarity": 0.2711,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.0,
+      "time_similarity": 0.9983,
+      "landmark_similarity": 0.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 1.0 h apart (inside 72 h incident window)",
+      "\u2713 text similarity 0.27",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.31 (threshold 0.70)",
+      "text cosine 0.27",
+      "gps distance 8896 m (similarity 0.00)",
+      "time delta 1.0 h (similarity 1.00)",
+      "category agreement 1",
+      "landmark overlap 0.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed"
+    ]
+  },
+  {
+    "pair_id": "dup-neg-3",
+    "kind": "negative",
+    "hard": false,
+    "expected": 0,
+    "predicted": 0,
+    "withheld_review": false,
+    "score": 0.3136,
+    "feature_contributions": {
+      "text_similarity": 0.2711,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.0,
+      "time_similarity": 0.9983,
+      "landmark_similarity": 0.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 1.0 h apart (inside 72 h incident window)",
+      "\u2713 text similarity 0.27",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.31 (threshold 0.70)",
+      "text cosine 0.27",
+      "gps distance 8896 m (similarity 0.00)",
+      "time delta 1.0 h (similarity 1.00)",
+      "category agreement 1",
+      "landmark overlap 0.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed"
+    ]
+  },
+  {
+    "pair_id": "dup-neg-4",
+    "kind": "negative",
+    "hard": false,
+    "expected": 0,
+    "predicted": 0,
+    "withheld_review": false,
+    "score": 0.3136,
+    "feature_contributions": {
+      "text_similarity": 0.2711,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.0,
+      "time_similarity": 0.9983,
+      "landmark_similarity": 0.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 1.0 h apart (inside 72 h incident window)",
+      "\u2713 text similarity 0.27",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.31 (threshold 0.70)",
+      "text cosine 0.27",
+      "gps distance 8896 m (similarity 0.00)",
+      "time delta 1.0 h (similarity 1.00)",
+      "category agreement 1",
+      "landmark overlap 0.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed"
+    ]
+  },
+  {
+    "pair_id": "dup-hard-nearby-unrelated",
+    "kind": "nearby-unrelated",
+    "hard": true,
+    "expected": 0,
+    "predicted": 0,
+    "withheld_review": true,
+    "score": 0.6714,
+    "feature_contributions": {
+      "text_similarity": 0.5754,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.9517,
+      "time_similarity": 0.9983,
+      "landmark_similarity": 0.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 33 m apart (inside 2000 m incident radius)",
+      "\u2713 1.0 h apart (inside 72 h incident window)",
+      "\u2713 text similarity 0.58",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.67 (threshold 0.70)",
+      "text cosine 0.58",
+      "gps distance 33 m (similarity 0.95)",
+      "time delta 1.0 h (similarity 1.00)",
+      "category agreement 1",
+      "landmark overlap 0.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed",
+      "near-threshold or conflicting evidence -> requires human review"
+    ]
+  },
+  {
+    "pair_id": "dup-hard-similar-text-different-location",
+    "kind": "similar-text-different-location",
+    "hard": true,
+    "expected": 0,
+    "predicted": 1,
+    "withheld_review": false,
+    "score": 0.4108,
+    "feature_contributions": {
+      "text_similarity": 1.0,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.0,
+      "time_similarity": 0.9983,
+      "landmark_similarity": 0.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 1323 m apart (inside 2000 m incident radius)",
+      "\u2713 1.0 h apart (inside 72 h incident window)",
+      "\u2713 text similarity 1.00",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.41 (threshold 0.70)",
+      "text cosine 1.00",
+      "gps distance 1323 m (similarity 0.00)",
+      "time delta 1.0 h (similarity 1.00)",
+      "category agreement 1",
+      "landmark overlap 0.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed",
+      "exceptional-evidence override (spatial or language agreement)"
+    ]
+  },
+  {
+    "pair_id": "dup-hard-same-location-different-category",
+    "kind": "same-location-different-category",
+    "hard": true,
+    "expected": 0,
+    "predicted": 1,
+    "withheld_review": false,
+    "score": 0.8463,
+    "feature_contributions": {
+      "text_similarity": 0.57,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.9783,
+      "time_similarity": 0.9983,
+      "landmark_similarity": 1.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 22 m apart (inside 2000 m incident radius)",
+      "\u2713 1.0 h apart (inside 72 h incident window)",
+      "\u2713 shared landmark anchoring (overlap 1.00)",
+      "\u2713 text similarity 0.57",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.85 (threshold 0.70)",
+      "text cosine 0.57",
+      "gps distance 22 m (similarity 0.98)",
+      "time delta 1.0 h (similarity 1.00)",
+      "category agreement 1",
+      "landmark overlap 1.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed"
+    ]
+  },
+  {
+    "pair_id": "dup-hard-different-time",
+    "kind": "different-time",
+    "hard": true,
+    "expected": 0,
+    "predicted": 0,
+    "withheld_review": true,
+    "score": 0.5759,
+    "feature_contributions": {
+      "text_similarity": 1.0,
+      "image_similarity": 0.0,
+      "category_agreement": 1.0,
+      "gps_similarity": 0.9945,
+      "time_similarity": 0.0,
+      "landmark_similarity": 0.0,
+      "incident_density": 0.0
+    },
+    "reasons": [
+      "\u2713 11 m apart (inside 2000 m incident radius)",
+      "\u2713 text similarity 1.00",
+      "\u2713 matching categories",
+      "\u00b7 incident density 0.00 (quiet cell)"
+    ],
+    "decision_basis": [
+      "composite similarity 0.58 (threshold 0.70)",
+      "text cosine 1.00",
+      "gps distance 11 m (similarity 0.99)",
+      "time delta 96.0 h (similarity 0.00)",
+      "category agreement 1",
+      "landmark overlap 0.00",
+      "incident density 0.00",
+      "image embedding unavailable; weight redistributed",
+      "near-threshold or conflicting evidence -> requires human review"
+    ]
+  }
+]

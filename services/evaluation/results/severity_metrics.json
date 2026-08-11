@@ -1,0 +1,99 @@
+{
+  "component": "severity-model",
+  "model_version": "severity-model-v1",
+  "thresholds": {
+    "bands": "critical>=80, high>=60, medium>=35"
+  },
+  "test_set": "test_data/severity (12 hand-authored cases; labels computed from the documented rule table)",
+  "n": 12,
+  "metrics": {
+    "accuracy": 1.0,
+    "cohen_kappa": 1.0,
+    "critical_recall": 1.0,
+    "explanation_consistency_violations": 0.0,
+    "factor_citations": 49.0
+  },
+  "class_wise": [
+    {
+      "class_name": "low",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": null,
+      "recall": null,
+      "f1": null
+    },
+    {
+      "class_name": "medium",
+      "tp": 7,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "class_name": "high",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "class_name": "critical",
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  ],
+  "confusion": {
+    "classes": [
+      "low",
+      "medium",
+      "high",
+      "critical"
+    ],
+    "matrix": [
+      [
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        7,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        3,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        2
+      ]
+    ],
+    "row_sums": [
+      0,
+      7,
+      3,
+      2
+    ]
+  },
+  "notes": [
+    "labels are computed from the documented severity rule table at test-set generation (constants drift-guarded); agreement therefore proves faithful implementation + regression safety, not external calibration (no real-world severity labels exist - recorded limitation)",
+    "explanation consistency: every cited factor must match a feature present in the input",
+    "known limitation: category base points (min 35 for streetlight) make the low band unreachable - the minimum achievable score is 41 (medium); critical needs >= 107 rule points under the squash curve 100*(1-exp(-points/66))"
+  ]
+}

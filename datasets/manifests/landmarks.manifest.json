@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "name": "landmarks",
+  "description": "Deterministic demo-city landmark set backing offline duplicate/severity flows. Production landmarks come from the PostGIS landmarks table (see geospatial/README.md).",
+  "kind": "fixture",
+  "generator": "datasets/generators/generate_landmarks.py",
+  "generation_command": "python datasets/generators/generate_landmarks.py",
+  "row_count": 11,
+  "generated_file": "datasets/generated/landmarks.jsonl",
+  "sha256": "24b3136e84bf27840480795bc6251480879188f4937f1f9495443327067e0504",
+  "columns": {
+    "landmark_id": "str",
+    "name": "str",
+    "kind": "school|hospital|junction|market|park|waterbody|metro_station|pathway",
+    "latitude": "float",
+    "longitude": "float",
+    "radius_m": "float"
+  },
+  "usage": "Seed the PostGIS landmarks table and offline tests."
+}

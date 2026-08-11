@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "civitas-evaluation"
-version = "0.1.0"
-description = "Workflow and baseline evaluation for Civitas."
+version = "1.0.0"
+description = "Frozen, reproducible evaluation of every Member 2 ML capability (Phase 11/12)."
 requires-python = ">=3.11"
-dependencies = ["pydantic>=2.10,<3.0"]
+dependencies = ["pydantic>=2.10,<3.0", "numpy>=1.26"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.3,<9.0", "ruff>=0.9,<1.0", "mypy>=1.14,<2.0"]
@@ -16,5 +16,33 @@ dev = ["pytest>=8.3,<9.0", "ruff>=0.9,<1.0", "mypy>=1.14,<2.0"]
 where = ["src"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = [
+    "src",
+    "../../ml/vision/src",
+    "../../ml/duplicates/src",
+    "../../ml/risk/src",
+    "../../ml/resolution/src",
+    "../../geospatial/src",
+    "../../services/ml/src",
+]
 testpaths = ["tests"]
+
+[[tool.mypy.overrides]]
+module = [
+    "civitas_vision",
+    "civitas_vision.*",
+    "civitas_duplicates",
+    "civitas_duplicates.*",
+    "civitas_risk",
+    "civitas_risk.*",
+    "civitas_resolution",
+    "civitas_resolution.*",
+    "civitas_geo",
+    "civitas_geo.*",
+    "civitas_ml",
+    "civitas_ml.*",
+    "PIL",
+    "PIL.*",
+    "cv2",
+]
+ignore_missing_imports = true

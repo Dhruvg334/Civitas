@@ -1,0 +1,200 @@
+[
+  {
+    "scenario_id": "cl-same-incident",
+    "expected_clusters": [
+      {
+        "incident": "first",
+        "report_ids": [
+          "CA-1",
+          "CA-2",
+          "CA-3"
+        ]
+      }
+    ],
+    "reports": [
+      {
+        "report_id": "CA-1",
+        "description": "water leak at the school gate, flooding the footpath",
+        "latitude": 28.611,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T08:00:00+00:00",
+        "category": "water_leakage"
+      },
+      {
+        "report_id": "CA-2",
+        "description": "water pipeline leak near school, road flooded",
+        "latitude": 28.6103,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T10:00:00+00:00",
+        "category": "water_leakage"
+      },
+      {
+        "report_id": "CA-3",
+        "description": "leaking pipe at school gate area, water everywhere",
+        "latitude": 28.6105,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-01T12:00:00+00:00",
+        "category": "water_leakage"
+      }
+    ]
+  },
+  {
+    "scenario_id": "cl-nearby-incidents",
+    "expected_clusters": [
+      {
+        "incident": "A",
+        "report_ids": [
+          "CB-1",
+          "CB-2"
+        ]
+      },
+      {
+        "incident": "B",
+        "report_ids": [
+          "CB-3",
+          "CB-4"
+        ]
+      }
+    ],
+    "reports": [
+      {
+        "report_id": "CB-1",
+        "description": "water leak near the bank building entrance",
+        "latitude": 28.63,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-02T08:00:00+00:00",
+        "category": "water_leakage"
+      },
+      {
+        "report_id": "CB-2",
+        "description": "pipe burst at the bank building, water on road",
+        "latitude": 28.6302,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-02T11:00:00+00:00",
+        "category": "water_leakage"
+      },
+      {
+        "report_id": "CB-3",
+        "description": "pothole near the hospital side gate",
+        "latitude": 28.64,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-02T08:00:00+00:00",
+        "category": "pothole_road_damage"
+      },
+      {
+        "report_id": "CB-4",
+        "description": "deep pothole outside the hospital gate",
+        "latitude": 28.6402,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-02T13:00:00+00:00",
+        "category": "pothole_road_damage"
+      }
+    ]
+  },
+  {
+    "scenario_id": "cl-confusable-pair",
+    "expected_clusters": [
+      {
+        "incident": "X",
+        "report_ids": [
+          "CC-1",
+          "CC-2"
+        ]
+      },
+      {
+        "incident": "Y",
+        "report_ids": [
+          "CC-3",
+          "CC-4"
+        ]
+      }
+    ],
+    "reports": [
+      {
+        "report_id": "CC-1",
+        "description": "pothole near the metro pillar, repair needed badly",
+        "latitude": 28.6301,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-03T08:00:00+00:00",
+        "category": "pothole_road_damage"
+      },
+      {
+        "report_id": "CC-2",
+        "description": "pothole near the metro pillar, repair needed badly",
+        "latitude": 28.6303,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-03T09:00:00+00:00",
+        "category": "pothole_road_damage"
+      },
+      {
+        "report_id": "CC-3",
+        "description": "pothole near the metro pillar, repair needed badly",
+        "latitude": 28.642,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-03T08:00:00+00:00",
+        "category": "pothole_road_damage"
+      },
+      {
+        "report_id": "CC-4",
+        "description": "pothole near the metro pillar, repair needed badly",
+        "latitude": 28.6422,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-03T10:00:00+00:00",
+        "category": "pothole_road_damage"
+      }
+    ]
+  },
+  {
+    "scenario_id": "cl-same-location-different-category",
+    "expected_clusters": [
+      {
+        "incident": "P",
+        "report_ids": [
+          "CD-1",
+          "CD-2"
+        ]
+      },
+      {
+        "incident": "Q",
+        "report_ids": [
+          "CD-3",
+          "CD-4"
+        ]
+      }
+    ],
+    "reports": [
+      {
+        "report_id": "CD-1",
+        "description": "fallen tree blocking the footpath exit",
+        "latitude": 28.615,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-04T08:00:00+00:00",
+        "category": "fallen_tree"
+      },
+      {
+        "report_id": "CD-2",
+        "description": "tree fell across the footpath exit",
+        "latitude": 28.6152,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-04T14:00:00+00:00",
+        "category": "fallen_tree"
+      },
+      {
+        "report_id": "CD-3",
+        "description": "garbage overflow pile at the footpath exit",
+        "latitude": 28.6154,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-04T08:00:00+00:00",
+        "category": "garbage_overflow"
+      },
+      {
+        "report_id": "CD-4",
+        "description": "waste overflowing near the footpath exit",
+        "latitude": 28.6156,
+        "longitude": 77.209,
+        "submitted_at": "2026-03-04T12:00:00+00:00",
+        "category": "garbage_overflow"
+      }
+    ]
+  }
+]
