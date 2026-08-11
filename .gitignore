@@ -1,5 +1,9 @@
-# Team-internal reference material
+# Team-internal reference material (per ref/00_REFERENCE_INDEX.md)
+ref/
 team reference/
+
+# geospatial source — consumed via PYTHONPATH, not committed
+services/spatial/
 
 # Environment and secrets
 .env
@@ -21,6 +25,7 @@ htmlcov/
 .venv/
 venv/
 env/
+*.egg-info/
 
 # Node / Next.js
 node_modules/
