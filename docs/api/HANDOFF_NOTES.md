@@ -20,9 +20,28 @@ golden scenario. Specifically:
 
 ## Known limitations
 
-### LAZ / TIFF / map-formatted files
+### LAZ / TIFF / raster file ingestion
 
 Not implemented.
+
+What we shipped instead — and what Pavit actually asked for — is a small
+URL → coordinate extractor at `POST /api/v1/map-extract`. It accepts
+Google Maps / OpenStreetMap share links and returns
+`(latitude, longitude)` after validation. The result flows into
+`POST /api/v1/reports` with no changes to the report contract. See
+[`INTEGRATION.md`](INTEGRATION.md) § "Map-link extraction" and
+[`apps/api/OPENAPI.md`](../../apps/api/OPENAPI.md) § "Map-link extraction".
+
+If full LiDAR / raster / shapefile ingestion is ever needed:
+
+1. New schema migration adding `media.kind IN ('image','video','lidar','raster')`
+2. Storage path convention for tiled rasters
+3. Backend handler surfacing pre-signed URLs to the ML service
+4. New MIME types added to the media allowlist
+5. Per-format parsers (LASzip, libtiff, Fiona/shapefile, OSM PBF, etc.)
+6. Possibly a background worker for large files
+
+None of this is in the current MVP.
 
 ### Clarification: `decision_impact` is not enforced
 
@@ -97,7 +116,7 @@ the whole operation if they get a transient 5xx.
 - Agent orchestration (Dhruv's `services/workflow`)
 - Knowledge grounding (Dhruv's `services/knowledge`)
 - Vision / duplicate / severity / resolution ML models (Pavit)
-- LAZ / TIFF ingestion (deferred)
+- LAZ / TIFF / raster ingestion (deferred; map-link URL extraction is supported at `/api/v1/map-extract`)
 - Rate limiting (use Vercel/Render edge in front)
 - WebSocket / push notifications (citizen updates batched in the next phase)
 

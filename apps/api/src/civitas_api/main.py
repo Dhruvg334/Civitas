@@ -7,6 +7,7 @@ from civitas_api.routers import (
     health,
     incidents,
     incidents_ops,
+    map_extract,
     media,
     policies,
     reports,
@@ -35,6 +36,7 @@ app.include_router(clarifications.router)
 app.include_router(routing.router)
 app.include_router(resolutions.router)
 app.include_router(policies.router)
+app.include_router(map_extract.router)
 
 
 @app.get("/ready")

@@ -223,6 +223,39 @@ curl -X POST -H "Authorization: Bearer $CITIZEN_JWT" \
 The `signed_url` is what you hand to Pavit's ML service for vision
 analysis. It's a 1-hour URL.
 
+### Map-link extraction (optional citizen UX)
+
+If a citizen has a Google Maps or OpenStreetMap share link instead of
+typed coordinates, you can convert the URL to coordinates before
+calling `/reports`:
+
+```bash
+# Step A: extract coords from a map URL
+curl -X POST -H "Content-Type: application/json" \
+     -d '{"url":"https://www.google.com/maps/@28.6139,77.2090,15z"}' \
+     http://localhost:8000/api/v1/map-extract
+# Returns { "data": { "latitude": 28.6139, "longitude": 77.2090, ... } }
+
+# Step B: feed those coords into /reports
+curl -X POST -H "Authorization: Bearer $CITIZEN_JWT" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "description": "pothole near the school gate",
+       "location": {"latitude": 28.6139, "longitude": 77.2090},
+       "citizen_selected_category": "pothole"
+     }' \
+     http://localhost:8000/api/v1/reports
+```
+
+Supported formats: Google Maps `/@lat,lon,...`, `/place/.../@lat,lon`,
+`?q=lat,lon`, `?ll=lat,lon`, `?center=lat,lon` (URL-encoded forms too);
+OpenStreetMap `?mlat`/`?mlon` and bare `?lat`/`?lon`; plain
+`lat,lon` string.
+
+The extractor is a pure string parser — no DB access, no role gate.
+Errors come back as 422 with code `MAP_LINK_INVALID` (URL not parsed)
+or `MAP_LINK_OUT_OF_RANGE` (coords outside canonical ranges).
+
 ---
 
 ## Common envelope
@@ -265,6 +298,8 @@ Error codes you'll see:
 | `PERSISTENCE_ERROR` | 500 | DB write failed |
 | `STORAGE_ERROR` | 500 | Storage adapter failed |
 | `LOCATION_PLACEHOLDER` | 400 | (0,0) coordinates — sentinel value |
+| `MAP_LINK_INVALID` | 422 | Map URL did not match a supported pattern |
+| `MAP_LINK_OUT_OF_RANGE` | 422 | Map-link coords outside [-90,90] / [-180,180] |
 
 ---
 
@@ -315,7 +350,7 @@ Use the token in the `Authorization: Bearer <token>` header.
 ## What lives where
 
 - **Code**: `apps/api/src/civitas_api/{core,operations,routers}`
-- **Routes**: `apps/api/src/civitas_api/routers/{reports,incidents,incidents_ops,media,work_orders,clarifications,routing,resolutions,policies}.py`
+- **Routes**: `apps/api/src/civitas_api/routers/{reports,incidents,incidents_ops,media,work_orders,clarifications,routing,resolutions,policies,map_extract}.py`
 - **State machine**: `apps/api/src/civitas_api/operations/state_machine.py`
 - **Schema**: `database/migrations/0001–0005.sql`
 - **Seeds**: `database/seed/0001_demo_landmarks.sql`, `0002_golden_scenario.sql`
@@ -329,7 +364,7 @@ Use the token in the `Authorization: Bearer <token>` header.
 - Agent orchestration (`services/workflow` — Dhruv)
 - Knowledge grounding (`services/knowledge` — Dhruv)
 - ML models (`services/spatial`, `services/ml` — Pavit)
-- LAZ/TIFF/map ingestion (deferred)
+- LAZ/TIFF/raster file ingestion (deferred; map-link URL extraction is supported)
 - Rate limiting (use edge proxy)
 
 See [`docs/api/HANDOFF_NOTES.md`](HANDOFF_NOTES.md) for the full
