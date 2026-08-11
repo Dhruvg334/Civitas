@@ -74,8 +74,24 @@ class TestFrames:
         black = Image.new("RGB", (128, 128), (1, 1, 1))
         sharp = make_image("pothole_road_damage", 8101)
         picks = select_key_frames([black, sharp, black], top_k=2)
-        assert [p.index for p in picks] == [1]
-        assert all(not p.quality.usable for p in [])
+        assert [p.index for p in picks] == [1, 2]
+        assert picks[0].quality.usable and not picks[1].quality.usable
+
+    def test_fully_unusable_video_still_rejected(self):
+        black = Image.new("RGB", (128, 128), (1, 1, 1))
+        assert select_key_frames([black, black, black], top_k=2) == []
+
+    def test_key_frames_cover_all_time_segments(self):
+        sharp = [make_image("water_leakage", 8102 + i) for i in range(8)]
+        picks = select_key_frames(sharp, top_k=4)
+        segments = sorted({p.index // 2 for p in picks})
+        assert segments == [0, 1, 2, 3]
+
+    def test_segments_without_usable_frames_contribute_best_available(self):
+        black = Image.new("RGB", (128, 128), (1, 1, 1))
+        sharp = make_image("broken_streetlight", 8103)
+        picks = select_key_frames([sharp, black, black, black], top_k=4)
+        assert [p.index for p in picks] == [0, 1, 2, 3]
 
 
 class TestFeatures:
@@ -163,7 +179,12 @@ class TestPipeline:
         res = self.pipeline.analyze_image(make_image("water_leakage", 9200, "flow"))
         payload = res.as_json()
         assert set(payload) == {
-            "primary_category", "secondary_categories", "observable_evidence", "confidence"
+            "primary_category",
+            "secondary_categories",
+            "secondary_label",
+            "precise_observable_description",
+            "observable_evidence",
+            "confidence",
         }
         assert payload["primary_category"] == "water_leakage"
         assert isinstance(payload["secondary_categories"], list)

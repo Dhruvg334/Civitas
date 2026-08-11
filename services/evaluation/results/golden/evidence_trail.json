@@ -14,6 +14,8 @@
           "media_rejected_basis": [],
           "primary_category": "water_leakage",
           "secondary_categories": [],
+          "secondary_label": null,
+          "precise_observable_description": "Visible water accumulation, flow or leakage consistent with a water incident; the media's appearance matches water evidence, but the wording is template-generated and not a verified visual fact.",
           "observable_evidence": [
             "standing water",
             "water flowing across road"
@@ -726,6 +728,8 @@
           "media_rejected_basis": [],
           "primary_category": "water_leakage",
           "secondary_categories": [],
+          "secondary_label": null,
+          "precise_observable_description": "Visible water accumulation, flow or leakage consistent with a water incident; the media's appearance matches water evidence, but the wording is template-generated and not a verified visual fact.",
           "observable_evidence": [
             "standing water",
             "water flowing across road"
@@ -1486,6 +1490,8 @@
           "media_rejected_basis": [],
           "primary_category": "water_leakage",
           "secondary_categories": [],
+          "secondary_label": null,
+          "precise_observable_description": "Visible water accumulation, flow or leakage consistent with a water incident; the media's appearance matches water evidence, but the wording is template-generated and not a verified visual fact.",
           "observable_evidence": [
             "standing water",
             "water flowing across road"
@@ -2416,6 +2422,8 @@
         "before_vision": {
           "primary_category": "water_leakage",
           "secondary_categories": [],
+          "secondary_label": null,
+          "precise_observable_description": "Visible water accumulation, flow or leakage consistent with a water incident; the media's appearance matches water evidence, but the wording is template-generated and not a verified visual fact.",
           "observable_evidence": [
             "standing water",
             "water flowing across road"
@@ -2427,6 +2435,8 @@
           "secondary_categories": [
             "pothole_road_damage"
           ],
+          "secondary_label": null,
+          "precise_observable_description": "A large animal-feed bag and several white plastic sacks are placed/stored on the floor beneath a table. Visible waste/material accumulation is present, but there is no clear evidence of a municipal garbage-bin overflow or street-side waste dumping.",
           "observable_evidence": [],
           "confidence": 0.3897
         },

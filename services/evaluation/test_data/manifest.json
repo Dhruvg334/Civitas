@@ -26,9 +26,9 @@
   "vision_train_origin": "civitas_vision.benchmark corpus (seeds 1..N), disjoint from test seeds",
   "ambiguous_blend_provenance": "50/50 pixel blend of committed training-prototype scenes (water flow 7101 + pothole 7300); derived input testing the ambiguity gate, not itself a training example; disclosed as derived",
   "files": {
-    "clusters\\labels.json": "1629471c13cd03ea57fbd8f43f61e6263796c62c54ce56bd860cd77243c4a19e",
-    "duplicates\\labels.json": "c5b30f15178bfedcf88943ba202216e92c71bfb646f40312c167b0d04e1481de",
-    "media_quality\\labels.json": "c26a118930786b509267ec093985c014d76ce1f85aa19d117ff5124659cb7c5d",
+    "clusters\\labels.json": "284fe24582d28eb26653cf9e2c9599927c2ea62b986b7aaa0846b977c6dca868",
+    "duplicates\\labels.json": "04d1bf8af7fac15264c455ba398c2409359549b09c3a41fc6de9adb17ef68b14",
+    "media_quality\\labels.json": "3f8c247a177f9e15635db71a558ecee500d5e6a9ed8a4267bb7b71f946612472",
     "media_quality\\mq-ambiguous-blend.png": "309bdddc3bf160f23611648b235a9856bec276ffd517499dff452338036d03a3",
     "media_quality\\mq-blur-pothole.png": "1f9e912ac629249105d6a8831a1cbf52d908d0d3333ff19f2f92c52ae2aff593",
     "media_quality\\mq-blur-streetlight.png": "eb937f85f642b48e895ffa2e85c15f2a98b44d00b50d109425883b43e91423ce",
@@ -40,9 +40,9 @@
     "media_quality\\mq-valid-garbage.png": "17b4cadb5c5e8b41ff6af6527c580aa04ea8f73d744efbca00aef794658ddfaa",
     "media_quality\\mq-valid-pothole.png": "6567fdb7ba55f3d3775eaf336dbaba99a0b691f6cbe8664ca1aa2a5d25a640b2",
     "media_quality\\mq-valid-water.png": "44426e28db9746ccbb4643f08074973ec7e30ea18284404388f3aad0a158f7f9",
-    "priority\\labels.json": "35c8230c7217a9586d6b641967d1b6a251c0470b6bcec92c613fb82483a569f3",
-    "resolution\\labels.json": "e2e0b89578ebc0ae249b0cf427b33829f5ca5e09433815c05cd49f652cbd35a9",
-    "severity\\labels.json": "f435857e35d9c6a0160fa9f97f8e4be612ff7d1118dc6485ebb9409f15264c54",
+    "priority\\labels.json": "488c160109c6ad77d6cec1f687c2a9077b99faa585a971e95f4f3a5be97c489c",
+    "resolution\\labels.json": "09e61539b9d285e8e5314458de9d9c41c382e0e017ba7d8f05879caa1480ec2a",
+    "severity\\labels.json": "f24b752d4ca32ee3a1a43f07f2569bafc1ce77334801c4c82e23fc3f2e18bc8d",
     "vision\\images\\broken_streetlight\\vis-broken_streetlight-2030.png": "72c99fbaddc14c833790159e2ab4bab49e658fe4d30f462e9756c34644ba2fc6",
     "vision\\images\\broken_streetlight\\vis-broken_streetlight-2031.png": "36a092293141555db4be4d963e67657d537615c1d51f4c5e16a9a849c5283dc2",
     "vision\\images\\broken_streetlight\\vis-broken_streetlight-2032.png": "b07832e6ea0412d740e0ead8027fff24358d9ccf971bf894c061b85fc168d0a1",
@@ -93,6 +93,6 @@
     "vision\\images\\water_leakage\\vis-water_leakage-2017.png": "b007bf72b51995816e3a0899498556cdb38d387fd395ead66b2a9a1dd4148a23",
     "vision\\images\\water_leakage\\vis-water_leakage-2018.png": "dedce89aa69596d36b44bd81fb99dea7cb9beb301b28cc3435d7b5605a9124bd",
     "vision\\images\\water_leakage\\vis-water_leakage-2019.png": "3d043961185ebf0bc3d9a6fc5c46c37f379f65f54718beb30a3fbdd6c95e09c5",
-    "vision\\labels.json": "c091febcf166fae9e0eda9451e5197d393f98544d454ddaf90c255ab98ed34a6"
+    "vision\\labels.json": "4e98bb8eb249dde82db9e68c17b854a3e3f6bbf05cf5b1b84ef9805e4db2c18e"
   }
 }

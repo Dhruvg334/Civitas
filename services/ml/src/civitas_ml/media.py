@@ -40,7 +40,10 @@ SUPPORTED_IMAGE_MIME = ("image/png", "image/jpeg", "image/jpg", "image/webp")
 SUPPORTED_VIDEO_MIME = ("video/mp4", "video/webm", "video/quicktime", "video/x-matroska")
 
 # Videos are sampled down to at most this many frames for analysis.
-MAX_VIDEO_FRAMES = 120
+# 120 frames only covers ~1s of a high-fps (120) phone video; 300 keeps
+# temporal coverage (~10s at 30 fps) while bounding decode cost. The
+# vision key-frame picker then selects `top_k` across the duration.
+MAX_VIDEO_FRAMES = 300
 # Output resolution cap for analysed video frames (input-agnostic).
 MAX_VIDEO_FRAME_PX = 1280
 

@@ -29,6 +29,16 @@ CIVITAS_CATEGORIES: tuple[str, ...] = (
     "fallen_tree",
 )
 
+# The real-media (zero-shot CLIP) classifier additionally recognises these
+# categories; the deterministic k-NN stays on the five MVP classes so the
+# frozen synthetic evaluation is untouched.
+REAL_MEDIA_CATEGORIES: tuple[str, ...] = CIVITAS_CATEGORIES + (
+    "other_infrastructure_damage",
+    "drainage_damage",
+    "no_incident",
+    "pest_infestation",
+)
+
 
 class SceneQuality(BaseModel):
     """Quality verdict for a single frame/image before classification."""
@@ -62,6 +72,15 @@ class ClassificationProbs(BaseModel):
         description="mean nearest-prototype distance / corpus median distance; "
         "> 2.0 means the input is far outside the training manifold (uncertain)",
     )
+    secondary_label: str | None = Field(
+        default=None,
+        description="real-media subcategory label for the primary category "
+        "(e.g. 'Wall moisture damage' under water_leakage); None when none is confident",
+    )
+    subcategory_scores: dict[str, float] = Field(
+        default_factory=dict,
+        description="per-subcategory similarities scoped to the primary category",
+    )
     basis: list[str] = Field(default_factory=list)
 
 
@@ -76,6 +95,17 @@ class VisualClassificationResult(BaseModel):
 
     primary_category: str | None = None
     secondary_categories: list[str] = Field(default_factory=list)
+    secondary_label: str | None = Field(
+        default=None,
+        description="real-media subcategory label (e.g. 'Open/unsafe drain') "
+        "or None; distinct from secondary_categories which lists competing categories",
+    )
+    precise_observable_description: str = Field(
+        default="",
+        description="deterministic, template-generated plain-language description "
+        "of what the media observably shows (built from the detected category "
+        "and subcategory; not an LLM caption)",
+    )
     observable_evidence: list[str] = Field(default_factory=list)
     confidence: float = Field(default=0.0, ge=0, le=1)
     ood_ratio: float | None = Field(
@@ -93,6 +123,8 @@ class VisualClassificationResult(BaseModel):
         return {
             "primary_category": self.primary_category,
             "secondary_categories": self.secondary_categories,
+            "secondary_label": self.secondary_label,
+            "precise_observable_description": self.precise_observable_description,
             "observable_evidence": self.observable_evidence,
             "confidence": round(self.confidence, 4),
         }

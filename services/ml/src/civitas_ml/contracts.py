@@ -167,6 +167,14 @@ class VisionSection(BaseModel):
     media_rejected_basis: list[str] = Field(default_factory=list)
     primary_category: str | None = None
     secondary_categories: list[str] = Field(default_factory=list)
+    secondary_label: str | None = Field(
+        default=None,
+        description="real-media subcategory label (e.g. 'Open/unsafe drain') or None",
+    )
+    precise_observable_description: str = Field(
+        default="",
+        description="template-generated plain-language description of the visible evidence",
+    )
     observable_evidence: list[str] = Field(default_factory=list)
     confidence: float = Field(default=0.0, ge=0, le=1)
     ood_ratio: float | None = Field(default=None, ge=0, description="out-of-distribution ratio > 2.0 = uncertain")

@@ -8,7 +8,8 @@
     "ood_ratio": 0.096,
     "basis": [
       "frame quality: blur 0.0, luminance 0.33",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'pothole_road_damage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -21,7 +22,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.32",
       "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'pothole_road_damage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -34,7 +36,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.32",
       "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'pothole_road_damage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -47,7 +50,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.32",
       "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'pothole_road_damage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -60,7 +64,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.32",
       "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'pothole_road_damage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -73,7 +78,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.32",
       "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'pothole_road_damage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -86,7 +92,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.32",
       "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'pothole_road_damage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -99,7 +106,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.33",
       "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'pothole_road_damage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -112,7 +120,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.32",
       "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'pothole_road_damage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -125,7 +134,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.33",
       "pothole_road_damage: visible road cavity (pothole) with broken surface (dark low-texture share >= 0.025, dark banding >= 0.030, edge density >= 0.13)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'pothole_road_damage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -138,7 +148,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.41",
       "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'water_leakage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -151,7 +162,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.41",
       "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'water_leakage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -164,7 +176,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.42",
       "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'water_leakage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -177,7 +190,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.43",
       "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'water_leakage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -190,7 +204,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.44",
       "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'water_leakage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -203,7 +218,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.44",
       "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'water_leakage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -216,7 +232,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.42",
       "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'water_leakage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -229,7 +246,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.44",
       "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'water_leakage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -242,7 +260,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.42",
       "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'water_leakage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -255,7 +274,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.41",
       "water_leakage: standing water (blue-dominant smooth-region share >= 0.20)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'water_leakage' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -267,7 +287,8 @@
     "ood_ratio": 0.121,
     "basis": [
       "frame quality: blur 0.0, luminance 0.33",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template for (garbage_overflow, None), grounded in the detected category/subcategory only"
     ]
   },
   {
@@ -280,7 +301,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.34",
       "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template for (garbage_overflow, None), grounded in the detected category/subcategory only"
     ]
   },
   {
@@ -293,7 +315,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.34",
       "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
-      "classification over 1 usable frame(s); confidence 0.521"
+      "classification over 1 usable frame(s); confidence 0.521",
+      "precise description: template for (garbage_overflow, None), grounded in the detected category/subcategory only"
     ]
   },
   {
@@ -306,7 +329,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.34",
       "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template for (garbage_overflow, None), grounded in the detected category/subcategory only"
     ]
   },
   {
@@ -319,7 +343,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.34",
       "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template for (garbage_overflow, None), grounded in the detected category/subcategory only"
     ]
   },
   {
@@ -332,7 +357,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.34",
       "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template for (garbage_overflow, None), grounded in the detected category/subcategory only"
     ]
   },
   {
@@ -344,7 +370,8 @@
     "ood_ratio": 0.185,
     "basis": [
       "frame quality: blur 0.0, luminance 0.33",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template for (garbage_overflow, None), grounded in the detected category/subcategory only"
     ]
   },
   {
@@ -357,7 +384,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.34",
       "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template for (garbage_overflow, None), grounded in the detected category/subcategory only"
     ]
   },
   {
@@ -370,7 +398,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.34",
       "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template for (garbage_overflow, None), grounded in the detected category/subcategory only"
     ]
   },
   {
@@ -383,7 +412,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.34",
       "garbage_overflow: mixed-color waste pile (scattered debris) (color scatter >= 90, saturation >= 0.17, no standing water, no canopy green (<= 0.012))",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template for (garbage_overflow, None), grounded in the detected category/subcategory only"
     ]
   },
   {
@@ -396,7 +426,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.18",
       "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'broken_streetlight' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -409,7 +440,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.17",
       "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'broken_streetlight' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -422,7 +454,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.18",
       "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'broken_streetlight' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -435,7 +468,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.16",
       "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'broken_streetlight' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -448,7 +482,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.17",
       "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'broken_streetlight' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -461,7 +496,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.18",
       "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'broken_streetlight' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -474,7 +510,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.20",
       "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'broken_streetlight' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -487,7 +524,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.17",
       "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'broken_streetlight' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -500,7 +538,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.17",
       "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'broken_streetlight' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -513,7 +552,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.21",
       "broken_streetlight: dark scene with a localized bright bulb region (bright peak in upper half >= 0.80, dark frame, large dark low-texture share)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'broken_streetlight' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -526,7 +566,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.31",
       "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'fallen_tree' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -538,7 +579,8 @@
     "ood_ratio": 0.124,
     "basis": [
       "frame quality: blur 0.0, luminance 0.32",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'fallen_tree' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -551,7 +593,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.32",
       "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'fallen_tree' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -564,7 +607,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.32",
       "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'fallen_tree' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -577,7 +621,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.32",
       "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
-      "classification over 1 usable frame(s); confidence 0.581"
+      "classification over 1 usable frame(s); confidence 0.581",
+      "precise description: template fallback for category 'fallen_tree' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -590,7 +635,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.31",
       "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'fallen_tree' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -602,7 +648,8 @@
     "ood_ratio": 0.149,
     "basis": [
       "frame quality: blur 0.0, luminance 0.32",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'fallen_tree' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -615,7 +662,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.31",
       "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'fallen_tree' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -627,7 +675,8 @@
     "ood_ratio": 0.142,
     "basis": [
       "frame quality: blur 0.0, luminance 0.31",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'fallen_tree' (no exact subcategory template for 'None')"
     ]
   },
   {
@@ -640,7 +689,8 @@
     "basis": [
       "frame quality: blur 0.0, luminance 0.32",
       "fallen_tree: fallen trunk/blockage spanning the road (pronounced canopy green (> 0.016) with dark recumbent banding >= 0.012)",
-      "classification over 1 usable frame(s); confidence 1.000"
+      "classification over 1 usable frame(s); confidence 1.000",
+      "precise description: template fallback for category 'fallen_tree' (no exact subcategory template for 'None')"
     ]
   }
 ]

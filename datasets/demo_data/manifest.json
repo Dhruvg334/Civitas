@@ -189,6 +189,66 @@
       "license": "CC BY-SA 3.0",
       "sha256": "a34ee05fe8cb1badd2d7ffbeec2257c79f3683bd3ea0aef2b4ec709e42878734",
       "size_bytes": 126936
+    },
+    {
+      "file": "datasets/demo_data/images/Real_Image1.jpg",
+      "expected_category": "other_infrastructure_damage",
+      "source_title": "locally provided demo media (wall/plaster damage)",
+      "source_page": "",
+      "source_url": "",
+      "license": "local contributor media (license not recorded)",
+      "sha256": "fc443f6fe6eacf648cad9f81546c023928b59508ee8f02f479fbc589335ea801",
+      "size_bytes": 135647
+    },
+    {
+      "file": "datasets/demo_data/images/Real_Image2.jpg",
+      "expected_category": "garbage_overflow",
+      "source_title": "locally provided demo media (waste accumulation)",
+      "source_page": "",
+      "source_url": "",
+      "license": "local contributor media (license not recorded)",
+      "sha256": "46c9870778cad9564b9fb308da59621e9cb7cd21bef24fc1af9bca6a0d6be59d",
+      "size_bytes": 182078
+    },
+    {
+      "file": "datasets/demo_data/images/Real_Image3.jpg",
+      "expected_category": "water_leakage",
+      "source_title": "locally provided demo media (water accumulation)",
+      "source_page": "",
+      "source_url": "",
+      "license": "local contributor media (license not recorded)",
+      "sha256": "6ddbf50c744c60e255d1887a8df76bdc9d6f0a40a5568d9bad0bb24e2b9017ba",
+      "size_bytes": 380398
+    },
+    {
+      "file": "datasets/demo_data/images/Real_Image4.jpg",
+      "expected_category": "drainage_damage",
+      "source_title": "locally provided demo media (roadside drainage damage)",
+      "source_page": "",
+      "source_url": "",
+      "license": "local contributor media (license not recorded)",
+      "sha256": "ddd0232d03772b1c03bc579faae4865ffaf849f78676625ad442eada43312e52",
+      "size_bytes": 373556
+    },
+    {
+      "file": "datasets/demo_data/images/Real_Image5.jpg",
+      "expected_category": "drainage_damage",
+      "source_title": "locally provided demo media (roadside drainage damage)",
+      "source_page": "",
+      "source_url": "",
+      "license": "local contributor media (license not recorded)",
+      "sha256": "82b1f6b784bb4306d716f321b3ab7a0c932cbe5006256d5391d8004be316e96d",
+      "size_bytes": 485674
+    },
+    {
+      "file": "datasets/demo_data/images/Real_Image6.jpg",
+      "expected_category": "no_incident",
+      "source_title": "locally provided demo media (maintained scene)",
+      "source_page": "",
+      "source_url": "",
+      "license": "local contributor media (license not recorded)",
+      "sha256": "b20fbddf32d6bee1d3aa75ca723e117f9f6f6b6561754cfd9a21670bb952577c",
+      "size_bytes": 381759
     }
   ],
   "videos": [
@@ -241,6 +301,36 @@
       "license": "CC BY-SA 4.0",
       "sha256": "4a00aa659fe7e25ee5cd24bf6f78c15667fc2c0d9ecd69d21f03e6c317d9eff6",
       "size_bytes": 2266204
+    },
+    {
+      "file": "datasets/demo_data/videos/Real_Video1.mp4",
+      "expected_category": "pest_infestation",
+      "source_title": "locally provided demo media (pest on wall)",
+      "source_page": "",
+      "source_url": "",
+      "license": "local contributor media (license not recorded)",
+      "sha256": "a3b26978c0e485e75ea87e71bb5781dbf37c1570256cc744955d5be582d66f2a",
+      "size_bytes": 3859648
+    },
+    {
+      "file": "datasets/demo_data/videos/Real_Video2.mp4",
+      "expected_category": "other_infrastructure_damage",
+      "source_title": "locally provided demo media (wall/plaster damage)",
+      "source_page": "",
+      "source_url": "",
+      "license": "local contributor media (license not recorded)",
+      "sha256": "66662c5e7fedfdb784fa7678ae91078f9bde5052cfa3389d15a1f3782d945b9a",
+      "size_bytes": 3082483
+    },
+    {
+      "file": "datasets/demo_data/videos/Real_Video3.mp4",
+      "expected_category": "water_leakage",
+      "source_title": "locally provided demo media (water accumulation)",
+      "source_page": "",
+      "source_url": "",
+      "license": "local contributor media (license not recorded)",
+      "sha256": "399b0540467f871fb136eb751abd81d22fb86baade4f63ee881a323907bd2d28",
+      "size_bytes": 1912411
     }
   ]
 }

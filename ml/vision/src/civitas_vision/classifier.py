@@ -16,6 +16,7 @@ from __future__ import annotations
 import numpy as np
 from PIL import Image
 
+from civitas_vision.clip_classifier import SUBCATEGORY_EMISSION_FLOOR
 from civitas_vision.contracts import ClassificationProbs, CIVITAS_CATEGORIES
 from civitas_vision.features import FEATURE_NAMES, extract_features
 
@@ -127,23 +128,40 @@ def merge_media_probs(per_frame: list[ClassificationProbs]) -> ClassificationPro
     shares (0..1). A unanimous frame gets ~1.0; a scene that genuinely
     straddles categories collapses toward 0.0, so low confidence is an
     honest signal of ambiguity instead of a saturated softmax.
+
+    The category set is the union of the per-frame probability keys, so the
+    deterministic k-NN (five MVP classes) and the zero-shot CLIP classifier
+    (extended real-media set) both merge correctly. The secondary label
+    (subcategory) is the averaged best subcategory similarity across frames.
     """
     if not per_frame:
         return ClassificationProbs(probabilities={}, basis=["no usable frames"])
-    probs: dict[str, float] = {c: 0.0 for c in CIVITAS_CATEGORIES}
+    categories = sorted({c for p in per_frame for c in p.probabilities})
+    probs: dict[str, float] = {c: 0.0 for c in categories}
     ratios = [p.ood_ratio for p in per_frame if p.ood_ratio is not None]
+    subcats: dict[str, float] = {}
     for frame in per_frame:
-        for c in CIVITAS_CATEGORIES:
+        for c in categories:
             probs[c] += frame.probabilities.get(c, 0.0)
+        for label, score in frame.subcategory_scores.items():
+            subcats[label] = subcats.get(label, 0.0) + score
     probs = {c: v / len(per_frame) for c, v in probs.items()}
+    subcats = {label: v / len(per_frame) for label, v in subcats.items()}
     primary = max(probs, key=lambda c: probs[c]) if probs else None
     ordered = sorted(probs.values(), reverse=True) if probs else [0.0]
     margin = max(0.0, (ordered[0] - ordered[1]) if len(ordered) > 1 else ordered[0])
+    secondary_label = None
+    if subcats:
+        label = max(subcats, key=subcats.__getitem__)
+        if subcats[label] >= SUBCATEGORY_EMISSION_FLOOR:
+            secondary_label = label
     return ClassificationProbs(
         probabilities=probs,
         primary_category=primary,
         confidence=round(margin, 4),
         ood_ratio=round(sum(ratios) / len(ratios), 3) if ratios else None,
+        secondary_label=secondary_label,
+        subcategory_scores={k: round(v, 4) for k, v in subcats.items()},
         basis=[
             f"mean of {len(per_frame)} usable frame probability vectors; "
             f"confidence = top-1/top-2 vote-share margin {margin:.3f}",
