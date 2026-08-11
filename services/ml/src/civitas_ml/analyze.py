@@ -90,6 +90,10 @@ VISION_TO_CATEGORY = {
     "garbage_overflow": "garbage",
     "broken_streetlight": "streetlight",
     "fallen_tree": "fallen tree",
+    "other_infrastructure_damage": "wall damage",
+    "drainage_damage": "drainage damage",
+    "no_incident": "no incident",
+    "pest_infestation": "pest infestation",
 }
 
 # A classification at or above this probability is treated as confident;
@@ -202,6 +206,10 @@ def build_vision_section(
         media_rejected_basis=list(vision_result.basis) if vision_result and not vision_result.media_usable else [],
         primary_category=vision_result.primary_category if vision_result else None,
         secondary_categories=list(vision_result.secondary_categories) if vision_result else [],
+        secondary_label=vision_result.secondary_label if vision_result else None,
+        precise_observable_description=(
+            vision_result.precise_observable_description if vision_result else ""
+        ),
         observable_evidence=list(vision_result.observable_evidence) if vision_result else [],
         confidence=vision_result.confidence if vision_result else 0.0,
         ood_ratio=vision_result.ood_ratio if vision_result else None,

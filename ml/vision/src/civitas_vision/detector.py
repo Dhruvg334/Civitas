@@ -35,6 +35,7 @@ from civitas_vision.contracts import (
     SceneQuality,
     VisualClassificationResult,
 )
+from civitas_vision.descriptions import build_precise_description
 from civitas_vision.frames import frames_from_path, select_key_frames
 from civitas_vision.features import extract_features
 from civitas_vision.nn_classifier import NNClassifier
@@ -64,9 +65,16 @@ class VisualIntelligencePipeline:
         return self._classify_frames([(image, quality)])
 
     def analyze_video(self, path: str | Path, video_extra_frames: list[Image.Image] | None = None) -> VisualClassificationResult:
-        """Analyze a video path (or pre-extracted frames in tests/offline)."""
+        """Analyze a video path (or pre-extracted frames in tests/offline).
+
+        Key-frame selection keeps temporal coverage (see `select_key_frames`);
+        the zero-shot CLIP classifier additionally tolerates degraded frames
+        from segments without any quality-passing frame, while the
+        deterministic k-NN keeps strict quality gating.
+        """
         frames = video_extra_frames if video_extra_frames is not None else list(frames_from_path(str(path)))
-        picks = select_key_frames(frames, top_k=self.top_frames)
+        allow_degraded = isinstance(self.classifier, CLIPZeroShotClassifier)
+        picks = select_key_frames(frames, top_k=self.top_frames, allow_degraded=allow_degraded)
         if not picks:
             return VisualClassificationResult(
                 media_usable=False,
@@ -93,6 +101,11 @@ class VisualIntelligencePipeline:
                 f"frame quality: blur {quality.blur_score:.1f}, "
                 f"luminance {quality.luminance_mean:.2f}"
             )
+            if not quality.usable:
+                basis.append(
+                    "degraded-segment frame included for temporal coverage "
+                    "(failed the quality gate; classification treated as weaker evidence)"
+                )
             basis.extend(evidence_rules.evidence_basis(feats))
 
         merged = merge_media_probs(per_frame)
@@ -102,13 +115,22 @@ class VisualIntelligencePipeline:
         evidence = evidence_rules.filter_evidence_for_categories(
             list(dict.fromkeys(evidence_seen)), supported
         )
+        description, description_basis = build_precise_description(
+            merged.primary_category,
+            merged.secondary_label,
+            merged.probabilities,
+            evidence,
+        )
         basis.append(
             f"classification over {len(per_frame)} usable frame(s); "
             f"confidence {merged.confidence:.3f}"
         )
+        basis.extend(description_basis)
         return VisualClassificationResult(
             primary_category=merged.primary_category,
             secondary_categories=secondary_categories(merged.probabilities, merged.primary_category),
+            secondary_label=merged.secondary_label,
+            precise_observable_description=description,
             observable_evidence=evidence,
             confidence=merged.confidence,
             ood_ratio=merged.ood_ratio,

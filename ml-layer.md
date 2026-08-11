@@ -699,12 +699,13 @@ What changed:
   over real, open-licensed media (`datasets/demo_data/`, manifest records
   every source and license).
 
-Measured (regenerated report in `datasets/demo_data/results/`):
+Measured (regenerated report in `datasets/demo_data/results/`; corpus now 33 real files):
 
 - Real photos: 17 of 17 classified correctly (k-NN previously: ~13 of 17).
-- Real videos: 4 of 4 classified correctly (flooded streets, dripping bucket,
-  leaking roof); the ceiling-infiltration video is *honestly rejected* (dark
-  and blurry, zero usable frames) instead of guessing.
+- Real videos: 7 of 8 classified correctly (flooded streets, dripping bucket,
+  leaking roof, ceiling infiltration, pest on wall, water accumulation);
+  `Real_Video2.mp4` (wall/plaster damage) is honestly called `water_leakage`
+  at low confidence (0.12 margin) and recorded as misclassified in the report.
 - Out-of-domain controls (a cat on snow, a Himalayan lake): 2 of 2 flagged
   "out of distribution" with the category marked as a best-effort guess.
 - No in-domain photo was wrongly flagged (max ratio 1.86, floor 2.0).
@@ -723,15 +724,66 @@ Honest limitations (recorded, not hidden):
 Verification commands (run from the repository root):
 
 ```text
-cd ml/vision && python -m pytest tests            # 38 passed (incl. CLIP tests)
+cd ml/vision && python -m pytest tests            # 55 passed (incl. CLIP + description tests)
 cd services/ml && python -m pytest tests          # 48 passed (incl. selection/routing tests)
 cd services/ml && python -m ruff check src tests  # clean
 cd services/ml && python -m mypy src              # clean (13 files)
 cd services/evaluation && python run_all.py       # frozen eval intact (all 1.0)
-cd services/evaluation && python src/civitas_evaluation/real_world_probe.py
-# 24 media files: 21 correct in-domain, 2 OOD-flagged, 1 honest rejection
+cd services/evaluation && python -m civitas_evaluation.real_world_probe
+# 33 media files: 17/17 photos correct, 7/8 videos correct, 2/2 OOD-flagged,
+# 1 recorded misclassification (Real_Video2, low-confidence)
 ```
 
+
+## Phase 13 refinement — decode coverage and key-frame selection (COMMIT b0691f8)
+
+*Plain words:* three real videos were misread (or rejected) not because the
+classifier was wrong but because the pipeline never *looked* at most of the
+video. The API decoded at most 120 frames — about **one second** of a
+120 fps phone video — and key-frame selection spread its four picks across
+that one second. The pest-on-wall video (`Real_Video1.mp4`, 120 fps) showed
+the pest only after frame ~88 of 294; the ceiling-infiltration video
+(35 seconds) had a ~5 second dark intro before the visible leak. Both were
+unfixable by any classifier tuning while the decoder stopped too early.
+
+What changed:
+
+- **Decode coverage.** `services/ml` decode budget `MAX_VIDEO_FRAMES`
+  raised 120 → 300 frames (bounded; ~10 s at 30 fps), matching the offline
+  `frames_from_path` default so the API and the evaluation path decode the
+  same window.
+- **Segment key-frame selection** (`ml/vision/src/civitas_vision/frames.py`):
+  deterministic — best-quality *usable* frame per time segment; segments
+  whose frames all failed the quality gate are covered by their best
+  available frame; any remaining slots fill from the best usable frames.
+- **Classifier-aware gating** (`detector.py`): the zero-shot CLIP classifier
+  (real-media path) may include degraded-segment frames for temporal
+  coverage and records that in the basis; the deterministic k-NN keeps
+  strict quality gating.
+- **Media corpus** grew to 33 real files (6 locally provided photos and
+  3 videos added; all recorded in `datasets/demo_data/manifest.json`).
+
+Measured (probe results regenerated in `datasets/demo_data/results/`):
+
+| video | before | after |
+|---|---|---|
+| `Real_Video1.mp4` (pest on wall) | water 0.019 (misclassified) | **pest 0.489 (correct)** |
+| `water_dripping_bucket.webm` | garbage 0.032 (misclassified) | **water 0.465 (correct)** |
+| `ceiling_infiltration.webm` | REJECTED (all frames dark) | **water 0.960 (correct)** |
+| `Real_Video2.mp4` (wall/plaster) | water 0.361 (misclassified) | water 0.124 (still misclassified, honest low confidence) |
+
+Housekeeping (recorded, not hidden): the frozen test-set manifest's seven
+label-file pins were stale — the label files had been regenerated without a
+trailing newline after the pins were recorded. Content was verified
+byte-identical (apart from that newline) to what the generator produces
+today, and the pins were re-recorded in `test_data/manifest.json`;
+`run_all.py check` passes and the full Phase 11/12 evaluation re-ran with
+every score unchanged.
+
+Known limitations (kept visible): videos longer than ~10 s still lose their
+tail (the 300-frame budget is a hard cap); `Real_Video2` remains a
+low-confidence water call on wall damage; CLIP's prompt wording and OOD
+calibration were tuned on this corpus (as recorded in Phase 13).
 
 ## Commits on this branch
 
@@ -760,3 +812,5 @@ cd services/evaluation && python src/civitas_evaluation/real_world_probe.py
 - `002707f` Add real-world media accuracy track: CLIP classifier, model selection, probe
 - `ef80e26` Record Phase 13 commit hash in ml-layer.md
 - `4814ede` Publish datasets: demo_data real-world corpus, generated datasets, probe results
+- `bee3bf3` Add skills validation script and CI job for SKILL.md checks
+- `b0691f8` Real-media vision refinement: decode coverage, segment key-frame selection, CLIP evidence gating

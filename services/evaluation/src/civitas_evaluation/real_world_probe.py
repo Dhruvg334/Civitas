@@ -37,7 +37,7 @@ from civitas_ml.analyze import analyze_report  # noqa: E402
 from civitas_ml.vision_model import build_vision_pipeline  # noqa: E402
 
 # Real-world probe policy: real citizen media is classified by the
-# zero-shot CLIP classifier (vision-clip-v1) when it is available —
+# zero-shot CLIP classifier (vision-clip-v2) when it is available —
 # measured accurate on natural photos — falling back to the deterministic
 # k-NN otherwise. The service default stays 'knn' so the frozen synthetic
 # evaluation never depends on an external model download.
@@ -54,13 +54,15 @@ def _run_image(path: Path, expected: str) -> dict[str, object]:
     )
     vision = analysis.vision
     return {
-        "file": str(path.relative_to(REPO_ROOT)),
+        "file": path.relative_to(REPO_ROOT).as_posix(),
         "kind": "image",
         "model_version": _REAL_MEDIA_MODEL,
         "expected_category": expected,
         "media_usable": vision.media_usable,
         "media_kind": vision.media_kind,
         "primary_category": vision.primary_category,
+        "secondary_label": vision.secondary_label,
+        "precise_observable_description": vision.precise_observable_description,
         "confidence": round(vision.confidence, 4),
         "ood_ratio": round(vision.ood_ratio, 3) if vision.ood_ratio is not None else None,
         "uncertainty": list(vision.uncertainty),
@@ -80,13 +82,15 @@ def _run_video(path: Path, expected: str) -> dict[str, object]:
     )
     vision = analysis.vision
     return {
-        "file": str(path.relative_to(REPO_ROOT)),
+        "file": path.relative_to(REPO_ROOT).as_posix(),
         "kind": "video",
         "model_version": _REAL_MEDIA_MODEL,
         "expected_category": expected,
         "media_usable": vision.media_usable,
         "media_kind": vision.media_kind,
         "primary_category": vision.primary_category,
+        "secondary_label": vision.secondary_label,
+        "precise_observable_description": vision.precise_observable_description,
         "confidence": round(vision.confidence, 4),
         "ood_ratio": round(vision.ood_ratio, 3) if vision.ood_ratio is not None else None,
         "frames_selected": vision.frames_selected,
@@ -143,7 +147,7 @@ def _verdict(row: dict[str, object]) -> str:
 
 def _write_report(rows: list[dict[str, object]]) -> None:
     lines = [
-        "# Real-world media probe — image/video analyser on open-licensed media",
+        "# Real-world media probe — image/video analyser on real media",
         "",
         f"Generated: {datetime.now(timezone.utc).isoformat()} by `python -m civitas_evaluation.real_world_probe`.",
         "",
@@ -173,8 +177,9 @@ def _write_report(rows: list[dict[str, object]]) -> None:
         f"Totals: {len(rows)} media files — {correct} correct on real-world in-domain media "
         f"(model {_REAL_MEDIA_MODEL}), {flagged} out-of-domain controls evaluated for honest flagging.",
         "",
-        "Sources and licenses: see `datasets/demo_data/manifest.json` (Wikimedia Commons, "
-        "CC0 / CC BY / CC BY-SA / public domain).",
+        "Sources and licenses: see `datasets/demo_data/manifest.json` — Wikimedia Commons",
+        "(CC0 / CC BY / CC BY-SA / public domain) plus locally provided demo media whose",
+        "license is not recorded.",
         "",
     ]
     (RESULTS / "real_world_report.md").write_text("\n".join(lines), encoding="utf-8")

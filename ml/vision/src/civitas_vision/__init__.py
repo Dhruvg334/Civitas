@@ -6,9 +6,11 @@ from civitas_vision.contracts import (
     CIVITAS_CATEGORIES,
     ClassificationProbs,
     FramePick,
+    REAL_MEDIA_CATEGORIES,
     SceneQuality,
     VisualClassificationResult,
 )
+from civitas_vision.descriptions import build_precise_description
 from civitas_vision.detector import VisualIntelligencePipeline
 from civitas_vision.evidence import extract_evidence
 from civitas_vision.features import FEATURE_NAMES, extract_features
@@ -24,11 +26,13 @@ __all__ = [
     "merge_media_probs",
     "secondary_categories",
     "CIVITAS_CATEGORIES",
+    "REAL_MEDIA_CATEGORIES",
     "ClassificationProbs",
     "FramePick",
     "SceneQuality",
     "VisualClassificationResult",
     "VisualIntelligencePipeline",
+    "build_precise_description",
     "extract_evidence",
     "FEATURE_NAMES",
     "extract_features",

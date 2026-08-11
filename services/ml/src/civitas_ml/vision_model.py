@@ -11,7 +11,8 @@ is a *configuration decision*, deliberately not implicit:
   evaluation, the golden evidence trail and every offline path keep their
   exact, reproducible numbers with zero external dependencies.
 - `clip` : the zero-shot CLIP classifier (`civitas_vision.clip_classifier`,
-  edition `vision-clip-v1`) — accurate on real-world natural photos, which
+  edition `vision-clip-v2`) — nine real-media categories with per-subcategory
+  evidence prompts, trained for accuracy on real-world natural photos, which
   is the media citizens actually upload. Requires `transformers` + torch
   and one HuggingFace download (`openai/clip-vit-base-patch32`). When the
   model cannot be loaded the service degrades to the k-NN with a recorded
@@ -28,7 +29,7 @@ import os
 
 from civitas_vision.detector import VisualIntelligencePipeline
 
-CID = "vision-clip-v1"
+CID = "vision-clip-v2"
 KID = "vision-knn-v1"
 
 MODEL_KNN = "knn"
