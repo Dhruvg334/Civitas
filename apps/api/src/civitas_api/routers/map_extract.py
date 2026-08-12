@@ -19,7 +19,10 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 
 from civitas_api.core.envelope import success_envelope
-from civitas_api.operations.map_link import MapLinkError, extract_coords
+from civitas_api.operations.map_link import (
+    MapLinkError,
+    extract_coords_with_source,
+)
 
 router = APIRouter(prefix="/api/v1", tags=["map-extract"])
 
@@ -50,7 +53,7 @@ def extract_map_coordinates(payload: dict[str, Any] | None = None) -> dict[str, 
         )
 
     try:
-        latitude, longitude = extract_coords(url)
+        result = extract_coords_with_source(url)
     except MapLinkError as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -58,7 +61,10 @@ def extract_map_coordinates(payload: dict[str, Any] | None = None) -> dict[str, 
         )
 
     return success_envelope({
-        "latitude": latitude,
-        "longitude": longitude,
+        "latitude": result.latitude,
+        "longitude": result.longitude,
         "url": url,
+        # Additive provenance: which pattern matched. Existing clients
+        # that only read latitude/longitude are unaffected.
+        "source": result.source,
     })
