@@ -15,6 +15,7 @@ dependencies = [
   "psycopg[binary]>=3.3,<4.0",
   "PyJWT>=2.9,<3.0",
   "python-multipart>=0.0.9,<1.0",
+  "civitas-geospatial>=0.1.0",
 ]
 
 [project.optional-dependencies]
@@ -30,10 +31,7 @@ dev = [
 where = ["src"]
 
 [tool.pytest.ini_options]
-pythonpath = [
-  "src",
-  "../../services/spatial/src",
-]
+pythonpath = ["src"]
 testpaths = ["tests"]
 
 [tool.ruff]

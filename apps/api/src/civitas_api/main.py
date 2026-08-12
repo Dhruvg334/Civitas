@@ -9,6 +9,7 @@ from civitas_api.routers import (
     incidents_ops,
     map_extract,
     media,
+    ml_internal,
     policies,
     reports,
     resolutions,
@@ -31,6 +32,7 @@ app.include_router(reports.router)
 app.include_router(incidents.router)
 app.include_router(incidents_ops.router)
 app.include_router(media.router)
+app.include_router(ml_internal.router)
 app.include_router(work_orders.router)
 app.include_router(clarifications.router)
 app.include_router(routing.router)

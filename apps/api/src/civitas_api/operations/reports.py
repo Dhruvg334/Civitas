@@ -219,3 +219,11 @@ def list_media_for_incident(incident_id: str) -> list[dict[str, Any]]:
             )
             rows = list(cur.fetchall())
     return [dict(r) for r in rows]
+
+def get_media(media_id: str) -> dict[str, Any] | None:
+    """Read one media record by stable media id."""
+    with _get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT * FROM media WHERE media_id = %(m)s", {"m": media_id})
+            row = cur.fetchone()
+    return dict(row) if row else None

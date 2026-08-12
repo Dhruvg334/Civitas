@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Clarification",
+  "type": "object",
+  "required": [
+    "question",
+    "reason",
+    "decision_impact"
+  ],
+  "properties": {
+    "question": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "decision_impact": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "answer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

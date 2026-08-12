@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Routing Decision",
+  "type": "object",
+  "required": [
+    "primary_department",
+    "secondary_departments",
+    "policy_references",
+    "review_required"
+  ],
+  "properties": {
+    "primary_department": {
+      "type": "string"
+    },
+    "secondary_departments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "policy_references": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "escalation_required": {
+      "type": "boolean"
+    },
+    "review_required": {
+      "type": "boolean"
+    },
+    "basis": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

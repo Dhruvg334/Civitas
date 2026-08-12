@@ -41,6 +41,9 @@ class StorageAdapter(ABC):
     @abstractmethod
     def head(self, object_path: str) -> dict[str, Any] | None: ...
 
+    @abstractmethod
+    def get(self, object_path: str) -> bytes: ...
+
 
 class LocalDiskStorageAdapter(StorageAdapter):
     def __init__(self, bucket: str, root: Path) -> None:
@@ -70,6 +73,12 @@ class LocalDiskStorageAdapter(StorageAdapter):
             return None
         st = target.stat()
         return {"size": st.st_size, "modified": datetime.fromtimestamp(st.st_mtime, tz=timezone.utc).isoformat()}
+
+    def get(self, object_path: str) -> bytes:
+        target = self._resolve(object_path)
+        if not target.exists():
+            raise FileNotFoundError(object_path)
+        return target.read_bytes()
 
 
 class SupabaseStorageAdapter(StorageAdapter):
@@ -127,6 +136,14 @@ class SupabaseStorageAdapter(StorageAdapter):
             return {"exists": True}
         except Exception:  # noqa: BLE001
             return None
+
+    def get(self, object_path: str) -> bytes:
+        import httpx
+        url = f"{self._base}/storage/v1/object/{self.bucket}/{object_path}"
+        resp = httpx.get(url, headers=self._auth_headers(), timeout=30)
+        if resp.status_code != 200:
+            raise FileNotFoundError(f"storage object unavailable: {object_path} ({resp.status_code})")
+        return resp.content
 
 
 _adapter: StorageAdapter | None = None

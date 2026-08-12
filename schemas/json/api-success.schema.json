@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Civitas API Success Envelope",
+  "type": "object",
+  "required": [
+    "success",
+    "data",
+    "trace_id",
+    "timestamp"
+  ],
+  "properties": {
+    "success": {
+      "const": true
+    },
+    "data": {},
+    "trace_id": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

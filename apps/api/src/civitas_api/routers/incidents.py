@@ -121,7 +121,7 @@ def _all_incidents_for_memory_mode() -> list[dict[str, Any]]:
         with conn.cursor() as cur:
             cur.execute(
                 "SELECT incident_id, category, reported_at, duplicates_seen, "
-                "CAST(0.0 AS REAL) AS latitude, CAST(0.0 AS REAL) AS longitude "
+                "latitude, longitude "
                 "FROM incidents"
             )
             rows = list(cur.fetchall())

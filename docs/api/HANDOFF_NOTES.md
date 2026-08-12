@@ -106,7 +106,7 @@ the whole operation if they get a transient 5xx.
 
 | From | What | Status |
 |---|---|---|
-| Pavit | `civitas_geo` Python package | Installed as editable via `services/spatial/pyproject.toml` |
+| Pavit | `civitas_geo` Python package | Installed as editable via `geospatial/pyproject.toml` |
 | Pavit | Resolution-verify ML model | We persist the output; model runs out of scope |
 | Dhruv | Agent workflow | We expose persistence endpoints; agent runs out of scope |
 
@@ -125,7 +125,7 @@ the whole operation if they get a transient 5xx.
 ```bash
 # 1. Install Python deps
 cd apps/api && python -m pip install -e .
-python -m pip install -e ../spatial
+python -m pip install -e ../../geospatial
 
 # 2. Apply migrations (in order)
 for f in ../../database/migrations/00*.sql; do

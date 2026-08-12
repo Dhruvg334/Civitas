@@ -5,7 +5,8 @@ paths. Mode and connection settings come from the environment:
 
     CIVITAS_BACKEND_MODE            mock | real        (default: mock)
     CIVITAS_BACKEND_BASE_URL        https://api...     (required for real)
-    CIVITAS_BACKEND_API_TOKEN       <token>            (optional auth header)
+    CIVITAS_BACKEND_API_TOKEN       <token>            (optional bearer auth)
+    CIVITAS_INTERNAL_API_KEY         <key>              (server-to-server key)
     CIVITAS_BACKEND_TIMEOUT_SECONDS 10                 (per-request timeout)
 
 The safe default is `mock`: the full pipeline runs locally against
@@ -59,11 +60,16 @@ class BackendSettings:
                 f"CIVITAS_BACKEND_TIMEOUT_SECONDS must be > 0, got {timeout_raw!r}",
                 code=CODE_CONFIG_ERROR,
             )
+        headers: dict[str, str] = {}
+        internal_key = os.environ.get("CIVITAS_INTERNAL_API_KEY") or None
+        if internal_key:
+            headers["X-Civitas-Internal-Key"] = internal_key
         return BackendSettings(
             mode=mode,
             base_url=os.environ.get("CIVITAS_BACKEND_BASE_URL") or None,
             api_token=os.environ.get("CIVITAS_BACKEND_API_TOKEN") or None,
             timeout_seconds=timeout,
+            extra_headers=headers,
         )
 
     def require_base_url(self) -> str:
@@ -87,7 +93,7 @@ def get_backend(settings: BackendSettings | None = None) -> "BackendAdapter":
 
     cfg = settings or BackendSettings.from_env()
     if cfg.mode == MODE_REAL:
-        return RealBackendAdapter(base_url=cfg.require_base_url(), token=cfg.api_token, timeout_seconds=cfg.timeout_seconds)
+        return RealBackendAdapter(base_url=cfg.require_base_url(), token=cfg.api_token, timeout_seconds=cfg.timeout_seconds, extra_headers=cfg.extra_headers)
     return MockBackendAdapter()
 
 

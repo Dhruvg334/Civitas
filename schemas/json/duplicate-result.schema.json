@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Duplicate Result",
+  "type": "object",
+  "required": [
+    "verdict",
+    "candidates",
+    "basis"
+  ],
+  "properties": {
+    "verdict": {
+      "enum": [
+        "new",
+        "duplicate",
+        "unknown"
+      ]
+    },
+    "candidates": {
+      "type": "array"
+    },
+    "best_match": {},
+    "basis": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

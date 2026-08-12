@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent Trace",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "incident_id",
+    "node",
+    "created_at"
+  ],
+  "properties": {
+    "trace_id": {
+      "type": "string"
+    },
+    "incident_id": {
+      "type": "string"
+    },
+    "node": {
+      "type": "string"
+    },
+    "model_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "prompt_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "input": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "output": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "latency_ms": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "validation_outcome": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": true
+}

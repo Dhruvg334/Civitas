@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Work Order",
+  "type": "object",
+  "required": [
+    "incident_id",
+    "summary",
+    "required_actions",
+    "suggested_resources",
+    "safety_notes",
+    "review_required"
+  ],
+  "properties": {
+    "incident_id": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "required_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "suggested_resources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "safety_notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "estimated_resolution_window": {},
+    "review_required": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": true
+}

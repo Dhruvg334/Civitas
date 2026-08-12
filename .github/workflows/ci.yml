@@ -15,14 +15,24 @@ jobs:
           python-version: "3.11"
           cache: pip
       - name: Install Python modules
-        run: >-
-          python -m pip install
-          -e 'apps/api[dev]'
-          -e 'geospatial[dev]'
-          -e 'services/workflow[dev]'
-          -e 'services/knowledge[dev]'
-          -e 'services/evaluation[dev]'
-          -e 'services/ml[dev]'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e 'geospatial[dev,postgres]'
+          python -m pip install -e 'ml/vision[dev]' -e 'ml/duplicates[dev]' -e 'ml/risk[dev]' -e 'ml/resolution[dev]'
+          python -m pip install -e 'services/ml[dev,http]'
+          python -m pip install -e 'apps/api[dev]' -e 'services/workflow[dev]' -e 'services/knowledge[dev]' -e 'services/evaluation[dev]'
+      - name: Test geospatial
+        run: python -m pytest geospatial/tests
+      - name: Test vision
+        run: python -m pytest ml/vision/tests
+      - name: Test duplicates
+        run: python -m pytest ml/duplicates/tests
+      - name: Test risk
+        run: python -m pytest ml/risk/tests
+      - name: Test resolution
+        run: python -m pytest ml/resolution/tests
+      - name: Test ML service
+        run: python -m pytest services/ml/tests
       - name: Test API
         run: python -m pytest apps/api/tests
       - name: Test workflow
@@ -31,21 +41,16 @@ jobs:
         run: python -m pytest services/knowledge/tests
       - name: Test evaluation
         run: python -m pytest services/evaluation/tests
-      - name: Test ML contracts
-        run: python -m pytest services/ml/tests
 
   web:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: .
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: npm
-      - run: npm ci
+      - name: Install web dependencies
+        run: npm install --ignore-scripts
       - run: npm run typecheck:web
       - run: npm run lint:web
       - run: npm run build:web

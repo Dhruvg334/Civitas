@@ -586,3 +586,14 @@ The first implementation priorities are:
 Built around evidence, explainability, and accountable human decisions.
 
 </div>
+
+
+## Demo media
+
+Large demo images and videos are kept outside Git. Restore versioned open-media references and externally hosted local demo assets with:
+
+```bash
+python scripts/fetch_demo_media.py
+```
+
+Downloads are checked against the SHA-256 hashes in `datasets/demo_data/manifest.json`.

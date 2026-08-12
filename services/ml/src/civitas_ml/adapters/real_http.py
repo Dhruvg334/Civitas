@@ -31,10 +31,10 @@ from civitas_ml.errors import (
     MLServiceError,
 )
 
-_ENDPOINT_NEARBY = "/ml/nearby-candidates"
-_ENDPOINT_LANDMARKS = "/ml/landmarks"
-_ENDPOINT_MEDIA = "/ml/media/{reference}"
-_ENDPOINT_MEDIA_METADATA = "/ml/media/{reference}/metadata"
+_ENDPOINT_NEARBY = "/api/v1/ml/nearby-candidates"
+_ENDPOINT_LANDMARKS = "/api/v1/ml/landmarks"
+_ENDPOINT_MEDIA = "/api/v1/ml/media/{reference}"
+_ENDPOINT_MEDIA_METADATA = "/api/v1/ml/media/{reference}/metadata"
 
 
 class RealBackendAdapter(BackendAdapter):
@@ -97,14 +97,51 @@ class RealBackendAdapter(BackendAdapter):
             raise MalformedResponseError(
                 f"backend returned a non-object payload for {path}", details={"path": path}
             )
+        if "success" in payload:
+            if payload.get("success") is not True:
+                raise BackendAdapterError(
+                    f"backend returned an error envelope for {path}",
+                    details={"path": path, "error": payload.get("error")},
+                )
+            data = payload.get("data")
+            if not isinstance(data, dict):
+                raise MalformedResponseError(
+                    f"backend success envelope has non-object data for {path}", details={"path": path}
+                )
+            return data
+        return payload
+
+    def _post_json(self, path: str, body: dict[str, Any]) -> dict[str, Any]:
+        try:
+            with self._client as client:
+                response = client.post(path, json=body)
+        except Exception as exc:  # noqa: BLE001
+            raise BackendAdapterError(
+                f"backend unreachable at {self.base_url}{path}: {exc}", details={"path": path}
+            ) from exc
+        if response.status_code != 200:
+            raise BackendAdapterError(
+                f"backend returned HTTP {response.status_code} for {path}",
+                details={"path": path, "status_code": response.status_code},
+            )
+        try:
+            payload = response.json()
+        except Exception as exc:  # noqa: BLE001
+            raise MalformedResponseError(f"backend returned non-JSON body for {path}", details={"path": path}) from exc
+        if not isinstance(payload, dict):
+            raise MalformedResponseError(f"backend returned a non-object payload for {path}", details={"path": path})
+        if "success" in payload:
+            if payload.get("success") is not True:
+                raise BackendAdapterError(f"backend returned an error envelope for {path}", details={"path": path})
+            payload = payload.get("data")
+        if not isinstance(payload, dict):
+            raise MalformedResponseError(f"backend response data is not an object for {path}", details={"path": path})
         return payload
 
     def fetch_nearby_candidates(self, request: NearbyCandidatesRequest) -> NearbyCandidatesResponse:
-        payload = self._get_json(_ENDPOINT_NEARBY)
+        payload = self._post_json(_ENDPOINT_NEARBY, request.model_dump(mode="json"))
         try:
-            envelope = dict(payload)
-            envelope["request"] = request
-            return NearbyCandidatesResponse.model_validate(envelope)
+            return NearbyCandidatesResponse.model_validate(payload)
         except Exception as exc:  # noqa: BLE001 - validation failure -> structured error
             raise MalformedResponseError(
                 f"nearby-candidates response does not match the contract: {exc}",

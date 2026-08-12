@@ -181,7 +181,7 @@ def build_report(
     md.append("")
     md.append("## 6. Recorded limitations")
     md.append("")
-    md.append("- All media is synthetic (procedural scenes) - no real-world imagery; vision metrics may not transfer to field photos.")
+    md.append("- The frozen component benchmark uses procedural synthetic media for reproducibility. A separate real-world media probe is maintained under datasets/demo_data/results; neither should be treated as universal field performance.")
     md.append("- Severity/priority labels come from the documented rule tables (faithfulness evidence, not external calibration).")
     md.append("- The ambiguous-blend test input is a pixel mix of two committed training-prototype scenes (derived, not a training example; provenance in the manifest).")
     md.append("- Duplicate/cluster labels are semantic (same physical incident), authored on text/gps/time/category records without real photos.")

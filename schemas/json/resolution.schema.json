@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Resolution Verification",
+  "type": "object",
+  "required": [
+    "incident_id",
+    "status",
+    "confidence",
+    "evidence",
+    "basis"
+  ],
+  "properties": {
+    "incident_id": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "resolved",
+        "partial",
+        "unverifiable",
+        "conflicting"
+      ]
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "basis": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

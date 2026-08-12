@@ -122,3 +122,33 @@ def test_scores_stay_in_range() -> None:
     )
     assert 0 <= analysis.vision.confidence <= 1
     assert analysis.severity.score is None
+
+def test_real_backend_adapter_posts_canonical_candidate_contract() -> None:
+    import json
+    import httpx
+    from civitas_ml.adapters.real_http import RealBackendAdapter
+
+    request = NearbyCandidatesRequest(
+        report_id="R1", latitude=28.6, longitude=77.2,
+        submitted_at="2026-03-01T12:00:00+00:00", category="water_leakage",
+        radius_m=1500, time_window_h=48, limit=12,
+    )
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        assert req.url.path == "/api/v1/ml/nearby-candidates"
+        assert req.method == "POST"
+        body = json.loads(req.content.decode())
+        assert body["latitude"] == 28.6
+        assert body["radius_m"] == 1500.0
+        assert body["time_window_h"] == 48.0
+        return httpx.Response(200, json={
+            "success": True,
+            "data": {"request": body, "candidates": [], "count": 0, "basis": ["test"]},
+            "trace_id": "trace-test",
+            "timestamp": "2026-03-01T12:00:00+00:00",
+        })
+
+    adapter = RealBackendAdapter(base_url="https://backend.test", _transport=httpx.MockTransport(handler))
+    response = adapter.fetch_nearby_candidates(request)
+    assert response.request.radius_m == 1500.0
+    assert response.count == 0

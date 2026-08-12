@@ -6,22 +6,11 @@ and exposes typed dataclasses/result handlers for HTTP routes.
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-# Make Pavit's geospatial package importable as `civitas_geo` from the
-# vendored copy under services/spatial/src.  We do NOT install it as a
-# package because the team has not vendored it into the api pyproject yet;
-# a sys.path shim is the minimum-friction integration for the hackathon.
-_SPATIAL_SRC = Path(__file__).resolve().parents[2] / "spatial" / "src"
-if str(_SPATIAL_SRC) not in sys.path:
-    sys.path.insert(0, str(_SPATIAL_SRC))
-
-from civitas_geo.aggregates import DensityAggregator  # noqa: E402
-from civitas_geo.boundary import DEFAULT_BOUNDARY  # noqa: E402
-from civitas_geo.candidates import CandidateRetriever  # noqa: E402
-from civitas_geo.landmarks import LandmarkIndex  # noqa: E402
-from civitas_geo.models import (  # noqa: E402
+from civitas_geo.aggregates import DensityAggregator
+from civitas_geo.boundary import DEFAULT_BOUNDARY
+from civitas_geo.candidates import CandidateRetriever
+from civitas_geo.landmarks import LandmarkIndex
+from civitas_geo.models import (
     CandidateSearchSpec,
     DensityAggregateResult,
     GeoPoint,
@@ -29,9 +18,9 @@ from civitas_geo.models import (  # noqa: E402
     NearbyIncidentsResult,
     SpatialSearchSpec,
 )
-from civitas_geo.retrieval import NearbyRetriever  # noqa: E402
+from civitas_geo.retrieval import NearbyRetriever
 
-from civitas_api.core.database import PostgresExecutor  # noqa: E402
+from civitas_api.core.database import PostgresExecutor
 
 __all__ = [
     "CandidateRetriever",

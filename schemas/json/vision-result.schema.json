@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Vision Result",
+  "type": "object",
+  "required": [
+    "media_usable",
+    "observable_evidence",
+    "confidence",
+    "basis"
+  ],
+  "properties": {
+    "media_usable": {
+      "type": "boolean"
+    },
+    "primary_category": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "secondary_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "observable_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "uncertainty": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "basis": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

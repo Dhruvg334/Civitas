@@ -363,7 +363,7 @@ Use the token in the `Authorization: Bearer <token>` header.
 - Frontend (`apps/web` — Dhruv)
 - Agent orchestration (`services/workflow` — Dhruv)
 - Knowledge grounding (`services/knowledge` — Dhruv)
-- ML models (`services/spatial`, `services/ml` — Pavit)
+- ML models (`geospatial`, `services/ml` — Pavit)
 - LAZ/TIFF/raster file ingestion (deferred; map-link URL extraction is supported)
 - Rate limiting (use edge proxy)
 

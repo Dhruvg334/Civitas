@@ -10,7 +10,7 @@ FastAPI backend for the Civitas civic incident intelligence platform.
 ```bash
 # Python 3.11+ (uses StrEnum from stdlib)
 python -m pip install -e .
-python -m pip install -e ../spatial  # if working from apps/api
+python -m pip install -e ../../geospatial  # if working from apps/api
 ```
 
 Required environment variables — see `.env.example`:
@@ -18,7 +18,7 @@ Required environment variables — see `.env.example`:
 | Var | Purpose |
 |---|---|
 | `DATABASE_URL` | Postgres connection (Supabase pooler). SQLite (`sqlite:///./test.db`) works for local dev without PostGIS. |
-| `CIVITAS_POSTGIS_DSN` | Same value as DATABASE_URL; consumed by `services/spatial`. |
+| `CIVITAS_POSTGIS_DSN` | Same value as DATABASE_URL; consumed by `geospatial`. |
 | `SUPABASE_URL` | Optional. If set with `SUPABASE_SERVICE_ROLE_KEY`, media uploads go to Supabase Storage. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Storage admin. |
 | `SUPABASE_JWT_SECRET` | If empty, dev mode accepts any HS256 token without signature verification. Required in production. |

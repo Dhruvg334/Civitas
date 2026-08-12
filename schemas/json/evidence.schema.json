@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Structured Evidence",
+  "type": "object",
+  "required": [
+    "observable_facts",
+    "inferences",
+    "hazards",
+    "landmarks",
+    "missing_information"
+  ],
+  "properties": {
+    "observable_facts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "inferences": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "hazards": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "landmarks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "media_quality": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "missing_information": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

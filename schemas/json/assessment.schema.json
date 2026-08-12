@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Severity and Priority Assessment",
+  "type": "object",
+  "required": [
+    "severity",
+    "priority"
+  ],
+  "properties": {
+    "severity": {
+      "$ref": "#/$defs/score"
+    },
+    "priority": {
+      "$ref": "#/$defs/score"
+    }
+  },
+  "$defs": {
+    "score": {
+      "type": "object",
+      "required": [
+        "available",
+        "basis"
+      ],
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "score": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "level": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "basis": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

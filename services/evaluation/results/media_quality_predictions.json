@@ -110,12 +110,12 @@
     "forced_category": null,
     "unusable_without_forced_category": true,
     "rejection_basis": [
-      "C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\evaluation\\test_data\\media_quality\\mq-unsupported-bytes.bin: media bytes not decodable as an image: cannot identify image file 'C:\\\\Users\\\\Nitu Agarwal\\\\Documents\\\\Pavit\\\\BTech\\\\Hackathons\\\\Civitas\\\\services\\\\evaluation\\\\test_data\\\\media_quality\\\\mq-unsupported-bytes.bin'"
+      "services\\evaluation\\test_data\\media_quality\\mq-unsupported-bytes.bin: media bytes not decodable as an image: cannot identify image file 'C:\\\\Users\\\\Nitu Agarwal\\\\Documents\\\\Pavit\\\\BTech\\\\Hackathons\\\\Civitas\\\\services\\\\evaluation\\\\test_data\\\\media_quality\\\\mq-unsupported-bytes.bin'"
     ],
     "error_code": "C",
     "basis": [
       "no media supplied",
-      "C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\evaluation\\test_data\\media_quality\\mq-unsupported-bytes.bin: media bytes not decodable as an image: cannot identify image file 'C:\\\\Users\\\\Nitu Agarwal\\\\Documents\\\\Pavit\\\\BTech\\\\Hackathons\\\\Civitas\\\\services\\\\evaluation\\\\test_data\\\\media_quality\\\\mq-unsupported-bytes.bin'"
+      "services\\evaluation\\test_data\\media_quality\\mq-unsupported-bytes.bin: media bytes not decodable as an image: cannot identify image file 'C:\\\\Users\\\\Nitu Agarwal\\\\Documents\\\\Pavit\\\\BTech\\\\Hackathons\\\\Civitas\\\\services\\\\evaluation\\\\test_data\\\\media_quality\\\\mq-unsupported-bytes.bin'"
     ]
   },
   {
@@ -126,12 +126,12 @@
     "forced_category": null,
     "unusable_without_forced_category": true,
     "rejection_basis": [
-      "C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\evaluation\\results\\does-not-exist.png: media file not found: C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\evaluation\\results\\does-not-exist.png"
+      "services\\evaluation\\results\\does-not-exist.png: media file not found: services\\evaluation\\results\\does-not-exist.png"
     ],
     "error_code": "C",
     "basis": [
       "no media supplied",
-      "C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\evaluation\\results\\does-not-exist.png: media file not found: C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\evaluation\\results\\does-not-exist.png"
+      "services\\evaluation\\results\\does-not-exist.png: media file not found: services\\evaluation\\results\\does-not-exist.png"
     ]
   },
   {
@@ -142,12 +142,12 @@
     "forced_category": null,
     "unusable_without_forced_category": true,
     "rejection_basis": [
-      "mock:video-bytes.mp4: video could not be resolved (media_not_found): mock media fixture missing: C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\ml\\fixtures\\media\\video-bytes.mp4"
+      "mock:video-bytes.mp4: video could not be resolved (media_not_found): mock media fixture missing: services\\ml\\fixtures\\media\\video-bytes.mp4"
     ],
     "error_code": "mock",
     "basis": [
       "no media supplied",
-      "mock:video-bytes.mp4: video could not be resolved (media_not_found): mock media fixture missing: C:\\Users\\Nitu Agarwal\\Documents\\Pavit\\BTech\\Hackathons\\Civitas\\services\\ml\\fixtures\\media\\video-bytes.mp4"
+      "mock:video-bytes.mp4: video could not be resolved (media_not_found): mock media fixture missing: services\\ml\\fixtures\\media\\video-bytes.mp4"
     ]
   },
   {

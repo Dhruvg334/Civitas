@@ -1,3 +1,13 @@
+# Demo media
+
+Binary demo images and videos are intentionally not stored in Git. Restore them with:
+
+```bash
+python scripts/fetch_demo_media.py
+```
+
+Open-licensed Wikimedia assets are restored directly from `manifest.json` and verified by SHA-256. Locally contributed media requires `CIVITAS_DEMO_MEDIA_BASE_URL`, pointing to an external object-storage prefix containing the manifest `remote_key` paths. The manifest and attribution remain versioned.
+
 # demo_data — real-world media corpus (open-licensed + local)
 
 A small, fully documented corpus of **real** citizen-style photos and videos,

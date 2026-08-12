@@ -2,9 +2,6 @@
 ref/
 team reference/
 
-# geospatial source — consumed via PYTHONPATH, not committed
-services/spatial/
-
 # Environment and secrets
 .env
 .env.*
@@ -85,3 +82,9 @@ reports/generated/
 .vercel/
 .render/
 *.egg-info/
+
+# External demo media (restore with scripts/fetch_demo_media.py)
+datasets/demo_data/images/*
+datasets/demo_data/videos/*
+!datasets/demo_data/images/.gitkeep
+!datasets/demo_data/videos/.gitkeep
