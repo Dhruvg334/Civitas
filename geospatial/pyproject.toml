@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "civitas-geospatial"
 version = "0.1.0"
 description = "Geospatial intelligence for Civitas: PostGIS queries, nearby-incident retrieval, landmark grounding, location validation and map-based reasoning."
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = ["pydantic>=2.10,<3.0"]
 
 [project.optional-dependencies]

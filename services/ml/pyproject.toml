@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "civitas-ml"
 version = "0.1.0"
 description = "Civitas ML/CV intelligence service: one typed, schema-validated ML integration boundary composing vision, embeddings, duplicates, clustering, severity, priority and resolution verification, with a backend-adapter interface (mock now, real APIs later)."
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = ["pydantic>=2.10,<3.0", "Pillow>=10.0"]
 
 [project.optional-dependencies]

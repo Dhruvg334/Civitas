@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civitas.local/schemas/knowledge-query.schema.json",
+  "title": "KnowledgeQuery",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": ["string", "null"],
+      "enum": ["pothole_road_damage", "water_leakage", "garbage_overflow", "broken_streetlight", "fallen_tree", null]
+    },
+    "department": {"type": ["string", "null"], "minLength": 1, "maxLength": 100},
+    "jurisdiction": {"type": ["string", "null"], "minLength": 1, "maxLength": 200},
+    "policy_type": {"type": ["string", "null"], "enum": ["policy", "playbook", null]},
+    "purposes": {
+      "type": "array",
+      "items": {
+        "enum": ["department_jurisdiction", "routing_policy", "escalation_rules", "safety_guidance", "required_work_order_fields", "operational_guidance", "citizen_communication_restrictions"]
+      },
+      "default": []
+    },
+    "text": {"type": ["string", "null"], "minLength": 2, "maxLength": 2000},
+    "limit": {"type": "integer", "minimum": 1, "maximum": 50, "default": 10}
+  },
+  "additionalProperties": false,
+  "anyOf": [
+    {"required": ["category"]},
+    {"required": ["department"]},
+    {"required": ["jurisdiction"]},
+    {"required": ["policy_type"]},
+    {"required": ["purposes"]},
+    {"required": ["text"]}
+  ]
+}

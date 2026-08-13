@@ -8,7 +8,7 @@ FastAPI backend for the Civitas civic incident intelligence platform.
 ## Setup
 
 ```bash
-# Python 3.11+ (uses StrEnum from stdlib)
+# Python 3.12
 python -m pip install -e .
 python -m pip install -e ../../geospatial  # if working from apps/api
 ```

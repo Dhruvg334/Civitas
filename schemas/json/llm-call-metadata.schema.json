@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civitas.local/schemas/llm-call-metadata.schema.json",
+  "title": "LLMCallMetadata",
+  "type": "object",
+  "required": ["provider", "model", "latency_ms", "trace_id", "retry_count", "status", "validation_result"],
+  "properties": {
+    "provider": {"type": "string"},
+    "model": {"type": "string"},
+    "latency_ms": {"type": "integer", "minimum": 0},
+    "trace_id": {"type": "string"},
+    "retry_count": {"type": "integer", "minimum": 0},
+    "status": {"enum": ["succeeded", "failed"]},
+    "validation_result": {"enum": ["valid", "invalid", "not_attempted"]},
+    "usage": {
+      "type": ["object", "null"],
+      "properties": {
+        "input_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "output_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "total_tokens": {"type": ["integer", "null"], "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "warnings": {"type": "array", "items": {"type": "string"}},
+    "provider_metadata": {"type": "object"}
+  },
+  "additionalProperties": false
+}

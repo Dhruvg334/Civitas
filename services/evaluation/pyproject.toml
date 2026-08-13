@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "civitas-evaluation"
 version = "1.0.0"
 description = "Frozen, reproducible evaluation of every Member 2 ML capability (Phase 11/12)."
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = ["pydantic>=2.10,<3.0", "numpy>=1.26"]
 
 [project.optional-dependencies]

@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "civitas-resolution"
 version = "0.1.0"
 description = "Resolution verification for Civitas: BEFORE/AFTER evidence comparison answering resolved, partial, unverifiable or conflicting."
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = ["pydantic>=2.10,<3.0"]
 
 [project.optional-dependencies]

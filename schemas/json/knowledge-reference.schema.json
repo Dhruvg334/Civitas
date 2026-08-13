@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civitas.local/schemas/knowledge-reference.schema.json",
+  "title": "KnowledgeReference",
+  "type": "object",
+  "required": ["record_id", "reference_id", "title", "source_identifier"],
+  "properties": {
+    "record_id": {"type": "string"},
+    "reference_id": {"type": "string"},
+    "title": {"type": "string"},
+    "source_identifier": {"type": "string"}
+  },
+  "additionalProperties": false
+}

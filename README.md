@@ -396,7 +396,7 @@ This makes the system inspectable instead of treating artificial intelligence as
 | Geospatial data | PostGIS |
 | Media storage | Supabase Storage |
 | Agent orchestration | LangGraph |
-| Multimodal reasoning | Gemini-compatible multimodal models |
+| Structured language reasoning | Provider-neutral clients with Groq support |
 | Text embeddings | Provider-agnostic embedding interface |
 | Image embeddings | CLIP-compatible vision embeddings |
 | Machine learning | scikit-learn and model-specific Python tooling |

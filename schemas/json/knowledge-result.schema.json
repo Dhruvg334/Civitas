@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civitas.local/schemas/knowledge-result.schema.json",
+  "title": "KnowledgeResult",
+  "type": "object",
+  "required": ["query", "records", "evidence", "status", "sufficient_evidence", "retrieval_method", "missing_information", "warnings"],
+  "properties": {
+    "query": {"type": "object"},
+    "records": {"type": "array", "items": {"type": "object"}},
+    "evidence": {"type": "array", "items": {"type": "object"}},
+    "status": {"enum": ["SUPPORTED", "PARTIALLY_SUPPORTED", "INSUFFICIENT_KNOWLEDGE"]},
+    "sufficient_evidence": {"type": "boolean"},
+    "retrieval_method": {"enum": ["exact_filter", "keyword", "semantic", "deterministic_fallback"]},
+    "missing_information": {"type": "array", "items": {"type": "string"}},
+    "abstention_reason": {"type": ["string", "null"]},
+    "warnings": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}
