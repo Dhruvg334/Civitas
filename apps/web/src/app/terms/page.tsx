@@ -1,0 +1,5 @@
+import { Footer, Nav } from "@/components/site";
+
+export default function Terms() {
+  return <><Nav /><main className="legal-page"><p className="section-kicker">Terms of use</p><h1>Use Civitas responsibly.</h1><p className="legal-lede">Civitas helps organize civic reports. It does not replace emergency services, municipal authority or a human safety assessment.</p><section><h2>Do not use for emergencies</h2><p>For immediate danger, medical emergencies, fire, crime or other urgent situations, contact the appropriate local emergency service. Do not wait for a workflow update.</p></section><section><h2>Report accuracy</h2><p>Share information you reasonably believe is accurate. Civitas may structure evidence and ask clarifying questions, but a submitted report is not a guarantee of response, resolution time or service outcome.</p></section><section><h2>Demo limitations</h2><p>Current screens use seeded data and local preview interactions. Production availability, service levels, identity verification and municipal policy handling require further implementation and review.</p></section></main><Footer /></>;
+}

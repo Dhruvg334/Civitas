@@ -6,6 +6,6 @@ import Profile from "./page";
 it("renders a safe signed-out profile state", () => {
   const html = renderToStaticMarkup(<Profile />);
 
-  expect(html).toContain("Signed-out preview");
-  expect(html).toContain("sign in required");
+  expect(html).toContain("signed out preview");
+  expect(html).toContain("Sign in or create account");
 });

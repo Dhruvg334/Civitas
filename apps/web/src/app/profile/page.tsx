@@ -1,1 +1,10 @@
-import { Nav, Status } from "@/components/site"; export default function Profile(){return <><Nav/><main className="prose"><p className="eyebrow">Profile</p><h1>Your civic activity</h1><p className="lede">Sign in to see reports, clarification requests and operational updates associated with your account.</p><section className="notice"><h2>Signed-out preview</h2><p>Profile data is shown only after current Civitas authentication is available.</p><Status>Sign in required</Status></section></main></>}
+import Link from "next/link";
+
+import { ProfileSettings } from "@/components/profile-settings";
+import { Footer, Nav, Status } from "@/components/site";
+
+const history = [["REPORT-103", "Water on road near school", "Grouped into INC-0241", "Today"], ["REPORT-097", "Streetlight outage", "Awaiting clarification", "2 days ago"], ["REPORT-088", "Blocked pedestrian path", "Sent to Public Works", "6 days ago"]];
+
+export default function Profile() {
+  return <><Nav /><main className="profile-shell"><section className="profile-top"><div className="profile-avatar">DR</div><div className="profile-intro"><span className="workspace-kicker">YOUR CIVIC ACCOUNT</span><h1>Stay connected to the reports you start.</h1><p>Update how Civitas addresses you, choose a local area and keep a clear record of report updates. You remain in control of this preview data.</p><div className="actions"><Link className="button" href="/sign-in">Sign in or create account</Link><Status tone="warn">SIGNED_OUT_PREVIEW</Status></div></div></section><section className="profile-overview"><article><span>Reports submitted</span><b>03</b><small>in this browser preview</small></article><article><span>Needs your response</span><b>01</b><small>clarification available</small></article><article><span>Area</span><b>Ward 12</b><small>Bhubaneswar demo</small></article></section><section className="history-section"><div className="history-heading"><div><span>REPORT HISTORY</span><h2>Recent civic activity</h2></div><Link className="textlink" href="/workspace">Open municipal workspace</Link></div><div className="history-list">{history.map(([id, title, status, date]) => <article key={id}><span>{id}</span><b>{title}</b><p>{status}</p><time>{date}</time></article>)}</div></section><ProfileSettings /></main><Footer /></>;
+}
