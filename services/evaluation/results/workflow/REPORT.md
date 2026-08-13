@@ -1,3 +1,3 @@
-# Workflow evaluation
+# Workflow comparison
 
-Offline deterministic contract evaluation only; no live-model quality claim.
+OFFLINE DETERMINISTIC ARCHITECTURE EVALUATION; not live model quality evidence.

@@ -13,4 +13,4 @@ def test_offline_comparison_is_serializable(tmp_path: Path) -> None:
     result = evaluate("civitas")
     assert result["case_count"] == 25
     comparison = write_results(tmp_path / "workflow")
-    assert comparison["mode"] == "offline_deterministic_contract"
+    assert comparison["mode"] == "OFFLINE DETERMINISTIC ARCHITECTURE EVALUATION"
