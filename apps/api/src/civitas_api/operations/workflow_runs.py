@@ -22,6 +22,13 @@ def find_active(report_id: str) -> dict[str, Any] | None:
     )
 
 
+def find_latest(report_id: str) -> dict[str, Any] | None:
+    return _one(
+        "SELECT * FROM workflow_runs WHERE report_id = %(id)s ORDER BY created_at DESC LIMIT 1",
+        {"id": report_id},
+    )
+
+
 def create(workflow_id: str, thread_id: str, report_id: str, trace_id: str) -> dict[str, Any]:
     _execute(
         "INSERT INTO workflow_runs (workflow_id, thread_id, report_id, incident_id, trace_id, status) "

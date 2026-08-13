@@ -22,6 +22,9 @@ class WorkflowRuntimeService:
         active = workflow_runs.find_active(report_id)
         if active:
             return self._summary(active)
+        completed = workflow_runs.find_latest(report_id)
+        if completed and completed["status"] in {"COMPLETED", "REJECTED"}:
+            return self._summary(completed)
         workflow_id = f"wf-{uuid4().hex}"
         trace_id = f"trc-{uuid4().hex}"
         row = workflow_runs.create(workflow_id, workflow_id, report_id, trace_id)

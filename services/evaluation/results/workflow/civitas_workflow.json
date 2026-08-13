@@ -1,0 +1,333 @@
+{
+  "system": "civitas",
+  "mode": "offline_deterministic_contract",
+  "timestamp": "2026-08-13T13:44:17.293254+00:00",
+  "dataset_version": "workflow-v1",
+  "case_count": 25,
+  "prompt_versions": {
+    "baseline_a": "single-v1",
+    "baseline_b": "mega-v1",
+    "agents": "v1"
+  },
+  "outputs": [
+    {
+      "case_id": "wf-01",
+      "valid": true,
+      "category": "water_leakage",
+      "primary_department": "water",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-WATER-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-02",
+      "valid": true,
+      "category": "pothole_road_damage",
+      "primary_department": "roads",
+      "escalation_required": false,
+      "knowledge_references": [
+        "PLAY-ROAD-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-03",
+      "valid": true,
+      "category": "garbage_overflow",
+      "primary_department": "sanitation",
+      "escalation_required": false,
+      "knowledge_references": [
+        "PLAY-WASTE-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-04",
+      "valid": true,
+      "category": "broken_streetlight",
+      "primary_department": "electric",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-LIGHT-01"
+      ],
+      "clarification_required": true,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-05",
+      "valid": true,
+      "category": "fallen_tree",
+      "primary_department": "parks",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-TREE-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-06",
+      "valid": true,
+      "category": "water_leakage",
+      "primary_department": "water",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-WATER-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-07",
+      "valid": true,
+      "category": "pothole_road_damage",
+      "primary_department": "roads",
+      "escalation_required": false,
+      "knowledge_references": [
+        "PLAY-ROAD-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-08",
+      "valid": true,
+      "category": "garbage_overflow",
+      "primary_department": "sanitation",
+      "escalation_required": false,
+      "knowledge_references": [
+        "PLAY-WASTE-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-09",
+      "valid": true,
+      "category": "broken_streetlight",
+      "primary_department": "electric",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-LIGHT-01"
+      ],
+      "clarification_required": true,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-10",
+      "valid": true,
+      "category": "fallen_tree",
+      "primary_department": "parks",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-TREE-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-11",
+      "valid": true,
+      "category": "water_leakage",
+      "primary_department": "water",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-WATER-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-12",
+      "valid": true,
+      "category": "pothole_road_damage",
+      "primary_department": "roads",
+      "escalation_required": false,
+      "knowledge_references": [
+        "PLAY-ROAD-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-13",
+      "valid": true,
+      "category": "garbage_overflow",
+      "primary_department": "sanitation",
+      "escalation_required": false,
+      "knowledge_references": [
+        "PLAY-WASTE-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-14",
+      "valid": true,
+      "category": "broken_streetlight",
+      "primary_department": "electric",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-LIGHT-01"
+      ],
+      "clarification_required": true,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-15",
+      "valid": true,
+      "category": "fallen_tree",
+      "primary_department": "parks",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-TREE-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-16",
+      "valid": true,
+      "category": "water_leakage",
+      "primary_department": "water",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-WATER-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-17",
+      "valid": true,
+      "category": "pothole_road_damage",
+      "primary_department": "roads",
+      "escalation_required": false,
+      "knowledge_references": [
+        "PLAY-ROAD-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-18",
+      "valid": true,
+      "category": "garbage_overflow",
+      "primary_department": "sanitation",
+      "escalation_required": false,
+      "knowledge_references": [
+        "PLAY-WASTE-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-19",
+      "valid": true,
+      "category": "broken_streetlight",
+      "primary_department": "electric",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-LIGHT-01"
+      ],
+      "clarification_required": true,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-20",
+      "valid": true,
+      "category": "fallen_tree",
+      "primary_department": "parks",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-TREE-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-21",
+      "valid": true,
+      "category": "water_leakage",
+      "primary_department": "water",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-WATER-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-22",
+      "valid": true,
+      "category": "pothole_road_damage",
+      "primary_department": "roads",
+      "escalation_required": false,
+      "knowledge_references": [
+        "PLAY-ROAD-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-23",
+      "valid": true,
+      "category": "garbage_overflow",
+      "primary_department": "sanitation",
+      "escalation_required": false,
+      "knowledge_references": [
+        "PLAY-WASTE-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-24",
+      "valid": true,
+      "category": "broken_streetlight",
+      "primary_department": "electric",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-LIGHT-01"
+      ],
+      "clarification_required": true,
+      "work_order_complete": true
+    },
+    {
+      "case_id": "wf-25",
+      "valid": true,
+      "category": "fallen_tree",
+      "primary_department": "parks",
+      "escalation_required": true,
+      "knowledge_references": [
+        "PLAY-TREE-01"
+      ],
+      "clarification_required": false,
+      "work_order_complete": true
+    }
+  ],
+  "metrics": {
+    "sample_size": 25,
+    "structured_output_valid": {
+      "count": 25,
+      "n": 25
+    },
+    "knowledge_reference_valid": {
+      "count": 25,
+      "n": 25
+    },
+    "work_order_complete": {
+      "count": 25,
+      "n": 25
+    },
+    "model_calls": {
+      "count": 150,
+      "n": 25
+    }
+  }
+}

@@ -15,7 +15,7 @@
 - [x] Start/status/clarification/review routes and runtime service exist.
 - [ ] Narrow edit and reroute schemas are implemented and tested.
 - [ ] Backend persistence adapters and citizen communication persistence are complete.
-- [ ] Golden FastAPI start-to-review-to-approval integration test passes.
+- [x] Golden FastAPI start-to-review-to-approval integration test passes.
 - [ ] Runtime failure and idempotency matrix is complete.
 
 ## Evaluation

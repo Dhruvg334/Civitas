@@ -1,0 +1,62 @@
+{
+  "mode": "offline_deterministic_contract",
+  "systems": {
+    "baseline-a": {
+      "sample_size": 25,
+      "structured_output_valid": {
+        "count": 25,
+        "n": 25
+      },
+      "knowledge_reference_valid": {
+        "count": 0,
+        "n": 25
+      },
+      "work_order_complete": {
+        "count": 0,
+        "n": 25
+      },
+      "model_calls": {
+        "count": 25,
+        "n": 25
+      }
+    },
+    "baseline-b": {
+      "sample_size": 25,
+      "structured_output_valid": {
+        "count": 25,
+        "n": 25
+      },
+      "knowledge_reference_valid": {
+        "count": 0,
+        "n": 25
+      },
+      "work_order_complete": {
+        "count": 25,
+        "n": 25
+      },
+      "model_calls": {
+        "count": 25,
+        "n": 25
+      }
+    },
+    "civitas": {
+      "sample_size": 25,
+      "structured_output_valid": {
+        "count": 25,
+        "n": 25
+      },
+      "knowledge_reference_valid": {
+        "count": 25,
+        "n": 25
+      },
+      "work_order_complete": {
+        "count": 25,
+        "n": 25
+      },
+      "model_calls": {
+        "count": 150,
+        "n": 25
+      }
+    }
+  }
+}
