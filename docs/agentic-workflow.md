@@ -26,6 +26,8 @@ Missing reports and invalid model output fail the responsible node explicitly. M
 
 The included memory checkpointer and in-memory tools are for local tests. Production must use a durable LangGraph checkpointer and authenticated HTTP adapters. A reviewer must approve, edit, reroute, reject, or request evidence; the workflow does not auto-approve high-impact decisions.
 
+Production composition uses `create_production_workflow` with `HttpReportContextTool`, `HttpMLIntelligenceTool`, `HttpKnowledgeTool`, `HttpPersistenceTool`, and `HttpTraceTool`. It requires `CIVITAS_BACKEND_BASE_URL`, `ML_SERVICE_URL`, `CIVITAS_INTERNAL_API_KEY` where enabled, and `CIVITAS_WORKFLOW_CHECKPOINT_DATABASE_URL`. Install the workflow PostgreSQL extra, create the saver with `create_postgres_checkpointer`, and call its `setup()` during controlled service initialization. The manual command `py -3.12 scripts/smoke_groq.py` verifies Groq structured output without printing credentials.
+
 ## Limitations
 
 The first vertical slice produces one report/incident recommendation. Multi-report consolidation and resolution verification remain separate future graph extensions. Existing backend policy data lacks jurisdiction metadata, so jurisdiction-specific grounding remains explicit partial support or abstention.

@@ -1,6 +1,32 @@
 from __future__ import annotations
 
 from civitas_api.core.config import Settings
+from civitas_api.main import app
+from fastapi.testclient import TestClient
+
+
+def test_analyze_report_internal_route(client: TestClient, auth_header: dict[str, str]) -> None:
+    created = client.post(
+        "/api/v1/reports",
+        json={
+            "description": "water leaking beside a school",
+            "location": {"latitude": 20.2, "longitude": 85.8},
+        },
+        headers=auth_header,
+    )
+    report_id = created.json()["data"]["report_id"]
+    result = client.post(
+        "/api/v1/ml/analyze", json={"report_id": report_id, "trace_id": "trace-ml"}
+    )
+    assert result.status_code == 200
+    data = result.json()["data"]
+    assert data["report_id"] == report_id
+    assert data["trace_id"] == "trace-ml"
+    assert {"vision", "duplicate", "cluster", "severity", "priority", "models"} <= data.keys()
+
+
+def test_analyze_unknown_report_is_404(client: TestClient) -> None:
+    assert client.post("/api/v1/ml/analyze", json={"report_id": "missing"}).status_code == 404
 
 
 def _create_report(client, auth_header, description, lat, lon, category):

@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal
 
 from civitas_knowledge.contracts import GroundingStatus, KnowledgePurpose
 from civitas_knowledge.grounding import validate_grounding_references
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
@@ -47,9 +48,14 @@ class WorkflowDependencies:
 
 
 class CivitasWorkflow:
-    def __init__(self, dependencies: WorkflowDependencies) -> None:
+    def __init__(
+        self,
+        dependencies: WorkflowDependencies,
+        *,
+        checkpointer: BaseCheckpointSaver[Any] | None = None,
+    ) -> None:
         self.dependencies = dependencies
-        self.checkpointer = MemorySaver()
+        self.checkpointer = checkpointer or MemorySaver()
         self.graph = self._build().compile(checkpointer=self.checkpointer)
 
     def _build(self) -> StateGraph[CivitasWorkflowState]:
@@ -609,5 +615,7 @@ class CivitasWorkflow:
         )
 
 
-def build_workflow(dependencies: WorkflowDependencies) -> CivitasWorkflow:
-    return CivitasWorkflow(dependencies)
+def build_workflow(
+    dependencies: WorkflowDependencies, *, checkpointer: BaseCheckpointSaver[Any] | None = None
+) -> CivitasWorkflow:
+    return CivitasWorkflow(dependencies, checkpointer=checkpointer)

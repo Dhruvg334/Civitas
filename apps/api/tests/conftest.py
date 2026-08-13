@@ -165,6 +165,18 @@ def _sqlite_schema() -> str:
         suggested_resources TEXT,
         created_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS workflow_runs (
+        workflow_id TEXT PRIMARY KEY,
+        thread_id TEXT NOT NULL UNIQUE,
+        report_id TEXT NOT NULL,
+        incident_id TEXT,
+        trace_id TEXT NOT NULL,
+        status TEXT NOT NULL,
+        interrupt_type TEXT,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        completed_at TEXT
+    );
     """
 
 

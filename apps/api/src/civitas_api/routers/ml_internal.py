@@ -5,6 +5,7 @@ returns the existing Civitas success envelope while keeping persistence and
 PostGIS details behind the backend. In production, X-Civitas-Internal-Key is
 required.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -15,7 +16,12 @@ from pydantic import BaseModel, Field
 
 from civitas_api.core.config import get_settings
 from civitas_api.core.envelope import success_envelope
-from civitas_api.core.spatial import DEFAULT_BOUNDARY, GeoPoint, get_candidate_retriever, get_landmark_index
+from civitas_api.core.spatial import (
+    DEFAULT_BOUNDARY,
+    GeoPoint,
+    get_candidate_retriever,
+    get_landmark_index,
+)
 from civitas_api.core.storage import get_storage
 from civitas_api.operations import reports as reports_ops
 
@@ -33,30 +39,64 @@ class NearbyCandidatesRequest(BaseModel):
     limit: int = Field(default=25, ge=1, le=100)
 
 
+class AnalyzeReportRequest(BaseModel):
+    """Identifier-only request; the backend loads persisted report context."""
+
+    report_id: str = Field(min_length=1, max_length=200)
+    trace_id: str | None = Field(default=None, max_length=200)
+
+
 def require_internal_key(x_civitas_internal_key: Annotated[str | None, Header()] = None) -> None:
     settings = get_settings()
     expected = settings.civitas_internal_api_key.strip()
     if not expected and not settings.is_production:
         return
     if not expected or x_civitas_internal_key != expected:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid internal service key")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid internal service key"
+        )
+
+
+@router.post("/analyze")
+def analyze(
+    body: AnalyzeReportRequest,
+    _: Annotated[None, Depends(require_internal_key)],
+) -> dict[str, Any]:
+    """Thin internal bridge to the existing unified ReportAnalysis pipeline."""
+    row = reports_ops.get_incident(body.report_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="report not found")
+    from civitas_ml import analyze_report
+
+    analysis = analyze_report(
+        report_id=body.report_id,
+        description=str(row.get("description") or ""),
+        latitude=float(row["latitude"]),
+        longitude=float(row["longitude"]),
+        timestamp=row.get("reported_at"),
+    ).model_copy(update={"trace_id": body.trace_id})
+    return success_envelope(analysis.model_dump(mode="json"))
 
 
 def _media_refs(incident_id: str) -> list[dict[str, Any]]:
-    refs=[]
+    refs = []
     for row in reports_ops.list_media_for_incident(incident_id):
-        refs.append({
-            "media_id": row["media_id"],
-            "kind": row["kind"],
-            "mime_type": row.get("mime_type"),
-            "local_path": None,
-            "note": None,
-        })
+        refs.append(
+            {
+                "media_id": row["media_id"],
+                "kind": row["kind"],
+                "mime_type": row.get("mime_type"),
+                "local_path": None,
+                "note": None,
+            }
+        )
     return refs
 
 
 @router.post("/nearby-candidates")
-def nearby_candidates(body: NearbyCandidatesRequest, _: Annotated[None, Depends(require_internal_key)]) -> dict[str, Any]:
+def nearby_candidates(
+    body: NearbyCandidatesRequest, _: Annotated[None, Depends(require_internal_key)]
+) -> dict[str, Any]:
     from civitas_geo.models import CandidateSearchSpec
     from civitas_api.core.spatial import get_candidate_retriever
 
@@ -69,72 +109,84 @@ def nearby_candidates(body: NearbyCandidatesRequest, _: Annotated[None, Depends(
         exclude_incident_ids=[body.report_id],
         category_filter=None,  # duplicate engine handles related-category logic itself
     )
-    memory_incidents=None
+    memory_incidents = None
     if retriever._executor is None:
-        memory_incidents=reports_ops.list_incidents(limit=1000)
-    result=retriever.retrieve(spec, memory_incidents=memory_incidents, boundary=DEFAULT_BOUNDARY, now=body.submitted_at)
-    candidates=[]
+        memory_incidents = reports_ops.list_incidents(limit=1000)
+    result = retriever.retrieve(
+        spec, memory_incidents=memory_incidents, boundary=DEFAULT_BOUNDARY, now=body.submitted_at
+    )
+    candidates = []
     for cand in result.candidates:
-        row=reports_ops.get_incident(cand.incident_id)
+        row = reports_ops.get_incident(cand.incident_id)
         if not row:
             continue
-        landmark_ids=[d.landmark.landmark_id for d in cand.landmark_context]
-        candidates.append({
-            "report_id": cand.incident_id,
-            "description": row.get("description") or "",
-            "latitude": float(row["latitude"]),
-            "longitude": float(row["longitude"]),
-            "submitted_at": row["reported_at"],
-            "category": row.get("category"),
-            "landmark_ids": landmark_ids,
-            "media_references": _media_refs(cand.incident_id),
-            "incident_id": cand.incident_id,
-        })
-    return success_envelope({
-        "request": body.model_dump(mode="json"),
-        "candidates": candidates,
-        "count": len(candidates),
-        "basis": list(result.basis),
-    })
+        landmark_ids = [d.landmark.landmark_id for d in cand.landmark_context]
+        candidates.append(
+            {
+                "report_id": cand.incident_id,
+                "description": row.get("description") or "",
+                "latitude": float(row["latitude"]),
+                "longitude": float(row["longitude"]),
+                "submitted_at": row["reported_at"],
+                "category": row.get("category"),
+                "landmark_ids": landmark_ids,
+                "media_references": _media_refs(cand.incident_id),
+                "incident_id": cand.incident_id,
+            }
+        )
+    return success_envelope(
+        {
+            "request": body.model_dump(mode="json"),
+            "candidates": candidates,
+            "count": len(candidates),
+            "basis": list(result.basis),
+        }
+    )
 
 
 @router.get("/landmarks")
 def landmarks(_: Annotated[None, Depends(require_internal_key)]) -> dict[str, Any]:
-    index=get_landmark_index()
-    return success_envelope({
-        "landmarks": [lm.model_dump(mode="json") for lm in index.landmarks],
-        "basis": ["backend landmark index"],
-    })
+    index = get_landmark_index()
+    return success_envelope(
+        {
+            "landmarks": [lm.model_dump(mode="json") for lm in index.landmarks],
+            "basis": ["backend landmark index"],
+        }
+    )
 
 
 @router.get("/media/{media_id}/metadata")
-def media_metadata(media_id: str, _: Annotated[None, Depends(require_internal_key)]) -> dict[str, Any]:
-    row=reports_ops.get_media(media_id)
+def media_metadata(
+    media_id: str, _: Annotated[None, Depends(require_internal_key)]
+) -> dict[str, Any]:
+    row = reports_ops.get_media(media_id)
     if row is None:
         raise HTTPException(status_code=404, detail="media not found")
-    return success_envelope({
-        "media_id": row["media_id"],
-        "kind": row["kind"],
-        "mime_type": row.get("mime_type"),
-        "local_path": None,
-        "note": None,
-    })
+    return success_envelope(
+        {
+            "media_id": row["media_id"],
+            "kind": row["kind"],
+            "mime_type": row.get("mime_type"),
+            "local_path": None,
+            "note": None,
+        }
+    )
 
 
 @router.get("/media/{media_id}")
 def media_bytes(media_id: str, _: Annotated[None, Depends(require_internal_key)]) -> Response:
-    row=reports_ops.get_media(media_id)
+    row = reports_ops.get_media(media_id)
     if row is None:
         raise HTTPException(status_code=404, detail="media not found")
-    storage_path=str(row["storage_path"])
+    storage_path = str(row["storage_path"])
     # Local adapter stores a local://bucket/path marker; adapters consume object path.
     if storage_path.startswith("local://") or storage_path.startswith("supabase://"):
-        parts=storage_path.split("/", 3)
-        object_path=parts[3] if len(parts) == 4 else storage_path
+        parts = storage_path.split("/", 3)
+        object_path = parts[3] if len(parts) == 4 else storage_path
     else:
-        object_path=storage_path
+        object_path = storage_path
     try:
-        data=get_storage().get(object_path)
+        data = get_storage().get(object_path)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="media object not found") from exc
     return Response(content=data, media_type=row.get("mime_type") or "application/octet-stream")
