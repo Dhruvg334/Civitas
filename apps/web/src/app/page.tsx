@@ -1,30 +1,4 @@
-const capabilities = [
-  ["Understand", "Convert images, video, text, and location into structured evidence."],
-  ["Connect", "Identify when separate reports describe the same real-world incident."],
-  ["Prioritize", "Separate public harm from operational response urgency."],
-  ["Verify", "Compare before-and-after evidence before an incident is closed."],
-];
+import Link from "next/link";
+import { Nav } from "@/components/site";
 
-export default function HomePage() {
-  return (
-    <main>
-      <section className="hero">
-        <span className="eyebrow">Evidence-backed civic intelligence</span>
-        <h1>Civitas</h1>
-        <p>
-          Turning every civic report into clear, accountable action. Civitas structures evidence,
-          detects duplicate incidents, grounds decisions in policy, and keeps important outcomes
-          reviewable by people.
-        </p>
-        <div className="grid">
-          {capabilities.map(([title, body]) => (
-            <article className="card" key={title}>
-              <h2>{title}</h2>
-              <p>{body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-    </main>
-  );
-}
+export default function Home() { return <><Nav /><main><section className="hero"><p className="eyebrow">Civic incident intelligence</p><h1>From civic reports<br />to accountable action.</h1><p className="lede">Civitas helps municipalities turn scattered reports into clear, evidence-backed operational decisions—with human review where it matters.</p><div className="actions"><Link className="button" href="/report">Report an issue</Link><Link className="textlink" href="/demo-workflow">See how Civitas works →</Link></div></section><section className="flow" aria-label="Civitas workflow">{["Report", "Evidence", "Priority", "Route", "Work order", "Review", "Update"].map((item, i) => <div key={item}><b>0{i + 1}</b><span>{item}</span></div>)}</section><section className="split"><div><p className="eyebrow">Built for the handoff</p><h2>Clear context, not another inbox.</h2></div><p>Reports, media, location, duplicate signals, policy evidence and operational decisions remain connected—so residents and municipal teams can understand what happens next.</p></section></main></> }
