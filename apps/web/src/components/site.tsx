@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AboutMenu } from "@/components/about-menu";
 import { CookieControls } from "@/components/cookie-controls";
 
 const productLinks: Array<[string, string]> = [["Workspace", "/workspace"], ["Demo", "/demo-workflow"], ["Docs", "/docs"], ["Profile", "/profile"]];
@@ -12,7 +13,7 @@ function Wordmark() {
 
 export function Nav({ docs = false }: { docs?: boolean }) {
   const links = docs ? docsLinks : productLinks;
-  return <header className={docs ? "docs-shell-nav" : "site-header"}><nav className={docs ? "docsnav" : "nav"} aria-label={docs ? "Documentation navigation" : "Primary navigation"}><Wordmark /><div className="nav-center">{links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}{!docs && <details className="aboutmenu"><summary>About</summary><div className="about-popover"><p className="popover-kicker">Explore Civitas</p>{aboutLinks.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</div></details>}</div><div className="nav-end">{docs ? <Link className="nav-back" href="/">Back to product</Link> : <Link className="button small" href="/report">Report an issue</Link>}<details className="mobilemenu"><summary aria-label="Open navigation"><span /><span /></summary><div>{links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}{!docs && aboutLinks.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}{docs && <Link href="/">Back to product</Link>}</div></details></div></nav></header>;
+  return <header className={docs ? "docs-shell-nav" : "site-header"}><nav className={docs ? "docsnav" : "nav"} aria-label={docs ? "Documentation navigation" : "Primary navigation"}><Wordmark /><div className="nav-center">{links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}{!docs && <AboutMenu />}</div><div className="nav-end">{docs ? <Link className="nav-back" href="/">Back to product</Link> : <Link className="button small" href="/report">Report an issue</Link>}<details className="mobilemenu"><summary aria-label="Open navigation"><span /><span /></summary><div>{links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}{!docs && aboutLinks.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}{docs && <Link href="/">Back to product</Link>}</div></details></div></nav></header>;
 }
 
 export function Footer() {
