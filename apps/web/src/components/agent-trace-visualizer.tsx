@@ -83,17 +83,26 @@ const DEFAULT_NODES: TraceNode[] = [
   },
 ];
 
-export function AgentTraceVisualizer() {
+export function AgentTraceVisualizer({
+  incidentId = "INC-0241",
+  workflowId = "WF-DEMO-0241",
+  currentStep,
+}: {
+  incidentId?: string;
+  workflowId?: string;
+  currentStep?: string;
+}) {
   const [selectedNode, setSelectedNode] = useState<TraceNode>(DEFAULT_NODES[0]);
 
   return (
     <div className="trace-visualizer">
       <div className="visualizer-header">
         <div>
-          <span className="kicker">12-LAYER AGENTIC OBSERVABILITY</span>
+          <span className="kicker">12-LAYER AGENTIC OBSERVABILITY · {incidentId} ({workflowId})</span>
           <h3>LangGraph Agent Execution Trace</h3>
         </div>
         <div className="trace-metrics">
+          <span>Step: <b>{currentStep || "active"}</b></span>
           <span>Total Latency: <b>944 ms</b></span>
           <span>Tokens: <b>1,690</b></span>
         </div>
