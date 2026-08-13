@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import time
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from typing import Any, Literal, TypeVar
 from uuid import uuid4
 
@@ -249,7 +249,10 @@ class FakeLLMClient(LLMClient):
 
     def __init__(
         self,
-        output: BaseModel | dict[str, Any] | str,
+        output: BaseModel
+        | dict[str, Any]
+        | str
+        | Mapping[str, BaseModel | dict[str, Any] | str],
         *,
         model: str = "fake-structured-v1",
         usage: LLMUsage | None = None,
@@ -270,11 +273,12 @@ class FakeLLMClient(LLMClient):
     ) -> LLMResult[OutputT]:
         del messages, model_tier
         call_trace_id = trace_id or "trc-fake-deterministic"
-        raw = (
-            self._output.model_dump(mode="json")
-            if isinstance(self._output, BaseModel)
+        source = (
+            self._output.get(output_type.__name__, self._output)
+            if isinstance(self._output, Mapping)
             else self._output
         )
+        raw = source.model_dump(mode="json") if isinstance(source, BaseModel) else source
         if isinstance(raw, str):
             try:
                 raw = json.loads(raw)

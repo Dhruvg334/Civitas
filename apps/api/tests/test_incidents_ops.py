@@ -1,16 +1,14 @@
 """Tests for the Tier-1 incident lifecycle routes:
 
-    GET  /api/v1/incidents/{id}
-    POST /api/v1/incidents/{id}/merge
-    POST /api/v1/incidents/{id}/assess
-    GET  /api/v1/incidents/{id}/trace
+GET  /api/v1/incidents/{id}
+POST /api/v1/incidents/{id}/merge
+POST /api/v1/incidents/{id}/assess
+GET  /api/v1/incidents/{id}/trace
 """
 
 from __future__ import annotations
 
 from fastapi.testclient import TestClient
-
-from civitas_api.main import app
 
 
 def _create_report(client: TestClient, auth_header: dict[str, str]) -> str:
@@ -27,6 +25,7 @@ def _create_report(client: TestClient, auth_header: dict[str, str]) -> str:
     body = r.json()
     if body.get("success") is not True:
         import pytest
+
         pytest.fail(f"create_report envelope: {body}")
     return body["data"]["report_id"]
 
@@ -110,15 +109,21 @@ def test_merge_404_on_unknown_target(client: TestClient, auth_header: dict[str, 
     assert r.status_code == 404
 
 
-def test_assess_persists_and_updates_state(
-    client: TestClient, auth_header: dict[str, str]
-) -> None:
+def test_assess_persists_and_updates_state(client: TestClient, auth_header: dict[str, str]) -> None:
     rid = _create_report(client, auth_header)
     r = client.post(
         f"/api/v1/incidents/{rid}/assess",
         json={
-            "severity": {"score": 78, "level": "high", "factors": [{"name": "slip_hazard", "contribution": 24}]},
-            "priority": {"score": 91, "level": "critical", "factors": [{"name": "school_proximity", "contribution": 18}]},
+            "severity": {
+                "score": 78,
+                "level": "high",
+                "factors": [{"name": "slip_hazard", "contribution": 24}],
+            },
+            "priority": {
+                "score": 91,
+                "level": "critical",
+                "factors": [{"name": "school_proximity", "contribution": 18}],
+            },
             "review_required": True,
             "model_version": "risk-v1",
         },
@@ -142,7 +147,10 @@ def test_assess_persists_and_updates_state(
 def test_assess_404_on_unknown(client: TestClient, auth_header: dict[str, str]) -> None:
     r = client.post(
         "/api/v1/incidents/inc-nope/assess",
-        json={"severity": {"score": 50, "level": "medium"}, "priority": {"score": 50, "level": "medium"}},
+        json={
+            "severity": {"score": 50, "level": "medium"},
+            "priority": {"score": 50, "level": "medium"},
+        },
         headers=auth_header,
     )
     assert r.status_code == 404
@@ -151,7 +159,9 @@ def test_assess_404_on_unknown(client: TestClient, auth_header: dict[str, str]) 
 def test_trace_endpoint_orders_events(client: TestClient, auth_header: dict[str, str]) -> None:
     target = _create_report(client, auth_header)
     report = _create_report(client, auth_header)
-    client.post(f"/api/v1/incidents/{target}/merge", json={"report_id": report}, headers=auth_header)
+    client.post(
+        f"/api/v1/incidents/{target}/merge", json={"report_id": report}, headers=auth_header
+    )
     client.post(
         f"/api/v1/incidents/{target}/assess",
         json={
@@ -188,3 +198,31 @@ def test_trace_filter_by_node(client: TestClient, auth_header: dict[str, str]) -
     events = r.json()["data"]["events"]
     assert len(events) == 1
     assert events[0]["node"] == "assess"
+
+
+def test_workflow_trace_write_persists_safe_node_event(
+    client: TestClient, auth_header: dict[str, str]
+) -> None:
+    rid = _create_report(client, auth_header)
+    r = client.post(
+        f"/api/v1/incidents/{rid}/trace",
+        headers=auth_header,
+        json={
+            "workflow_trace_id": "wf-123",
+            "node": "knowledge_grounding",
+            "status": "succeeded",
+            "latency_ms": 12,
+            "tool_or_model": "KnowledgeTool",
+            "validation_outcome": "valid",
+            "knowledge_reference_ids": ["PLAY-WATER-01"],
+            "warnings": [],
+        },
+    )
+    assert r.status_code == 201, r.text
+    events = client.get(f"/api/v1/incidents/{rid}/trace", headers=auth_header).json()["data"][
+        "events"
+    ]
+    event = events[-1]
+    assert event["node"] == "knowledge_grounding"
+    assert event["latency_ms"] == 12
+    assert event["input"] == '{"workflow_trace_id": "wf-123"}'

@@ -7,7 +7,11 @@ name = "civitas-workflow"
 version = "0.1.0"
 description = "Agent orchestration for Civitas."
 requires-python = ">=3.12"
-dependencies = ["pydantic>=2.10,<3.0"]
+dependencies = [
+  "pydantic>=2.10,<3.0",
+  "langgraph>=1.0,<2.0",
+  "civitas-knowledge>=0.1.0",
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.3,<9.0", "ruff>=0.9,<1.0", "mypy>=1.14,<2.0"]
