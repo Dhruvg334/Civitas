@@ -13,8 +13,9 @@ it("keeps review controls narrow by default", () => {
 });
 
 it("limits EDIT and REROUTE to their permitted fields", () => {
-  const edit = renderToStaticMarkup(<ReviewFields mode="edit" />);
-  const reroute = renderToStaticMarkup(<ReviewFields mode="reroute" />);
+  const dummySubmit = () => {};
+  const edit = renderToStaticMarkup(<ReviewFields mode="edit" onSubmit={dummySubmit} />);
+  const reroute = renderToStaticMarkup(<ReviewFields mode="reroute" onSubmit={dummySubmit} />);
 
   expect(edit).toContain("Work-order summary");
   expect(edit).not.toContain("Primary department");

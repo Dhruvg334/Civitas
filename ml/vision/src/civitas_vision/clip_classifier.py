@@ -411,14 +411,26 @@ class CLIPZeroShotClassifier:
             return None
         return cls(model, processor)
 
+    def _to_tensor(self, feats):
+        if hasattr(feats, "text_embeds") and feats.text_embeds is not None:
+            return feats.text_embeds
+        if hasattr(feats, "image_embeds") and feats.image_embeds is not None:
+            return feats.image_embeds
+        if hasattr(feats, "pooler_output") and feats.pooler_output is not None:
+            return feats.pooler_output
+        if hasattr(feats, "last_hidden_state") and feats.last_hidden_state is not None:
+            return feats.last_hidden_state[:, 0, :]
+        if isinstance(feats, (list, tuple)):
+            return feats[0]
+        return feats
+
     def _encode_text(self):
         torch, _ = _torch()
         texts = [p for prompts in self._prompts.values() for p in prompts]
         inputs = self._processor(text=texts, return_tensors="pt", padding=True)
         with torch.inference_mode():
-            return torch.nn.functional.normalize(
-                self._model.get_text_features(**inputs), dim=-1
-            )
+            feats = self._to_tensor(self._model.get_text_features(**inputs))
+            return torch.nn.functional.normalize(feats, dim=-1)
 
     def _encode_subcategory_text(self):
         torch, _ = _torch()
@@ -430,9 +442,8 @@ class CLIPZeroShotClassifier:
         ]
         inputs = self._processor(text=texts, return_tensors="pt", padding=True)
         with torch.inference_mode():
-            return torch.nn.functional.normalize(
-                self._model.get_text_features(**inputs), dim=-1
-            )
+            feats = self._to_tensor(self._model.get_text_features(**inputs))
+            return torch.nn.functional.normalize(feats, dim=-1)
 
     def _all_subcat_prompts(self) -> tuple[str, ...]:
         return tuple(
@@ -448,9 +459,8 @@ class CLIPZeroShotClassifier:
         torch, _ = _torch()
         inputs = self._processor(images=image, return_tensors="pt")
         with torch.inference_mode():
-            image_feature = torch.nn.functional.normalize(
-                self._model.get_image_features(**inputs), dim=-1
-            )
+            feats = self._to_tensor(self._model.get_image_features(**inputs))
+            image_feature = torch.nn.functional.normalize(feats, dim=-1)
             sims = torch.matmul(image_feature, self._text_features.T)[0]
             subcat_sims = torch.matmul(image_feature, self._subcat_text_features.T)[0]
 
