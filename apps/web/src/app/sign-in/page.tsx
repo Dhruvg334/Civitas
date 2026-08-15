@@ -223,7 +223,7 @@ export default function SignIn() {
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Dhruv Gupta"
+                      placeholder="e.g. Alex Morgan"
                       className="auth-input-control"
                     />
                   </div>
@@ -239,7 +239,7 @@ export default function SignIn() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="dhruvg.030304@gmail.com"
+                    placeholder="name@example.com"
                     className="auth-input-control"
                   />
                 </div>
@@ -290,8 +290,9 @@ export default function SignIn() {
                   </p>
                 ) : (
                   <div className="reset-pw-row">
-                    <Link href="/reset-password" className="reset-pw-anchor">
-                      Forgot your password? Reset here →
+                    <span className="reset-pw-hint">Forgot your password?</span>
+                    <Link href="/reset-password" className="reset-btn-pill">
+                      Reset Password
                     </Link>
                   </div>
                 )}
@@ -609,18 +610,34 @@ export default function SignIn() {
           padding: 12px 18px;
         }
         .reset-pw-row {
-          text-align: center;
-          margin-top: -6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          margin-top: -2px;
         }
-        .reset-pw-anchor {
+        .reset-pw-hint {
           font-size: 0.72rem;
-          font-weight: 700;
           color: #687067;
-          text-decoration: none;
         }
-        .reset-pw-anchor:hover {
-          color: #0f5f4f;
-          text-decoration: underline;
+        .reset-btn-pill {
+          display: inline-flex;
+          align-items: center;
+          padding: 3px 10px;
+          font-size: 0.7rem;
+          font-weight: 750;
+          color: #172019;
+          background: #fbf9f4;
+          border: 1px solid #172019;
+          border-radius: 4px;
+          text-decoration: none;
+          box-shadow: 1px 1px 0 #172019;
+          transition: all 0.15s ease;
+          line-height: 1.2;
+        }
+        .reset-btn-pill:hover {
+          background: #172019;
+          color: #ffffff;
         }
         .signup-tos-notice {
           font-size: 0.72rem;

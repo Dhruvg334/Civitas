@@ -64,7 +64,7 @@ export default function ResetPassword() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g. dhruvg.030304@gmail.com"
+                    placeholder="e.g. name@example.com"
                     className="text-input"
                   />
                 </label>

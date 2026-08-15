@@ -116,8 +116,8 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
   const [step, setStep] = useState<number>(1);
 
   // Form State
-  const [name, setName] = useState(initialName || "Dhruv Gupta");
-  const [email] = useState(initialEmail || "dhruvg.030304@gmail.com");
+  const [name, setName] = useState(initialName || "");
+  const [email] = useState(initialEmail || "");
   const [phone, setPhone] = useState("+91 98765 43210");
   const [role, setRole] = useState("resident");
   
@@ -227,7 +227,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Dhruv Gupta"
+                  placeholder="e.g. Alex Morgan"
                   className="modal-text-input"
                 />
               </div>

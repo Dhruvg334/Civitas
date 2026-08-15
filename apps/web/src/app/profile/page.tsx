@@ -10,12 +10,12 @@ import { submitWorkflowClarification, fetchMe, isDemoMode } from "@/lib/api";
 const DEFAULT_PERSONAS: Record<string, CivicUser> = {
   resident: {
     id: "usr-resident-01",
-    name: "Dhruv Gupta",
-    email: "dhruvg.030304@gmail.com",
+    name: "Ananya Sharma",
+    email: "ananya.resident@civic.local",
     role: "citizen",
     roleTitle: "Citizen Reporter · Ward 12 Resident",
     ward: "Ward 12 · DAV Public School Zone",
-    avatarInitials: "DG",
+    avatarInitials: "AS",
   },
   supervisor: {
     id: "usr-supervisor-01",
@@ -227,7 +227,7 @@ export default function Profile() {
                     className={`persona-pill ${user.role === "citizen" ? "active" : ""}`}
                     onClick={() => handleSwitchPersona("resident")}
                   >
-                    <FlatIcon name="user" size={12} /> Resident (Dhruv)
+                    <FlatIcon name="user" size={12} /> Resident (Ananya)
                   </button>
                   <button
                     type="button"
