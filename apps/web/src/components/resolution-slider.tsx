@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, ReactNode } from "react";
+import { useState, useRef } from "react";
 
 interface Props {
   beforeLabel?: string;

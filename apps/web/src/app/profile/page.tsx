@@ -133,7 +133,7 @@ export default function Profile() {
                     <small>Submitted {date}</small>
                   </div>
                   <div className="row-col-status">
-                    <Status tone={tone as any}>{status}</Status>
+                    <Status tone={tone as "neutral" | "good" | "warn" | "danger"}>{status}</Status>
                   </div>
                   <div className="row-col-prio">
                     <span className="prio-tag">{priority}</span>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Footer, Nav, Status } from "@/components/site";
 import { AgentTraceVisualizer } from "@/components/agent-trace-visualizer";
 

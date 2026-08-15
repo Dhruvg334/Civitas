@@ -207,7 +207,7 @@ export function ReviewPanel() {
           <ReviewFields
             mode={mode}
             onSubmit={(details) =>
-              handleAction(mode === "evidence" ? "reject" : (mode as any), details)
+              handleAction(mode === "evidence" ? "reject" : (mode as "approve" | "edit" | "reroute" | "reject"), details)
             }
           />
         </>

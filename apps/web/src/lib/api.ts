@@ -191,7 +191,7 @@ export async function fetchIncidentTrace(id: string): Promise<IncidentTraceStep[
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const envelope = (await res.json()) as CivitasEnvelope<IncidentTraceStep[]>;
     return unwrapEnvelope(envelope);
-  } catch (err) {
+  } catch {
     return [
       { step: "Report Intake & Evidence Extraction", status: "completed", timestamp: "08:42:01", details: "3 report items normalized. Contradictions & source claims preserved." },
       { step: "Multimodal ML Analysis", status: "completed", timestamp: "08:42:04", details: "Duplicate similarity score 0.84. Primary category set to water_leakage." },

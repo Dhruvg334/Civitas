@@ -8,6 +8,8 @@ on:
 jobs:
   python:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: "geospatial/src:ml/vision/src:ml/duplicates/src:ml/risk/src:ml/resolution/src:services/ml/src:services/knowledge/src:services/workflow/src:services/evaluation/src:apps/api/src"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -17,10 +19,11 @@ jobs:
       - name: Install Python modules
         run: |
           python -m pip install --upgrade pip
+          python -m pip install --no-deps -e geospatial -e ml/vision -e ml/duplicates -e ml/risk -e ml/resolution -e services/knowledge -e services/ml -e services/workflow -e services/evaluation -e apps/api
           python -m pip install -e 'geospatial[dev,postgres]'
           python -m pip install -e 'ml/vision[dev]' -e 'ml/duplicates[dev]' -e 'ml/risk[dev]' -e 'ml/resolution[dev]'
           python -m pip install -e 'services/ml[dev,http]'
-          python -m pip install -e 'apps/api[dev]' -e 'services/workflow[dev]' -e 'services/knowledge[dev]' -e 'services/evaluation[dev]'
+          python -m pip install -e 'services/knowledge[dev]' -e 'services/workflow[dev]' -e 'services/evaluation[dev]' -e 'apps/api[dev]'
       - name: Test geospatial
         run: python -m pytest geospatial/tests
       - name: Test vision
