@@ -414,26 +414,33 @@ export default function Docs({
         .docs-pagination-nav {
           display: flex;
           justify-content: space-between;
-          margin-top: 50px;
-          padding-top: 30px;
+          margin-top: 72px;
+          padding-top: 40px;
           border-top: 2px solid #172019;
-          gap: 20px;
+          gap: 24px;
         }
         .pagination-link {
           display: flex;
           flex-direction: column;
-          gap: 4px;
-          padding: 12px 18px;
-          border: 1px solid #172019;
+          gap: 6px;
+          padding: 16px 24px;
+          min-width: 220px;
+          border: 2px solid #172019;
           background: #ffffff;
-          box-shadow: 3px 3px 0 #172019;
+          box-shadow: 4px 4px 0 #172019;
           text-decoration: none;
-          border-radius: 4px;
+          border-radius: 6px;
           transition: all 0.15s ease;
+        }
+        .pagination-link.next {
+          margin-left: auto;
+          text-align: right;
         }
         .pagination-link:hover {
           background: #172019;
           color: #ffffff;
+          box-shadow: 2px 2px 0 #0f5f4f;
+          transform: translateY(-2px);
         }
         .pagination-link:hover small {
           color: #dce8dd;
@@ -442,13 +449,13 @@ export default function Docs({
           color: #ffffff;
         }
         .pagination-link small {
-          font-size: 0.6rem;
-          font-weight: 850;
-          letter-spacing: 0.08em;
+          font-size: 0.65rem;
+          font-weight: 900;
+          letter-spacing: 0.1em;
           color: #0f5f4f;
         }
         .pagination-link span {
-          font-size: 0.95rem;
+          font-size: 1rem;
           font-weight: 800;
           color: #172019;
         }

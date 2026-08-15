@@ -9,63 +9,55 @@ import { ResolutionSlider } from "@/components/resolution-slider";
 function CityLandscapeLeft() {
   return (
     <div className="city-backdrop-wing left-wing" aria-hidden="true">
-      <svg viewBox="0 0 420 540" fill="none" xmlns="http://www.w3.org/2000/svg" className="city-svg">
-        {/* BACKGROUND BUILDINGS SILHOUETTES */}
-        <path d="M40 220 H110 V540 H40 Z" fill="#e8e4d8" opacity="0.6" />
-        <path d="M120 160 H190 V540 H120 Z" fill="#d8d4c6" opacity="0.7" />
-        <path d="M195 240 H260 V540 H195 Z" fill="#e8e4d8" opacity="0.6" />
-        <path d="M270 190 H330 V540 H270 Z" fill="#d2cebf" opacity="0.6" />
+      <svg viewBox="0 0 380 500" fill="none" xmlns="http://www.w3.org/2000/svg" className="city-svg">
+        {/* SKYLINE SILHOUETTES */}
+        <path d="M20 180 H90 V500 H20 Z" fill="#dce8dd" stroke="#172019" strokeWidth="2" />
+        <path d="M100 120 H180 V500 H100 Z" fill="#ffffff" stroke="#172019" strokeWidth="2" />
+        <path d="M190 200 H250 V500 H190 Z" fill="#e8e4d8" stroke="#172019" strokeWidth="2" />
+        <path d="M260 150 H330 V500 H260 Z" fill="#dce8dd" stroke="#172019" strokeWidth="2" />
 
-        {/* MIDGROUND MUNICIPAL TOWERS & WATER TANK */}
-        <rect x="70" y="270" width="75" height="270" fill="#ffffff" stroke="#172019" strokeWidth="2" />
-        {/* Tower Windows Grid */}
-        {[290, 320, 350, 380, 410, 440, 470, 500].map((y) => (
+        {/* MUNICIPAL TOWER (Left) */}
+        <rect x="50" y="240" width="80" height="260" fill="#ffffff" stroke="#172019" strokeWidth="2.5" />
+        {/* Windows */}
+        {[260, 290, 320, 350, 380, 410, 440, 470].map((y) => (
           <g key={`w-l1-${y}`}>
-            <rect x="82" y={y} width="12" height="16" fill="#fef08a" stroke="#172019" strokeWidth="1" />
-            <rect x="102" y={y} width="12" height="16" fill="#dce8dd" stroke="#172019" strokeWidth="1" />
-            <rect x="122" y={y} width="12" height="16" fill="#fef08a" stroke="#172019" strokeWidth="1" />
+            <rect x="62" y={y} width="14" height="16" fill="#fef08a" stroke="#172019" strokeWidth="1.5" />
+            <rect x="83" y={y} width="14" height="16" fill="#dce8dd" stroke="#172019" strokeWidth="1.5" />
+            <rect x="104" y={y} width="14" height="16" fill="#fef08a" stroke="#172019" strokeWidth="1.5" />
           </g>
         ))}
-        {/* Antenna Mast with Pulsing Beacon */}
-        <line x1="107" y1="270" x2="107" y2="210" stroke="#172019" strokeWidth="2" />
-        <circle cx="107" cy="210" r="4" fill="#e84d7a" className="beacon-pulse" />
+        {/* Antenna Mast */}
+        <line x1="90" y1="240" x2="90" y2="160" stroke="#172019" strokeWidth="2.5" />
+        <circle cx="90" cy="160" r="5" fill="#e84d7a" className="beacon-pulse" />
 
-        {/* MUNICIPAL WATER RESERVOIR TOWER */}
-        <ellipse cx="230" cy="300" rx="36" ry="18" fill="#dce8dd" stroke="#172019" strokeWidth="2" />
-        <path d="M194 300 V330 C194 340 266 340 266 330 V300 Z" fill="#dce8dd" stroke="#172019" strokeWidth="2" />
-        <line x1="206" y1="335" x2="206" y2="540" stroke="#172019" strokeWidth="3" />
-        <line x1="254" y1="335" x2="254" y2="540" stroke="#172019" strokeWidth="3" />
-        <line x1="230" y1="335" x2="230" y2="540" stroke="#0f5f4f" strokeWidth="4" strokeDasharray="6,4" />
-        <line x1="206" y1="380" x2="254" y2="380" stroke="#172019" strokeWidth="2" />
-        <line x1="206" y1="440" x2="254" y2="440" stroke="#172019" strokeWidth="2" />
-        <line x1="206" y1="500" x2="254" y2="500" stroke="#172019" strokeWidth="2" />
-        <text x="230" y="322" fill="#0f5f4f" fontSize="8" fontWeight="bold" textAnchor="middle" letterSpacing="0.08em">BMC WATER</text>
+        {/* WATER RESERVOIR TOWER */}
+        <ellipse cx="220" cy="270" rx="38" ry="20" fill="#0f5f4f" stroke="#172019" strokeWidth="2.5" />
+        <path d="M182 270 V305 C182 318 258 318 258 305 V270 Z" fill="#0f5f4f" stroke="#172019" strokeWidth="2.5" />
+        <line x1="195" y1="310" x2="195" y2="500" stroke="#172019" strokeWidth="3.5" />
+        <line x1="245" y1="310" x2="245" y2="500" stroke="#172019" strokeWidth="3.5" />
+        <line x1="220" y1="310" x2="220" y2="500" stroke="#10b981" strokeWidth="4" strokeDasharray="6,4" />
+        <line x1="195" y1="360" x2="245" y2="360" stroke="#172019" strokeWidth="2" />
+        <line x1="195" y1="420" x2="245" y2="420" stroke="#172019" strokeWidth="2" />
+        <line x1="195" y1="470" x2="245" y2="470" stroke="#172019" strokeWidth="2" />
+        <text x="220" y="294" fill="#ffffff" fontSize="9" fontWeight="900" textAnchor="middle" letterSpacing="0.08em">BMC WATER</text>
 
-        {/* BRIDGE / FLYOVER ARCH */}
-        <path d="M10 460 Q 180 430 360 480" stroke="#172019" strokeWidth="6" fill="none" />
-        <path d="M10 468 Q 180 438 360 488" stroke="#0f5f4f" strokeWidth="2" fill="none" />
-        {/* Bridge Pillars */}
-        <rect x="80" y="456" width="10" height="84" fill="#172019" />
-        <rect x="180" y="445" width="10" height="95" fill="#172019" />
-        <rect x="280" y="465" width="10" height="75" fill="#172019" />
+        {/* FLYOVER BRIDGE ARCH */}
+        <path d="M0 420 Q 160 390 340 440" stroke="#172019" strokeWidth="7" fill="none" />
+        <path d="M0 428 Q 160 398 340 448" stroke="#e84d7a" strokeWidth="2" fill="none" />
+        <rect x="70" y="415" width="12" height="85" fill="#172019" />
+        <rect x="170" y="405" width="12" height="95" fill="#172019" />
+        <rect x="270" y="425" width="12" height="75" fill="#172019" />
 
-        {/* SMART STREETLIGHT & TELEMETRY */}
-        <path d="M320 540 V360 Q 320 340 345 340" stroke="#172019" strokeWidth="3" fill="none" />
-        <circle cx="345" cy="340" r="5" fill="#e3b950" />
-        <path d="M338 345 L320 440 L370 440 Z" fill="#e3b950" opacity="0.12" />
-
-        {/* FOREGROUND TREES */}
-        <circle cx="45" cy="500" r="22" fill="#0f5f4f" opacity="0.85" />
-        <circle cx="65" cy="510" r="18" fill="#172019" opacity="0.85" />
-        <rect x="42" y="520" width="6" height="20" fill="#172019" />
-        <rect x="63" y="526" width="5" height="14" fill="#172019" />
+        {/* STREETLIGHT & GIS TELEMETRY */}
+        <path d="M310 500 V320 Q 310 300 335 300" stroke="#172019" strokeWidth="3" fill="none" />
+        <circle cx="335" cy="300" r="6" fill="#fef08a" stroke="#172019" strokeWidth="1.5" />
+        <path d="M328 306 L305 400 L360 400 Z" fill="#fef08a" opacity="0.3" />
 
         {/* GEOLOCATION CALLOUT PIN */}
-        <g transform="translate(140, 390)">
-          <rect x="0" y="0" width="100" height="24" rx="4" fill="#172019" />
-          <circle cx="12" cy="12" r="4" fill="#10b981" className="beacon-pulse" />
-          <text x="24" y="15" fill="#ffffff" fontSize="8" fontWeight="bold">20.2961°N · W12</text>
-          <path d="M50 24 L50 38" stroke="#172019" strokeWidth="2" strokeDasharray="2,2" />
+        <g transform="translate(110, 360)">
+          <rect x="0" y="0" width="110" height="26" rx="5" fill="#172019" stroke="#ffffff" strokeWidth="1.5" />
+          <circle cx="14" cy="13" r="5" fill="#10b981" className="beacon-pulse" />
+          <text x="26" y="17" fill="#ffffff" fontSize="9" fontWeight="bold">20.2961°N · W12</text>
         </g>
       </svg>
     </div>
@@ -75,65 +67,57 @@ function CityLandscapeLeft() {
 function CityLandscapeRight() {
   return (
     <div className="city-backdrop-wing right-wing" aria-hidden="true">
-      <svg viewBox="0 0 420 540" fill="none" xmlns="http://www.w3.org/2000/svg" className="city-svg">
-        {/* BACKGROUND BUILDINGS SILHOUETTES */}
-        <path d="M320 200 H390 V540 H320 Z" fill="#e8e4d8" opacity="0.6" />
-        <path d="M240 150 H310 V540 H240 Z" fill="#d8d4c6" opacity="0.7" />
-        <path d="M170 230 H235 V540 H170 Z" fill="#e8e4d8" opacity="0.6" />
-        <path d="M90 180 H160 V540 H90 Z" fill="#d2cebf" opacity="0.6" />
+      <svg viewBox="0 0 380 500" fill="none" xmlns="http://www.w3.org/2000/svg" className="city-svg">
+        {/* SKYLINE SILHOUETTES */}
+        <path d="M290 160 H360 V500 H290 Z" fill="#dce8dd" stroke="#172019" strokeWidth="2" />
+        <path d="M210 110 H285 V500 H210 Z" fill="#ffffff" stroke="#172019" strokeWidth="2" />
+        <path d="M140 190 H205 V500 H140 Z" fill="#e8e4d8" stroke="#172019" strokeWidth="2" />
+        <path d="M60 140 H135 V500 H60 Z" fill="#dce8dd" stroke="#172019" strokeWidth="2" />
 
         {/* CONSTRUCTION CRANE */}
-        <line x1="280" y1="150" x2="280" y2="70" stroke="#e84d7a" strokeWidth="2" />
-        <line x1="230" y1="80" x2="350" y2="80" stroke="#e84d7a" strokeWidth="2" />
-        <line x1="280" y1="70" x2="340" y2="80" stroke="#e84d7a" strokeWidth="1.5" />
-        <line x1="280" y1="70" x2="240" y2="80" stroke="#e84d7a" strokeWidth="1.5" />
-        <line x1="330" y1="80" x2="330" y2="120" stroke="#172019" strokeWidth="1" strokeDasharray="3,2" />
-        <rect x="326" y="120" width="8" height="8" fill="#e84d7a" />
+        <line x1="250" y1="110" x2="250" y2="40" stroke="#e84d7a" strokeWidth="3" />
+        <line x1="190" y1="50" x2="320" y2="50" stroke="#e84d7a" strokeWidth="3" />
+        <line x1="250" y1="40" x2="310" y2="50" stroke="#e84d7a" strokeWidth="2" />
+        <line x1="250" y1="40" x2="200" y2="50" stroke="#e84d7a" strokeWidth="2" />
+        <line x1="300" y1="50" x2="300" y2="95" stroke="#172019" strokeWidth="1.5" strokeDasharray="3,2" />
+        <rect x="295" y="95" width="10" height="10" fill="#e84d7a" stroke="#172019" strokeWidth="1.5" />
 
-        {/* MUNICIPAL HOSPITAL & ADMINISTRATIVE HQ */}
-        <rect x="260" y="240" width="90" height="300" fill="#ffffff" stroke="#172019" strokeWidth="2" />
+        {/* MUNICIPAL HOSPITAL & HQ */}
+        <rect x="230" y="210" width="95" height="290" fill="#ffffff" stroke="#172019" strokeWidth="2.5" />
         {/* Hospital Medical Cross */}
-        <rect x="298" y="254" width="14" height="4" fill="#e84d7a" />
-        <rect x="303" y="249" width="4" height="14" fill="#e84d7a" />
-        {/* Windows Grid */}
-        {[280, 310, 340, 370, 400, 430, 460, 490].map((y) => (
+        <rect x="270" y="225" width="16" height="5" fill="#e84d7a" />
+        <rect x="275.5" y="219.5" width="5" height="16" fill="#e84d7a" />
+        {/* Windows */}
+        {[255, 285, 315, 345, 375, 405, 435, 465].map((y) => (
           <g key={`w-r1-${y}`}>
-            <rect x="272" y={y} width="14" height="16" fill="#dce8dd" stroke="#172019" strokeWidth="1" />
-            <rect x="298" y={y} width="14" height="16" fill="#fef08a" stroke="#172019" strokeWidth="1" />
-            <rect x="324" y={y} width="14" height="16" fill="#dce8dd" stroke="#172019" strokeWidth="1" />
+            <rect x="242" y={y} width="16" height="16" fill="#dce8dd" stroke="#172019" strokeWidth="1.5" />
+            <rect x="270" y={y} width="16" height="16" fill="#fef08a" stroke="#172019" strokeWidth="1.5" />
+            <rect x="298" y={y} width="16" height="16" fill="#dce8dd" stroke="#172019" strokeWidth="1.5" />
           </g>
         ))}
 
         {/* CIVIC ACADEMY / SCHOOL FACADE */}
-        <polygon points="120,340 210,340 165,300" fill="#ffffff" stroke="#172019" strokeWidth="2" />
-        <rect x="125" y="340" width="80" height="200" fill="#fbf9f4" stroke="#172019" strokeWidth="2" />
+        <polygon points="90,310 190,310 140,265" fill="#0f5f4f" stroke="#172019" strokeWidth="2.5" />
+        <rect x="95" y="310" width="90" height="190" fill="#fbf9f4" stroke="#172019" strokeWidth="2.5" />
         {/* Classical Columns */}
-        <rect x="135" y="345" width="8" height="195" fill="#ffffff" stroke="#172019" strokeWidth="1.5" />
-        <rect x="155" y="345" width="8" height="195" fill="#ffffff" stroke="#172019" strokeWidth="1.5" />
-        <rect x="175" y="345" width="8" height="195" fill="#ffffff" stroke="#172019" strokeWidth="1.5" />
-        <rect x="195" y="345" width="8" height="195" fill="#ffffff" stroke="#172019" strokeWidth="1.5" />
-        <text x="165" y="335" fill="#172019" fontSize="6.5" fontWeight="bold" textAnchor="middle">DAV SCHOOL</text>
+        <rect x="105" y="315" width="9" height="185" fill="#ffffff" stroke="#172019" strokeWidth="2" />
+        <rect x="127" y="315" width="9" height="185" fill="#ffffff" stroke="#172019" strokeWidth="2" />
+        <rect x="149" y="315" width="9" height="185" fill="#ffffff" stroke="#172019" strokeWidth="2" />
+        <rect x="171" y="315" width="9" height="185" fill="#ffffff" stroke="#172019" strokeWidth="2" />
+        <text x="140" y="298" fill="#ffffff" fontSize="8.5" fontWeight="900" textAnchor="middle">DAV SCHOOL</text>
 
         {/* ELECTRICAL TRANSMISSION TOWER */}
-        <path d="M50 540 L80 320 L110 540" stroke="#172019" strokeWidth="2" fill="none" />
-        <line x1="60" y1="460" x2="100" y2="460" stroke="#172019" strokeWidth="1.5" />
-        <line x1="68" y1="390" x2="92" y2="390" stroke="#172019" strokeWidth="1.5" />
-        <line x1="50" y1="460" x2="100" y2="390" stroke="#172019" strokeWidth="1" />
-        <line x1="110" y1="460" x2="60" y2="390" stroke="#172019" strokeWidth="1" />
-        <circle cx="80" cy="320" r="3" fill="#e84d7a" className="beacon-pulse" />
+        <path d="M20 500 L50 280 L80 500" stroke="#172019" strokeWidth="2.5" fill="none" />
+        <line x1="30" y1="420" x2="70" y2="420" stroke="#172019" strokeWidth="2" />
+        <line x1="38" y1="350" x2="62" y2="350" stroke="#172019" strokeWidth="2" />
+        <circle cx="50" cy="280" r="4" fill="#e84d7a" className="beacon-pulse" />
 
         {/* POSTGIS 500M BUFFER PIN CALLOUT */}
-        <g transform="translate(170, 410)">
-          <rect x="0" y="0" width="112" height="24" rx="4" fill="#0f5f4f" />
-          <circle cx="12" cy="12" r="4" fill="#ffffff" className="beacon-pulse" />
-          <text x="24" y="15" fill="#ffffff" fontSize="8" fontWeight="bold">85.8245°E · POSTGIS</text>
-          <path d="M56 24 L56 36" stroke="#0f5f4f" strokeWidth="2" strokeDasharray="2,2" />
+        <g transform="translate(130, 380)">
+          <rect x="0" y="0" width="125" height="26" rx="5" fill="#0f5f4f" stroke="#ffffff" strokeWidth="1.5" />
+          <circle cx="14" cy="13" r="5" fill="#ffffff" className="beacon-pulse" />
+          <text x="26" y="17" fill="#ffffff" fontSize="9" fontWeight="bold">85.8245°E · POSTGIS</text>
         </g>
-
-        {/* FOREGROUND TREES */}
-        <circle cx="360" cy="510" r="22" fill="#0f5f4f" opacity="0.85" />
-        <circle cx="380" cy="520" r="16" fill="#172019" opacity="0.85" />
-        <rect x="357" y="525" width="6" height="15" fill="#172019" />
       </svg>
     </div>
   );
@@ -218,7 +202,9 @@ export default function Home() {
               See how Civitas separates raw citizen text from observable media facts and connects them to verified municipal playbooks.
             </p>
           </div>
-          <LiveEvidenceSandbox />
+          <div className="sandbox-wrapper">
+            <LiveEvidenceSandbox />
+          </div>
         </section>
 
         {/* 3 CONNECTED CAPABILITIES EXPLORER */}
@@ -352,7 +338,7 @@ export default function Home() {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 60px 20px;
+          padding: 70px 20px;
           border-bottom: 2px solid #172019;
           background: #fbf9f4;
           text-align: center;
@@ -360,15 +346,13 @@ export default function Home() {
         }
         .city-backdrop-wing {
           position: absolute;
-          top: 0;
           bottom: 0;
-          width: 320px;
+          width: clamp(260px, 28vw, 420px);
           pointer-events: none;
           display: flex;
           align-items: flex-end;
           z-index: 1;
-          opacity: 0.85;
-          transition: opacity 0.3s ease;
+          opacity: 0.95;
         }
         .city-backdrop-wing.left-wing {
           left: 0;
@@ -379,25 +363,25 @@ export default function Home() {
         .city-svg {
           width: 100%;
           height: auto;
-          max-height: 100%;
+          display: block;
         }
         .beacon-pulse {
           animation: beaconBlink 2s infinite ease-in-out;
         }
         @keyframes beaconBlink {
           0%, 100% {
-            opacity: 0.4;
+            opacity: 0.5;
             transform: scale(0.9);
           }
           50% {
             opacity: 1;
-            transform: scale(1.2);
+            transform: scale(1.25);
           }
         }
         .hero-content-center {
           position: relative;
           z-index: 2;
-          width: min(calc(100% - 40px), 860px);
+          width: min(calc(100% - 40px), 820px);
           margin: 0 auto;
           display: flex;
           flex-direction: column;
@@ -407,7 +391,7 @@ export default function Home() {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          padding: 4px 12px;
+          padding: 5px 14px;
           border: 1px solid #0f5f4f;
           background: #dce8dd;
           color: #0f5f4f;
@@ -508,6 +492,10 @@ export default function Home() {
         .section-header-tag {
           width: min(calc(100% - 40px), 1180px);
           margin: 0 auto 36px;
+        }
+        .sandbox-wrapper {
+          width: min(calc(100% - 40px), 1180px);
+          margin: 0 auto;
         }
         .tag-row {
           display: inline-flex;
@@ -669,13 +657,7 @@ export default function Home() {
           gap: 14px;
           flex-wrap: wrap;
         }
-        @media (max-width: 1100px) {
-          .city-backdrop-wing {
-            width: 220px;
-            opacity: 0.45;
-          }
-        }
-        @media (max-width: 800px) {
+        @media (max-width: 900px) {
           .city-backdrop-wing {
             display: none;
           }

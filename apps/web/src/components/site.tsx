@@ -588,12 +588,9 @@ export function DocsPage({
   tocItems?: Array<{ id: string; label: string }>;
   children: React.ReactNode;
 }) {
-  const [, setSearchFilter] = useState("");
-
   return (
     <>
       <Nav />
-      <DocsSubNav activeSlug={activeSlug} onSearchChange={setSearchFilter} />
       <main className="docs-dual-layout">
         {/* LEFT TOPIC SIDEBAR WITH FLAT ICONS */}
         <aside className="docs-left-sidebar" aria-label="Documentation topics">

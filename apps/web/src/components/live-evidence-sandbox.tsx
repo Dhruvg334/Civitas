@@ -9,57 +9,97 @@ interface Preset {
   icon: string;
   text: string;
   category: string;
+  mediaType: string;
+  mediaLabel: string;
+  gps: string;
   landmark: string;
   observedFacts: string[];
   reportedClaims: string[];
   retrievedPolicy: string;
+  policyTitle: string;
   severity: number;
   priority: "P1" | "P2" | "P3";
   department: string;
+  workOrderDraft: string;
 }
 
 const PRESETS: Preset[] = [
   {
     id: "water",
-    label: "Water Main Leak",
+    label: "Water Main Rupture",
     icon: "water",
-    text: "Heavy water bursting from underground pipeline near DAV School gate. Kids are crossing into flooded street.",
+    text: "Heavy water bursting from underground pipeline near DAV School gate. Road is flooded and water is entering compounds.",
     category: "water_leakage",
-    landmark: "14m from DAV Public School Gate (Hazard Buffer active)",
-    observedFacts: ["High-volume liquid surface pooling", "Roadway obstruction", "Sub-surface main fissure"],
-    reportedClaims: ["Pipeline burst approximately 40 minutes ago", "Water entering school compound"],
-    retrievedPolicy: "PLAY-WATER-01 (Municipal Main Line Rupture Protocol) · Ward 12",
+    mediaType: "Live Camera Geotag",
+    mediaLabel: "Sub-surface Pipe Fracture (High Pressure)",
+    gps: "20.29614° N, 85.82451° E · Ward 12",
+    landmark: "14m from DAV Public School Gate (500m Safety Buffer Active)",
+    observedFacts: [
+      "High-pressure liquid pooling and asphalt surface fissure",
+      "Sub-surface municipal main line failure",
+      "Roadway pedestrian crossing obstructed",
+    ],
+    reportedClaims: [
+      "Water bursting for approximately 45 minutes",
+      "Liquid entering residential compounds",
+    ],
+    retrievedPolicy: "PLAY-WATER-01",
+    policyTitle: "Municipal Distribution Rupture & Emergency Isolation Protocol",
     severity: 78,
     priority: "P1",
-    department: "Water Supply & Drainage (Primary) + Traffic Control (Support)",
+    department: "Public Health Engineering / Water Works",
+    workOrderDraft: "Dispatch ductile collar repair sleeve (8-inch) + excavation crew to Ward 12.",
   },
   {
     id: "tree",
-    label: "Fallen Tree",
+    label: "Fallen Banyan Branch",
     icon: "tree",
-    text: "Large banyan branch snapped in heavy wind and completely blocking the inbound lane on Park Road.",
+    text: "Large banyan tree branch snapped during morning rain, completely blocking the southbound lane on Park Road.",
     category: "fallen_tree",
-    landmark: "Park Road, opposite Ward Community Center",
-    observedFacts: ["Overhead timber debris on asphalt", "1 lane completely impassable"],
-    reportedClaims: ["Branch snapped during morning thunderstorm", "No injuries reported"],
-    retrievedPolicy: "PLAY-FORESTRY-03 (Obstruction Clearing & Heavy Timber Removal)",
+    mediaType: "Street View Sensor",
+    mediaLabel: "Overhead Timber Obstruction across Roadway",
+    gps: "20.29420° N, 85.82110° E · Ward 11",
+    landmark: "Park Road, opposite Community Center",
+    observedFacts: [
+      "Heavy timber obstruction resting across roadway",
+      "Southbound vehicular lane 100% blocked",
+      "No structural impact on overhead power lines detected",
+    ],
+    reportedClaims: [
+      "Branch snapped during squall",
+      "Traffic building up rapidly",
+    ],
+    retrievedPolicy: "PLAY-FORESTRY-03",
+    policyTitle: "Roadway Timber Removal & Rapid Arborist Clearance",
     severity: 54,
     priority: "P2",
-    department: "Parks & Urban Forestry",
+    department: "Parks & Urban Forestry Department",
+    workOrderDraft: "Deploy 2 arborist chainsaws and hydraulic crane to clear Park Road.",
   },
   {
     id: "light",
-    label: "Streetlight Outage",
+    label: "Streetlight Circuit Outage",
     icon: "streetlight",
-    text: "Three streetlights in a row are flickering and dark along the East Gate crossing at night.",
+    text: "Three consecutive streetlights are dark along East Gate commercial crossroad. Dark stretch at night.",
     category: "streetlight",
-    landmark: "East Gate Commercial Crossroad, Poles #104-106",
-    observedFacts: ["Zero luminaire output detected on 3 poles", "Underground feeder continuity fault"],
-    reportedClaims: ["Dark for 3 consecutive nights", "Pedestrians struggling to cross"],
-    retrievedPolicy: "PLAY-LIGHT-02 (Feeder Circuit Diagnostic & Luminaire Repair)",
+    mediaType: "Infrared Optical Sensor",
+    mediaLabel: "Zero Luminaire Output on Poles #104-106",
+    gps: "20.29880° N, 85.83100° E · Ward 10",
+    landmark: "East Gate Commercial Crossroad",
+    observedFacts: [
+      "Zero luminaire output verified on poles #104, #105, #106",
+      "Underground feeder cable ground fault suspected",
+    ],
+    reportedClaims: [
+      "Dark for 3 consecutive nights",
+      "Difficult crossing for pedestrians",
+    ],
+    retrievedPolicy: "PLAY-LIGHT-02",
+    policyTitle: "Feeder Circuit Diagnostic & Municipal Luminaire Replacement",
     severity: 38,
     priority: "P3",
-    department: "Electrical & Public Lighting",
+    department: "Electrical Division / Public Lighting",
+    workOrderDraft: "Dispatch electrical maintenance van to inspect circuit breaker #04.",
   },
 ];
 
@@ -67,95 +107,156 @@ export function LiveEvidenceSandbox() {
   const [activePreset, setActivePreset] = useState<Preset>(PRESETS[0]);
   const [customText, setCustomText] = useState<string>(PRESETS[0].text);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [supervisorStatus, setSupervisorStatus] = useState<"pending" | "approved" | "clarification">("pending");
+  const [actionNotice, setActionNotice] = useState<string>("");
 
   const handleSelectPreset = (preset: Preset) => {
     setActivePreset(preset);
     setCustomText(preset.text);
+    setSupervisorStatus("pending");
+    setActionNotice("");
     setIsProcessing(true);
-    setTimeout(() => setIsProcessing(false), 350);
+    setTimeout(() => setIsProcessing(false), 300);
+  };
+
+  const handleRunIntake = () => {
+    setIsProcessing(true);
+    setActionNotice("");
+    setSupervisorStatus("pending");
+    setTimeout(() => {
+      setIsProcessing(false);
+      setActionNotice("✓ Multimodal evidence extracted and policy playbooks retrieved successfully.");
+    }, 450);
+  };
+
+  const handleApprove = () => {
+    setSupervisorStatus("approved");
+    setActionNotice("✓ Work order WO-2026-0881 authorized by Supervisor Marcus Vance.");
+  };
+
+  const handleClarify = () => {
+    setSupervisorStatus("clarification");
+    setActionNotice("✓ Single-question photo request dispatched to citizen via WhatsApp.");
   };
 
   return (
-    <div className="sandbox-card-root">
-      <div className="sandbox-top-header">
-        <div>
-          <span className="sandbox-kicker">LIVE INTERACTIVE DEMO</span>
-          <h3 className="sandbox-heading">Real-Time Evidence & Intelligence Sandbox</h3>
-          <p className="sandbox-subtext">
-            Test how Civitas separates raw citizen claims from observable media evidence, retrieved policy playbooks, and deterministic risk scores.
-          </p>
+    <div className="sandbox-panel-root">
+      {/* TOP CONTROLS & PRESET BAR */}
+      <div className="sandbox-control-strip">
+        <div className="strip-left-status">
+          <span className="live-pulse-dot" />
+          <b className="strip-title">LIVE INTAKE & REASONING ENGINE</b>
         </div>
 
-        <div className="preset-selector-chips">
-          {PRESETS.map((p) => (
-            <button
-              key={p.id}
-              className={`preset-chip ${activePreset.id === p.id ? "active" : ""}`}
-              onClick={() => handleSelectPreset(p)}
-            >
-              <FlatIcon name={p.icon} size={14} />
-              <span>{p.label}</span>
-            </button>
-          ))}
+        <div className="preset-selector-row" role="tablist">
+          {PRESETS.map((p) => {
+            const isSelected = activePreset.id === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                role="tab"
+                aria-selected={isSelected}
+                className={`preset-tab-btn ${isSelected ? "active" : ""}`}
+                onClick={() => handleSelectPreset(p)}
+              >
+                <FlatIcon name={p.icon} size={14} />
+                <span>{p.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div className="sandbox-body-grid">
-        {/* INPUT COLUMN */}
-        <div className="sandbox-input-col">
-          <div className="col-header">
-            <span className="step-num">01</span>
-            <b>Raw Citizen Intake</b>
-          </div>
-          <div className="textarea-container">
-            <textarea
-              className="sandbox-textarea"
-              value={customText}
-              onChange={(e) => setCustomText(e.target.value)}
-              rows={4}
-              aria-label="Citizen report text"
-            />
-            <div className="input-meta-bar">
-              <span>📍 WGS84: 20.29614° N, 85.82451° E</span>
-              <span>📸 1 Attached Image</span>
+      {/* 2-COLUMN SANDBOX WORKSPACE */}
+      <div className="sandbox-columns-grid">
+        {/* LEFT: RAW MULTIMODAL INTAKE */}
+        <div className="sandbox-intake-col">
+          <div className="pane-header">
+            <span className="pane-step-badge">01</span>
+            <div>
+              <b className="pane-heading">Citizen Multimodal Intake</b>
+              <p className="pane-sub">Raw citizen statement & attached observable media</p>
             </div>
           </div>
 
-          <div className="evidence-badge-box">
-            <span className="badge-title">BOUNDARY INTEGRITY CHECK</span>
-            <p>
-              Civitas <b>never hallucinates</b> response timelines. Every action must be grounded in an existing municipal playbook.
-            </p>
+          <div className="intake-form-box">
+            <label className="intake-label" htmlFor="sandbox-text-input">
+              Citizen Description (Editable)
+            </label>
+            <textarea
+              id="sandbox-text-input"
+              className="sandbox-textarea"
+              value={customText}
+              onChange={(e) => setCustomText(e.target.value)}
+              rows={3}
+            />
+
+            {/* ATTACHED MEDIA TELEMETRY CARD */}
+            <div className="media-telemetry-tile">
+              <div className="media-tile-top">
+                <div className="media-badge">
+                  <FlatIcon name="camera" size={13} color="#0f5f4f" />
+                  <span>{activePreset.mediaType}</span>
+                </div>
+                <span className="gps-tag">📍 {activePreset.gps}</span>
+              </div>
+              <b className="media-tag-title">{activePreset.mediaLabel}</b>
+              <small className="landmark-text">🏛️ Landmark: {activePreset.landmark}</small>
+            </div>
+
+            <button
+              type="button"
+              className="button run-reasoning-btn"
+              onClick={handleRunIntake}
+              disabled={isProcessing}
+            >
+              {isProcessing ? "Executing LangGraph Reasoning..." : "Run Multimodal Extraction ⚡"}
+            </button>
+          </div>
+
+          <div className="boundary-guarantee-note">
+            <span className="shield-icon">🛡️</span>
+            <div>
+              <b>Boundary Integrity Rule</b>
+              <p>
+                Civitas never allows LLMs to hallucinate SLA commitments or silently overwrite citizen assertions.
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* OUTPUT COLUMN */}
-        <div className="sandbox-output-col">
-          <div className="col-header">
-            <span className="step-num">02</span>
-            <b>Structured Evidence & Risk Breakdown</b>
-            {isProcessing && <span className="processing-pill">Reasoning...</span>}
+        {/* RIGHT: STRUCTURED EVIDENCE & POLICY GROUNDING */}
+        <div className="sandbox-reasoning-col">
+          <div className="pane-header">
+            <span className="pane-step-badge">02</span>
+            <div>
+              <b className="pane-heading">Structured Evidence & Policy Grounding</b>
+              <p className="pane-sub">Observable facts, playbook matching & human checkpoint</p>
+            </div>
           </div>
 
-          <div className="output-cards-stack">
-            {/* OBSERVED VS REPORTED */}
+          <div className="reasoning-cards-stack">
+            {/* EVIDENCE SPLIT: OBSERVED VS REPORTED */}
             <div className="evidence-split-card">
-              <div className="split-half observed">
-                <div className="split-label">
-                  <span className="dot dot-obs" /> OBSERVED FACTS (MEDIA)
+              <div className="split-column observed">
+                <div className="split-title-row">
+                  <span className="dot dot-obs" />
+                  <b>OBSERVED FACTS (MEDIA)</b>
                 </div>
-                <ul>
+                <ul className="evidence-list">
                   {activePreset.observedFacts.map((fact) => (
                     <li key={fact}>{fact}</li>
                   ))}
                 </ul>
               </div>
 
-              <div className="split-half reported">
-                <div className="split-label">
-                  <span className="dot dot-rep" /> REPORTED CLAIMS (CITIZEN)
+              <div className="split-column reported">
+                <div className="split-title-row">
+                  <span className="dot dot-rep" />
+                  <b>REPORTED CLAIMS (CITIZEN)</b>
                 </div>
-                <ul>
+                <ul className="evidence-list">
                   {activePreset.reportedClaims.map((claim) => (
                     <li key={claim}>{claim}</li>
                   ))}
@@ -163,215 +264,305 @@ export function LiveEvidenceSandbox() {
               </div>
             </div>
 
-            {/* POLICY GROUNDING & RISK */}
-            <div className="grounding-risk-row">
-              <div className="grounding-box">
-                <span className="row-kicker">RETRIEVED MUNICIPAL PLAYBOOK</span>
-                <b className="policy-code">{activePreset.retrievedPolicy}</b>
-                <span className="landmark-tag">📍 {activePreset.landmark}</span>
+            {/* RETRIEVED POLICY PLAYBOOK & RISK SCORES */}
+            <div className="policy-risk-card">
+              <div className="policy-details">
+                <span className="policy-kicker">RETRIEVED MUNICIPAL PLAYBOOK</span>
+                <b className="policy-code-badge">{activePreset.retrievedPolicy}</b>
+                <p className="policy-title-text">{activePreset.policyTitle}</p>
+                <small className="dept-text">Assigned: {activePreset.department}</small>
               </div>
 
-              <div className="risk-score-box">
-                <div className="score-item">
+              <div className="risk-meters-group">
+                <div className="meter-box">
                   <span>SEVERITY</span>
-                  <b className="score-val">{activePreset.severity}/100</b>
+                  <b className="severity-val">{activePreset.severity}/100</b>
                 </div>
-                <div className="score-item">
+                <div className="meter-box">
                   <span>PRIORITY</span>
-                  <b className={`prio-pill ${activePreset.priority.toLowerCase()}`}>
-                    {activePreset.priority}
+                  <b className={`prio-badge prio-${activePreset.priority.toLowerCase()}`}>
+                    {activePreset.priority} CRITICAL
                   </b>
                 </div>
               </div>
             </div>
 
-            {/* ROUTING & HUMAN GATE */}
-            <div className="routing-gate-bar">
-              <div className="dept-info">
-                <span>ASSIGNED JURISDICTION</span>
-                <b>{activePreset.department}</b>
+            {/* SUPERVISOR HUMAN-IN-THE-LOOP CHECKPOINT */}
+            <div className="supervisor-action-card">
+              <div className="supervisor-header">
+                <div>
+                  <span className="supervisor-kicker">HUMAN SUPERVISOR CHECKPOINT</span>
+                  <b className="draft-order-title">Draft Work Order: {activePreset.workOrderDraft}</b>
+                </div>
+                <span className={`status-pill status-${supervisorStatus}`}>
+                  {supervisorStatus === "approved"
+                    ? "✓ DISPATCH AUTHORIZED"
+                    : supervisorStatus === "clarification"
+                    ? "💬 WAITING CITIZEN PHOTO"
+                    : "⏳ AWAITING SUPERVISOR"}
+                </span>
               </div>
-              <div className="human-gate-pill">
-                <span className="gate-icon">🛡️</span>
-                <span>PAUSED AT SUPERVISOR CHECKPOINT</span>
-              </div>
+
+              {supervisorStatus === "pending" && (
+                <div className="supervisor-btn-row">
+                  <button type="button" className="button small authorize-btn" onClick={handleApprove}>
+                    Authorize Work Order Dispatch →
+                  </button>
+                  <button type="button" className="outline small clarify-btn" onClick={handleClarify}>
+                    Request 1 Photo Clarification
+                  </button>
+                </div>
+              )}
+
+              {actionNotice && (
+                <div className="action-feedback-toast" role="status">
+                  <span>{actionNotice}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       <style jsx>{`
-        .sandbox-card-root {
+        .sandbox-panel-root {
           border: 2px solid #172019;
           background: #ffffff;
           box-shadow: 6px 6px 0 #172019;
-          padding: 32px;
-          margin: 40px 0;
+          border-radius: 8px;
+          overflow: hidden;
         }
-        .sandbox-top-header {
+        .sandbox-control-strip {
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
-          gap: 20px;
-          padding-bottom: 24px;
-          border-bottom: 1px solid #172019;
-          margin-bottom: 28px;
+          align-items: center;
+          background: #172019;
+          color: #ffffff;
+          padding: 12px 24px;
+          gap: 16px;
           flex-wrap: wrap;
         }
-        .sandbox-kicker {
-          font-size: 0.65rem;
-          font-weight: 900;
-          letter-spacing: 0.12em;
-          color: #0f5f4f;
-          display: block;
-          margin-bottom: 4px;
-        }
-        .sandbox-heading {
-          font-size: 1.6rem;
-          font-family: Georgia, serif;
-          margin: 0 0 6px;
-          color: #172019;
-        }
-        .sandbox-subtext {
-          font-size: 0.9rem;
-          color: #555e54;
-          margin: 0;
-          max-width: 650px;
-          line-height: 1.5;
-        }
-        .preset-selector-chips {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-        .preset-chip {
+        .strip-left-status {
           display: flex;
           align-items: center;
+          gap: 8px;
+        }
+        .live-pulse-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #10b981;
+          animation: pulse 1.6s infinite;
+        }
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.4;
+            transform: scale(0.85);
+          }
+        }
+        .strip-title {
+          font-size: 0.68rem;
+          letter-spacing: 0.12em;
+          color: #dce8dd;
+        }
+        .preset-selector-row {
+          display: flex;
           gap: 6px;
-          padding: 8px 14px;
-          border: 1px solid #172019;
-          background: #fbf9f4;
-          font-size: 0.78rem;
-          font-weight: 800;
+          flex-wrap: wrap;
+        }
+        .preset-tab-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          background: #232d25;
+          color: #fbf9f4;
+          border: 1px solid #334035;
           border-radius: 4px;
+          font-size: 0.74rem;
+          font-weight: 750;
           cursor: pointer;
           transition: all 0.15s ease;
         }
-        .preset-chip:hover {
-          background: #172019;
-          color: #ffffff;
+        .preset-tab-btn:hover {
+          background: #334035;
         }
-        .preset-chip.active {
-          background: #172019;
+        .preset-tab-btn.active {
+          background: #0f5f4f;
+          border-color: #0f5f4f;
           color: #ffffff;
-          box-shadow: 3px 3px 0 #e84d7a;
+          box-shadow: 0 0 8px rgba(15, 95, 79, 0.5);
         }
-        .sandbox-body-grid {
+        .sandbox-columns-grid {
           display: grid;
-          grid-template-columns: 1fr 1.3fr;
-          gap: 32px;
+          grid-template-columns: 1fr 1.25fr;
+          gap: 28px;
+          padding: 28px 32px;
+          background: #fbf9f4;
         }
-        .col-header {
+        .pane-header {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
           margin-bottom: 14px;
         }
-        .step-num {
-          font-size: 0.72rem;
+        .pane-step-badge {
+          width: 28px;
+          height: 28px;
+          background: #172019;
+          color: #ffffff;
+          font-size: 0.75rem;
           font-weight: 900;
-          color: #0f5f4f;
-          background: #dce8dd;
-          padding: 2px 6px;
-          border: 1px solid #0f5f4f;
-          border-radius: 3px;
+          border-radius: 4px;
+          display: grid;
+          place-items: center;
+          flex-shrink: 0;
         }
-        .col-header b {
-          font-size: 0.9rem;
+        .pane-heading {
+          display: block;
+          font-size: 0.95rem;
           color: #172019;
         }
-        .processing-pill {
-          margin-left: auto;
-          font-size: 0.65rem;
-          font-weight: 800;
-          background: #e3b950;
-          padding: 2px 8px;
-          border-radius: 4px;
+        .pane-sub {
+          font-size: 0.72rem;
+          color: #687067;
+          margin: 0;
         }
-        .textarea-container {
+        .intake-form-box {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          background: #ffffff;
           border: 1px solid #172019;
-          background: #fbf9f4;
-          border-radius: 4px;
-          overflow: hidden;
+          border-radius: 6px;
+          padding: 16px;
+        }
+        .intake-label {
+          font-size: 0.72rem;
+          font-weight: 800;
+          color: #172019;
         }
         .sandbox-textarea {
           width: 100%;
-          border: 0;
-          background: transparent;
-          padding: 14px;
-          font-size: 0.88rem;
-          line-height: 1.55;
-          font-family: inherit;
-          resize: none;
-          outline: none;
-          color: #172019;
-        }
-        .input-meta-bar {
-          display: flex;
-          justify-content: space-between;
-          padding: 8px 14px;
-          background: #ede9df;
-          font-size: 0.68rem;
-          font-weight: 750;
-          color: #555e54;
-          border-top: 1px solid #e2ded4;
-        }
-        .evidence-badge-box {
-          margin-top: 20px;
-          padding: 14px;
-          border: 1px dashed #0f5f4f;
-          background: #f4f8f5;
-          border-radius: 4px;
-        }
-        .badge-title {
-          font-size: 0.62rem;
-          font-weight: 900;
-          letter-spacing: 0.1em;
-          color: #0f5f4f;
-          display: block;
-          margin-bottom: 4px;
-        }
-        .evidence-badge-box p {
-          font-size: 0.8rem;
-          color: #495248;
-          margin: 0;
+          border: 1px solid #172019;
+          background: #fbf9f4;
+          padding: 10px 12px;
+          font-size: 0.85rem;
           line-height: 1.45;
+          border-radius: 4px;
+          outline: none;
+          font-family: inherit;
+          resize: vertical;
         }
-        .output-cards-stack {
+        .sandbox-textarea:focus {
+          background: #ffffff;
+          border-color: #0f5f4f;
+        }
+        .media-telemetry-tile {
+          border: 1px solid #e2ded4;
+          background: #f4f8f5;
+          padding: 10px 12px;
+          border-radius: 4px;
           display: flex;
           flex-direction: column;
-          gap: 14px;
+          gap: 3px;
+        }
+        .media-tile-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .media-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 0.64rem;
+          font-weight: 850;
+          color: #0f5f4f;
+        }
+        .gps-tag {
+          font-size: 0.62rem;
+          font-weight: 700;
+          color: #687067;
+        }
+        .media-tag-title {
+          font-size: 0.8rem;
+          color: #172019;
+        }
+        .landmark-text {
+          font-size: 0.68rem;
+          color: #495248;
+        }
+        .run-reasoning-btn {
+          width: 100%;
+          padding: 10px;
+        }
+        .boundary-guarantee-note {
+          display: flex;
+          gap: 10px;
+          padding: 12px;
+          border: 1px solid #0f5f4f;
+          background: #dce8dd;
+          border-radius: 6px;
+          margin-top: 14px;
+        }
+        .shield-icon {
+          font-size: 1.1rem;
+        }
+        .boundary-guarantee-note b {
+          display: block;
+          font-size: 0.76rem;
+          color: #0f5f4f;
+          margin-bottom: 2px;
+        }
+        .boundary-guarantee-note p {
+          font-size: 0.7rem;
+          color: #172019;
+          margin: 0;
+          line-height: 1.35;
+        }
+        .reasoning-cards-stack {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
         }
         .evidence-split-card {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 12px;
           border: 1px solid #172019;
-          background: #fbf9f4;
+          background: #ffffff;
+          border-radius: 6px;
+          overflow: hidden;
+        }
+        .split-column {
           padding: 14px;
         }
-        .split-label {
+        .split-column.observed {
+          background: #f4f8f5;
+          border-right: 1px solid #e2ded4;
+        }
+        .split-title-row {
           display: flex;
           align-items: center;
           gap: 6px;
-          font-size: 0.62rem;
+          font-size: 0.66rem;
           font-weight: 900;
           letter-spacing: 0.08em;
           margin-bottom: 8px;
         }
+        .split-column.observed .split-title-row {
+          color: #0f5f4f;
+        }
+        .split-column.reported .split-title-row {
+          color: #991b1b;
+        }
         .dot {
-          width: 7px;
-          height: 7px;
+          width: 6px;
+          height: 6px;
           border-radius: 50%;
         }
         .dot-obs {
@@ -380,120 +571,154 @@ export function LiveEvidenceSandbox() {
         .dot-rep {
           background: #e84d7a;
         }
-        .split-half ul {
+        .evidence-list {
+          list-style: none;
+          padding: 0;
           margin: 0;
-          padding-left: 16px;
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 6px;
         }
-        .split-half li {
-          font-size: 0.78rem;
-          color: #495248;
+        .evidence-list li {
+          font-size: 0.74rem;
+          color: #334035;
           line-height: 1.35;
         }
-        .grounding-risk-row {
-          display: grid;
-          grid-template-columns: 1.8fr 1fr;
-          gap: 12px;
+        .evidence-list li::before {
+          content: "• ";
+          color: #687067;
+        }
+        .policy-risk-card {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
           border: 1px solid #172019;
           background: #ffffff;
-          padding: 14px;
+          border-radius: 6px;
+          padding: 14px 16px;
+          gap: 16px;
         }
-        .row-kicker {
+        .policy-kicker {
           font-size: 0.58rem;
           font-weight: 900;
           letter-spacing: 0.1em;
           color: #687067;
           display: block;
-          margin-bottom: 4px;
         }
-        .policy-code {
-          font-size: 0.85rem;
-          color: #172019;
-          display: block;
-          margin-bottom: 6px;
-        }
-        .landmark-tag {
-          font-size: 0.72rem;
-          font-weight: 750;
+        .policy-code-badge {
+          font-size: 0.86rem;
           color: #0f5f4f;
+          display: block;
+          margin: 2px 0;
         }
-        .risk-score-box {
+        .policy-title-text {
+          font-size: 0.74rem;
+          color: #172019;
+          margin: 0 0 3px;
+        }
+        .dept-text {
+          font-size: 0.66rem;
+          color: #687067;
+          display: block;
+        }
+        .risk-meters-group {
           display: flex;
           gap: 12px;
-          border-left: 1px solid #e2ded4;
-          padding-left: 14px;
-          align-items: center;
         }
-        .score-item span {
-          display: block;
-          font-size: 0.58rem;
-          font-weight: 900;
+        .meter-box {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          text-align: right;
+        }
+        .meter-box span {
+          font-size: 0.56rem;
+          font-weight: 850;
           color: #687067;
         }
-        .score-val {
-          font-size: 1.15rem;
-          font-family: monospace;
+        .severity-val {
+          font-size: 1.1rem;
           color: #e84d7a;
+          font-family: Georgia, serif;
         }
-        .prio-pill {
-          display: inline-block;
-          font-size: 0.75rem;
+        .prio-badge {
+          font-size: 0.62rem;
           font-weight: 900;
-          padding: 2px 8px;
+          padding: 3px 6px;
           border-radius: 3px;
-          margin-top: 2px;
+          background: #fee2e2;
+          color: #991b1b;
+          border: 1px solid #991b1b;
         }
-        .prio-pill.p1 {
-          background: #e84d7a;
-          color: #ffffff;
-        }
-        .prio-pill.p2 {
-          background: #0f5f4f;
-          color: #ffffff;
-        }
-        .prio-pill.p3 {
-          background: #e3b950;
-          color: #172019;
-        }
-        .routing-gate-bar {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 12px 16px;
+        .supervisor-action-card {
           border: 1px solid #172019;
-          background: #172019;
-          color: #ffffff;
-          border-radius: 4px;
-          flex-wrap: wrap;
+          background: #ffffff;
+          border-radius: 6px;
+          padding: 14px 16px;
+          display: flex;
+          flex-direction: column;
           gap: 10px;
         }
-        .dept-info span {
-          display: block;
-          font-size: 0.58rem;
-          font-weight: 850;
-          letter-spacing: 0.08em;
-          color: #9da99e;
-        }
-        .dept-info b {
-          font-size: 0.82rem;
-          color: #ffffff;
-        }
-        .human-gate-pill {
+        .supervisor-header {
           display: flex;
-          align-items: center;
-          gap: 6px;
-          background: #2b382d;
-          padding: 4px 10px;
-          border-radius: 4px;
-          font-size: 0.68rem;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 12px;
+        }
+        .supervisor-kicker {
+          font-size: 0.58rem;
+          font-weight: 900;
+          letter-spacing: 0.1em;
+          color: #0f5f4f;
+          display: block;
+        }
+        .draft-order-title {
+          font-size: 0.78rem;
+          color: #172019;
+          display: block;
+          margin-top: 2px;
+        }
+        .status-pill {
+          font-size: 0.6rem;
           font-weight: 850;
-          letter-spacing: 0.06em;
-          color: #dce8dd;
+          padding: 3px 8px;
+          border-radius: 4px;
+          white-space: nowrap;
+        }
+        .status-pending {
+          background: #fef08a;
+          color: #854d0e;
+          border: 1px solid #854d0e;
+        }
+        .status-approved {
+          background: #dce8dd;
+          color: #0f5f4f;
+          border: 1px solid #0f5f4f;
+        }
+        .status-clarification {
+          background: #fce7f3;
+          color: #be185d;
+          border: 1px solid #be185d;
+        }
+        .supervisor-btn-row {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .action-feedback-toast {
+          padding: 6px 10px;
+          background: #f4f8f5;
+          border: 1px solid #0f5f4f;
+          color: #0f5f4f;
+          font-size: 0.72rem;
+          font-weight: 750;
+          border-radius: 4px;
         }
         @media (max-width: 900px) {
-          .sandbox-body-grid {
+          .sandbox-columns-grid {
+            grid-template-columns: 1fr;
+          }
+          .evidence-split-card {
             grid-template-columns: 1fr;
           }
         }
