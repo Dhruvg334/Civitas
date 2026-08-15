@@ -10,11 +10,99 @@ interface OnboardingProps {
   initialName?: string;
 }
 
-const WARDS = [
-  { id: "Ward 12 · Unit 8", name: "Ward 12 · DAV School Zone", sector: "Nayapalli / Unit 8", hazardRisk: "Moderate" },
-  { id: "Ward 11 · Saheed Nagar", name: "Ward 11 · Saheed Nagar", sector: "Commercial Corridor", hazardRisk: "Low" },
-  { id: "Ward 10 · Master Canteen", name: "Ward 10 · Transit Hub", sector: "Station Crossings", hazardRisk: "High" },
-  { id: "Ward 08 · Capital Hospital", name: "Ward 08 · Hospital Axis", sector: "Emergency Corridor", hazardRisk: "Critical" },
+export interface LocalityItem {
+  id: string;
+  name: string;
+  zone: string;
+  landmarks: string;
+  riskLevel: "Low" | "Moderate" | "High" | "Critical";
+}
+
+const BHUBANESWAR_LOCALITIES: LocalityItem[] = [
+  {
+    id: "Ward 12 · Nayapalli / Unit 8",
+    name: "Nayapalli · Unit 8 & DAV Zone",
+    zone: "Central Zone (Ward 12)",
+    landmarks: "DAV Public School, VIP Road, ISKCON Temple",
+    riskLevel: "Moderate",
+  },
+  {
+    id: "Patia · KIIT & Infocity",
+    name: "Patia · Infocity & KIIT University",
+    zone: "North Zone",
+    landmarks: "KIIT Square, DLF Cybercity, Silicon Hills",
+    riskLevel: "Moderate",
+  },
+  {
+    id: "Chandrasekharpur · Damana",
+    name: "Chandrasekharpur · Damana & Sailashree Vihar",
+    zone: "North Zone",
+    landmarks: "Care Hospital, Big Bazaar, Housing Board",
+    riskLevel: "Low",
+  },
+  {
+    id: "Jayadev Vihar · IRC Village",
+    name: "Jayadev Vihar · IRC Village & Ekamra Kanan",
+    zone: "Central Zone",
+    landmarks: "Mayfair Crossing, Botanical Garden, BDA Colony",
+    riskLevel: "Moderate",
+  },
+  {
+    id: "Saheed Nagar · Vani Vihar",
+    name: "Saheed Nagar · Vani Vihar & Janpath",
+    zone: "Central East Zone",
+    landmarks: "Utkal University, Maharishi College, Rupali Square",
+    riskLevel: "Low",
+  },
+  {
+    id: "Master Canteen · Station Square",
+    name: "Master Canteen · Station & Ashok Nagar",
+    zone: "Transit Core",
+    landmarks: "Bhubaneswar Railway Station, Ram Mandir, Market Bldg",
+    riskLevel: "High",
+  },
+  {
+    id: "Unit 1 & 2 · Rajmahal & Secretariat",
+    name: "Unit 1, 2 & 3 · State Secretariat Core",
+    zone: "Administrative Core",
+    landmarks: "Daily Market, AG Square, State Assembly, Raj Bhavan",
+    riskLevel: "Low",
+  },
+  {
+    id: "Unit 6, 8 & 9 · Capital Hospital",
+    name: "Unit 6, 8 & 9 · Capital Hospital Corridor",
+    zone: "Medical Axis",
+    landmarks: "Capital Hospital, OUAT Campus, Siripur Square",
+    riskLevel: "Critical",
+  },
+  {
+    id: "Khandagiri · Pokhariput · Jagamara",
+    name: "Khandagiri · Pokhariput & Jagamara",
+    zone: "West Zone",
+    landmarks: "Khandagiri Caves, ITER College, Western Bypass",
+    riskLevel: "Moderate",
+  },
+  {
+    id: "Old Town · Lingaraj Temple Zone",
+    name: "Old Town · Lingaraj & Bindusagar Heritage",
+    zone: "Heritage Zone",
+    landmarks: "Lingaraj Temple, Bindusagar Lake, Kedar Gouri",
+    riskLevel: "High",
+  },
+  {
+    id: "Rasulgarh · Hanspal · NH-16",
+    name: "Rasulgarh · Hanspal & Cuttack Road Corridor",
+    zone: "East Zone",
+    landmarks: "Rasulgarh Flyover, Esplanade One Mall, NH-16 Highway",
+    riskLevel: "Moderate",
+  },
+  {
+    id: "Sundarpada · Jatni Road Belt",
+    name: "Sundarpada · Hi-Tech & South Suburban Belt",
+    zone: "South Zone",
+    landmarks: "Hi-Tech Medical College, Kapilaprasad, Jatni Link",
+    riskLevel: "High",
+  },
 ];
 
 const ROLES = [
@@ -32,12 +120,30 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
   const [email] = useState(initialEmail || "dhruvg.030304@gmail.com");
   const [phone, setPhone] = useState("+91 98765 43210");
   const [role, setRole] = useState("resident");
-  const [selectedWard, setSelectedWard] = useState(WARDS[0].id);
+  
+  // Location State
+  const [localitySearch, setLocalitySearch] = useState("");
+  const [selectedLocality, setSelectedLocality] = useState(BHUBANESWAR_LOCALITIES[0].id);
+  const [customLocality, setCustomLocality] = useState("");
   const [streetAddress, setStreetAddress] = useState("Lane 4, Near DAV Public School");
   const [alertRadius, setAlertRadius] = useState("500m");
+  
+  // Alert & Governance Settings
   const [alertChannel, setAlertChannel] = useState<"whatsapp" | "sms" | "app">("whatsapp");
   const [alertPriority, setAlertPriority] = useState<"all" | "p1_only">("all");
   const [allowClarifications, setAllowClarifications] = useState(true);
+
+  const filteredLocalities = BHUBANESWAR_LOCALITIES.filter((loc) => {
+    const query = localitySearch.toLowerCase();
+    return (
+      loc.name.toLowerCase().includes(query) ||
+      loc.zone.toLowerCase().includes(query) ||
+      loc.landmarks.toLowerCase().includes(query)
+    );
+  });
+
+  const activeLocality =
+    BHUBANESWAR_LOCALITIES.find((l) => l.id === selectedLocality) || BHUBANESWAR_LOCALITIES[0];
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,13 +153,18 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
   };
 
   const handleFinish = () => {
+    const finalWardLocation =
+      selectedLocality === "other" && customLocality.trim()
+        ? `Bhubaneswar · ${customLocality.trim()}`
+        : selectedLocality;
+
     const userData = {
       name: name || "Resident Citizen",
       email,
       phone,
       role: role === "community_lead" ? "volunteer" : role === "business_owner" ? "merchant" : "resident",
-      roleTitle: role === "community_lead" ? "Ward Community Volunteer" : role === "business_owner" ? "Local Facility Lead" : "Registered Citizen · Ward 12",
-      ward: selectedWard,
+      roleTitle: role === "community_lead" ? "Ward Community Volunteer" : role === "business_owner" ? "Local Facility Lead" : "Registered Citizen · Bhubaneswar",
+      ward: finalWardLocation,
       streetAddress,
       alertRadius,
       alertChannel,
@@ -101,7 +212,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
             <div className="step-title-group">
               <h2 id="onboard-title" className="step-main-title">Create Your Civic Identity</h2>
               <p className="step-subtitle">
-                Set up your verified resident identity for official municipal correspondence and dispatch updates.
+                Set up your verified resident identity for official municipal correspondence and dispatch updates across Bhubaneswar.
               </p>
             </div>
 
@@ -162,49 +273,110 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
             <div className="modal-actions-footer">
               <span className="step-hint">Step 1 of 4: Identity Setup</span>
               <button type="submit" className="button large continue-btn">
-                Next: Ward Geofence →
+                Next: Bhubaneswar Location →
               </button>
             </div>
           </form>
         )}
 
-        {/* STEP 2: WARD & GEOFENCE */}
+        {/* STEP 2: BHUBANESWAR LOCATION & GEOFENCE */}
         {step === 2 && (
           <form onSubmit={handleNext} className="onboard-step-body">
             <div className="step-title-group">
-              <h2 id="onboard-title" className="step-main-title">Set Your Municipal Ward Geofence</h2>
+              <h2 id="onboard-title" className="step-main-title">Select Your Bhubaneswar Locality</h2>
               <p className="step-subtitle">
-                PostGIS spatial queries use this zone to notify you about nearby pipe bursts, road closures, and hazards.
+                Choose your residential or business neighborhood across Greater Bhubaneswar to set your PostGIS proximity alert buffer.
               </p>
             </div>
 
             <div className="form-fields-stack">
+              {/* SEARCH FILTER */}
               <div className="field-block">
-                <span className="field-label">Select Your Primary Ward</span>
-                <div className="ward-options-grid">
-                  {WARDS.map((w) => {
-                    const isSelected = selectedWard === w.id;
-                    return (
-                      <div
-                        key={w.id}
-                        className={`ward-option-card ${isSelected ? "selected" : ""}`}
-                        onClick={() => setSelectedWard(w.id)}
-                      >
-                        <div className="ward-top-meta">
-                          <FlatIcon name="map" size={14} color={isSelected ? "#e84d7a" : "#0f5f4f"} />
-                          <span className="ward-sector-tag">{w.sector}</span>
-                        </div>
-                        <b className="ward-name">{w.name}</b>
-                        <small className="ward-risk">Hazard Sensitivity: {w.hazardRisk}</small>
-                      </div>
-                    );
-                  })}
+                <label className="field-label" htmlFor="locality-search-input">
+                  Search Bhubaneswar Zones ({BHUBANESWAR_LOCALITIES.length} Available)
+                </label>
+                <div className="search-input-wrapper">
+                  <FlatIcon name="search" size={15} color="#687067" />
+                  <input
+                    id="locality-search-input"
+                    type="text"
+                    value={localitySearch}
+                    onChange={(e) => setLocalitySearch(e.target.value)}
+                    placeholder="Search e.g. Patia, Nayapalli, Saheed Nagar, Khandagiri..."
+                    className="modal-search-field"
+                  />
+                  {localitySearch && (
+                    <button
+                      type="button"
+                      className="clear-search-x"
+                      onClick={() => setLocalitySearch("")}
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               </div>
 
+              {/* LOCALITY CARDS GRID */}
+              <div className="field-block">
+                <span className="field-label">Choose Primary Locality / Ward</span>
+                <div className="locality-scroll-grid">
+                  {filteredLocalities.map((loc) => {
+                    const isSelected = selectedLocality === loc.id;
+                    return (
+                      <div
+                        key={loc.id}
+                        className={`locality-card ${isSelected ? "selected" : ""}`}
+                        onClick={() => setSelectedLocality(loc.id)}
+                      >
+                        <div className="loc-top-row">
+                          <span className="loc-zone-badge">{loc.zone}</span>
+                          <span className={`loc-risk-badge ${loc.riskLevel.toLowerCase()}`}>
+                            {loc.riskLevel} Risk
+                          </span>
+                        </div>
+                        <b className="loc-title">{loc.name}</b>
+                        <small className="loc-landmarks">📍 {loc.landmarks}</small>
+                      </div>
+                    );
+                  })}
+
+                  {/* OTHER CUSTOM LOCALITY CARD */}
+                  <div
+                    className={`locality-card other-card ${selectedLocality === "other" ? "selected" : ""}`}
+                    onClick={() => setSelectedLocality("other")}
+                  >
+                    <div className="loc-top-row">
+                      <span className="loc-zone-badge">Custom Zone</span>
+                      <span className="loc-risk-badge">All 67 Wards</span>
+                    </div>
+                    <b className="loc-title">+ Other Locality in Bhubaneswar</b>
+                    <small className="loc-landmarks">Enter custom ward, society or colony name</small>
+                  </div>
+                </div>
+              </div>
+
+              {/* CUSTOM LOCALITY TEXT FIELD IF 'OTHER' SELECTED */}
+              {selectedLocality === "other" && (
+                <div className="field-block custom-locality-fade">
+                  <label className="field-label" htmlFor="custom-loc-input">
+                    Specify Your Locality / Colony Name in Bhubaneswar
+                  </label>
+                  <input
+                    id="custom-loc-input"
+                    type="text"
+                    required
+                    value={customLocality}
+                    onChange={(e) => setCustomLocality(e.target.value)}
+                    placeholder="e.g. Kalinga Nagar, Mancheswar, Tomando, Ghatikia..."
+                    className="modal-text-input"
+                  />
+                </div>
+              )}
+
               <div className="field-block">
                 <label className="field-label" htmlFor="onboard-street">
-                  Street / Neighborhood Address
+                  Street / Landmark / Colony Address
                 </label>
                 <input
                   id="onboard-street"
@@ -212,15 +384,15 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
                   required
                   value={streetAddress}
                   onChange={(e) => setStreetAddress(e.target.value)}
-                  placeholder="e.g. Lane 4, Opposite Community Park"
+                  placeholder="e.g. Plot 24, Near Sector Community Centre"
                   className="modal-text-input"
                 />
               </div>
 
               <div className="field-block">
-                <span className="field-label">Proximity Notification Buffer</span>
+                <span className="field-label">PostGIS Proximity Alert Buffer</span>
                 <div className="radius-pill-group">
-                  {["250m (Immediate Block)", "500m (School/Hospital Buffer)", "1km (Full Ward)"].map((rad) => {
+                  {["250m (Immediate Block)", "500m (School & Hospital Buffer)", "1km (Full Neighborhood)"].map((rad) => {
                     const value = rad.split(" ")[0];
                     const isSelected = alertRadius === value;
                     return (
@@ -291,7 +463,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
                     className={`sense-btn ${alertPriority === "all" ? "active" : ""}`}
                     onClick={() => setAlertPriority("all")}
                   >
-                    <b>All Ward Incidents</b>
+                    <b>All Neighborhood Incidents</b>
                     <small>Water leaks, potholes, trees, streetlights</small>
                   </button>
                   <button
@@ -341,7 +513,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
             <div className="step-title-group">
               <h2 id="onboard-title" className="step-main-title">Your Civic Passport is Ready</h2>
               <p className="step-subtitle">
-                Your profile has been registered on the Ward 12 PostGIS municipal geofence.
+                Your profile has been registered on the Bhubaneswar municipal geofence.
               </p>
             </div>
 
@@ -354,7 +526,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
                 <div className="passport-meta">
                   <div className="passport-kicker-row">
                     <span className="passport-verified-tag">✓ VERIFIED RESIDENT</span>
-                    <span className="passport-ward-tag">{selectedWard.split("·")[0].trim()}</span>
+                    <span className="passport-ward-tag">BHUBANESWAR BMC</span>
                   </div>
                   <b className="passport-name">{name}</b>
                   <p className="passport-email">{email} · {phone}</p>
@@ -364,7 +536,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
               <div className="passport-specs-grid">
                 <div className="spec-tile">
                   <span>REGISTERED GEOFENCE</span>
-                  <b>{selectedWard}</b>
+                  <b>{selectedLocality === "other" && customLocality ? customLocality : activeLocality.name}</b>
                 </div>
                 <div className="spec-tile">
                   <span>NOTIFICATIONS</span>
@@ -411,7 +583,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
           }
         }
         .onboarding-modal-card {
-          width: min(100%, 640px);
+          width: min(100%, 680px);
           background: #ffffff;
           border: 2px solid #172019;
           box-shadow: 8px 8px 0 #172019;
@@ -420,7 +592,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
           display: flex;
           flex-direction: column;
           gap: 16px;
-          max-height: 92vh;
+          max-height: 90vh;
           overflow-y: auto;
           animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -541,6 +713,99 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
           border-color: #0f5f4f;
           box-shadow: 0 0 0 2px rgba(15, 95, 79, 0.15);
         }
+        .search-input-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+          border: 1px solid #172019;
+          background: #fbf9f4;
+          border-radius: 4px;
+          padding: 0 12px;
+          gap: 8px;
+        }
+        .modal-search-field {
+          flex: 1;
+          border: 0;
+          background: transparent;
+          padding: 9px 0;
+          font-size: 0.86rem;
+          outline: none;
+          font-family: inherit;
+        }
+        .clear-search-x {
+          border: 0;
+          background: transparent;
+          cursor: pointer;
+          font-size: 0.75rem;
+          color: #687067;
+          padding: 2px 6px;
+        }
+        .locality-scroll-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          max-height: 240px;
+          overflow-y: auto;
+          padding-right: 4px;
+        }
+        .locality-card {
+          border: 1px solid #172019;
+          background: #fbf9f4;
+          padding: 10px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          text-align: left;
+          transition: all 0.15s ease;
+        }
+        .locality-card:hover {
+          background: #ffffff;
+          box-shadow: 2px 2px 0 #172019;
+        }
+        .locality-card.selected {
+          border-left: 5px solid #0f5f4f;
+          background: #ffffff;
+          box-shadow: 3px 3px 0 #172019;
+        }
+        .locality-card.other-card {
+          border-style: dashed;
+        }
+        .loc-top-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .loc-zone-badge {
+          font-size: 0.58rem;
+          font-weight: 850;
+          color: #0f5f4f;
+          background: #dce8dd;
+          padding: 2px 5px;
+          border-radius: 3px;
+        }
+        .loc-risk-badge {
+          font-size: 0.56rem;
+          font-weight: 800;
+          color: #687067;
+        }
+        .loc-risk-badge.high, .loc-risk-badge.critical {
+          color: #991b1b;
+        }
+        .loc-title {
+          font-size: 0.8rem;
+          color: #172019;
+          line-height: 1.25;
+        }
+        .loc-landmarks {
+          font-size: 0.66rem;
+          color: #687067;
+          line-height: 1.25;
+        }
+        .custom-locality-fade {
+          animation: fadeIn 0.2s ease-out;
+        }
         .role-cards-grid {
           display: flex;
           flex-direction: column;
@@ -591,49 +856,6 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
           font-size: 0.72rem;
           color: #687067;
           line-height: 1.3;
-        }
-        .ward-options-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 8px;
-        }
-        .ward-option-card {
-          border: 1px solid #172019;
-          background: #fbf9f4;
-          padding: 10px 12px;
-          border-radius: 6px;
-          cursor: pointer;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-          transition: all 0.15s ease;
-        }
-        .ward-option-card:hover {
-          background: #ffffff;
-          box-shadow: 2px 2px 0 #172019;
-        }
-        .ward-option-card.selected {
-          border-left: 5px solid #e84d7a;
-          background: #ffffff;
-          box-shadow: 3px 3px 0 #172019;
-        }
-        .ward-top-meta {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .ward-sector-tag {
-          font-size: 0.6rem;
-          font-weight: 800;
-          color: #687067;
-        }
-        .ward-name {
-          font-size: 0.8rem;
-          color: #172019;
-        }
-        .ward-risk {
-          font-size: 0.68rem;
-          color: #687067;
         }
         .radius-pill-group {
           display: flex;
@@ -843,7 +1065,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
           width: 100%;
         }
         @media (max-width: 600px) {
-          .ward-options-grid,
+          .locality-scroll-grid,
           .channel-cards-row,
           .sensitivity-selector,
           .passport-specs-grid {

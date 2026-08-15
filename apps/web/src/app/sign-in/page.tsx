@@ -289,7 +289,13 @@ export default function SignIn() {
                     : "Sign In to Workspace →"}
                 </button>
 
-                {!isSignUp && (
+                {isSignUp ? (
+                  <p className="signup-tos-notice">
+                    By creating an account, you agree to the Civitas{" "}
+                    <Link href="/terms">Terms of Service</Link> and{" "}
+                    <Link href="/privacy">Privacy Policy</Link>.
+                  </p>
+                ) : (
                   <div className="reset-pw-row">
                     <Link href="/reset-password" className="reset-pw-anchor">
                       Forgot your password? Reset here →
@@ -605,16 +611,28 @@ export default function SignIn() {
         }
         .reset-pw-row {
           text-align: center;
-          margin-top: -4px;
+          margin-top: -6px;
         }
         .reset-pw-anchor {
-          font-size: 0.78rem;
-          font-weight: 750;
-          color: #0f5f4f;
+          font-size: 0.72rem;
+          font-weight: 700;
+          color: #687067;
           text-decoration: none;
         }
         .reset-pw-anchor:hover {
-          color: #e84d7a;
+          color: #0f5f4f;
+          text-decoration: underline;
+        }
+        .signup-tos-notice {
+          font-size: 0.72rem;
+          color: #687067;
+          line-height: 1.4;
+          text-align: center;
+          margin: -2px 0 0;
+        }
+        .signup-tos-notice a {
+          color: #0f5f4f;
+          font-weight: 700;
           text-decoration: underline;
         }
         .auth-notice-toast {
