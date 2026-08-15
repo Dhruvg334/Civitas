@@ -8,13 +8,101 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { Nav, Status, Footer } from "@/components/site";
 import { MiniMap } from "@/components/civic-visuals";
 
+interface IncidentData {
+  title: string;
+  priority: "P1" | "P2" | "P3";
+  ward: string;
+  department: string;
+  category: string;
+  landmark: string;
+  playbook: string;
+  reportsCount: number;
+  observedText: string;
+  reportedText: string;
+  inferredText: string;
+  workOrderDesc: string;
+}
+
+const INCIDENT_CATALOG: Record<string, IncidentData> = {
+  "INC-0241": {
+    title: "School Crossing Water Main Leakage",
+    priority: "P1",
+    ward: "WARD 12 · UNIT 8",
+    department: "Water Supply & Drainage + Traffic Control",
+    category: "water_leakage",
+    landmark: "14m from DAV Public School Gate (Active School Buffer)",
+    playbook: "PLAY-WATER-01 (Municipal Main Line Rupture Protocol)",
+    reportsCount: 3,
+    observedText: "Standing water crossing active school corridor and high-pressure subsurface fissure.",
+    reportedText: "Bicycles slipping near school gate during morning arrival; road flooded.",
+    inferredText: "Likely 150mm ductile distribution line rupture requiring collar clamping.",
+    workOrderDesc: "Isolate sub-zone isolation valve V-12, deploy mechanical backhoe for excavation, install ductile iron repair sleeve, and backfill with asphalt cold patch.",
+  },
+  "INC-0240": {
+    title: "Park Road Snapped Banyan Tree Branch",
+    priority: "P2",
+    ward: "WARD 12 · PARK SECTOR",
+    department: "Parks & Urban Forestry",
+    category: "fallen_tree",
+    landmark: "Park Road, opposite Ward Community Center",
+    playbook: "PLAY-FORESTRY-03 (Obstruction Clearing & Heavy Timber Removal)",
+    reportsCount: 2,
+    observedText: "Overhead timber debris across outbound lane; asphalt surface scratched.",
+    reportedText: "Branch snapped in storm; blocking school vans.",
+    inferredText: "Heavy banyan branch under mechanical tension; chainsaw crew required.",
+    workOrderDesc: "Deploy boom crane truck and 2 chainsaw operators to section timber into 1m logs, clear road lane, and chip residue.",
+  },
+  "INC-0238": {
+    title: "East Gate Luminaire & Dark Corridor Fault",
+    priority: "P3",
+    ward: "WARD 12 · EAST GATE JUNCTION",
+    department: "Electrical & Public Lighting",
+    category: "streetlight",
+    landmark: "East Gate Commercial Crossroad, Poles #104-106",
+    playbook: "PLAY-LIGHT-02 (Feeder Circuit Diagnostic & Luminaire Repair)",
+    reportsCount: 1,
+    observedText: "Zero luminaire output across 3 consecutive poles during night cycle.",
+    reportedText: "Dark for 3 consecutive nights; pedestrians cannot see pavement.",
+    inferredText: "Underground feeder cable short or burnt ballast relay.",
+    workOrderDesc: "Test continuity of feeder circuit FC-08, replace blown 250W LED driver modules on Poles 104-106, and verify photocell timer.",
+  },
+  "INC-0235": {
+    title: "Hospital Axis Stormwater Drain Blockage",
+    priority: "P1",
+    ward: "WARD 08 · HOSPITAL SECTOR",
+    department: "Drainage & Sewerage Board",
+    category: "drainage_blockage",
+    landmark: "Ambulance Access Bay, Capital Hospital Entrance",
+    playbook: "PLAY-DRAIN-04 (Emergency Stormwater Desilting)",
+    reportsCount: 4,
+    observedText: "Storm drain inlet completely submerged by refuse; backflow onto ambulance ramp.",
+    reportedText: "Water entering emergency bay; vehicles slowing down.",
+    inferredText: "Sediment and plastic obstruction inside 600mm reinforced concrete pipe.",
+    workOrderDesc: "Deploy high-pressure water jetting vacuum truck VJ-04 to flush obstruction, clear inlet grate, and install sediment trap.",
+  },
+};
+
 export default function Incident({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const incidentId = id.toUpperCase();
+  const incidentId = (id || "INC-0241").toUpperCase();
+  const incident: IncidentData = INCIDENT_CATALOG[incidentId] || {
+    title: `Civic Incident ${incidentId}`,
+    priority: "P2",
+    ward: "WARD 12 · MUNICIPAL ZONE",
+    department: "Public Works & Infrastructure",
+    category: "general_hazard",
+    landmark: "Ward 12 Municipal Corridor (PostGIS Georeferenced)",
+    playbook: "PLAY-GEN-01 (Standard Civic Hazard Resolution)",
+    reportsCount: 2,
+    observedText: "Visual anomaly detected on municipal infrastructure asset.",
+    reportedText: "Citizen report logged with evidence attachment.",
+    inferredText: "Standard field inspection protocol recommended.",
+    workOrderDesc: "Deploy district inspection crew to assess site and implement corrective action.",
+  };
   const [activeTab, setActiveTab] = useState<string>("evidence");
 
   return (
@@ -25,22 +113,24 @@ export default function Incident({
         <header className="incident-top-header">
           <div className="incident-title-block">
             <div className="incident-tag-row">
-              <span className="prio-tag p1">P1 CRITICAL</span>
+              <span className={`prio-tag ${incident.priority.toLowerCase()}`}>
+                {incident.priority} {incident.priority === "P1" ? "CRITICAL" : incident.priority === "P2" ? "MODERATE" : "INSPECTION"}
+              </span>
               <span className="incident-id-badge">{incidentId}</span>
-              <span className="ward-tag">WARD 12 · UNIT 8</span>
+              <span className="ward-tag">{incident.ward}</span>
             </div>
-            <h1 className="incident-main-heading">School Crossing Water Main Leakage</h1>
+            <h1 className="incident-main-heading">{incident.title}</h1>
             <p className="incident-sub-desc">
-              3 related resident reports (photo, text, video) consolidated via PostGIS spatial clustering and CLIP zero-shot vision classification.
+              {incident.reportsCount} related resident reports (photo, text, video) consolidated via PostGIS spatial clustering and CLIP zero-shot vision classification.
             </p>
           </div>
 
           <div className="incident-state-card">
             <span className="state-label">WORKFLOW STATE</span>
-            <Status tone="warn">WAITING_FOR_REVIEW</Status>
+            <Status tone={incident.priority === "P1" ? "warn" : "good"}>WAITING_FOR_REVIEW</Status>
             <div className="trace-id-box">
-              <span>TRACE: CIV-TR-0241</span>
-              <span>THREAD: th-water-0241</span>
+              <span>TRACE: CIV-TR-{incidentId.slice(-4)}</span>
+              <span>THREAD: th-{incident.category}-{incidentId.slice(-4)}</span>
             </div>
           </div>
         </header>

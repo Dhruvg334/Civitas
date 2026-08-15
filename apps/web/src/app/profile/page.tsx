@@ -465,6 +465,16 @@ export default function Profile() {
                     className="settings-checkbox"
                   />
                 </div>
+
+                <div className="settings-row">
+                  <div>
+                    <b>Account Security & Credentials</b>
+                    <p>Update your password or configure two-factor authentication recovery codes.</p>
+                  </div>
+                  <Link href="/reset-password" className="outline small reset-pw-link">
+                    Reset Password →
+                  </Link>
+                </div>
               </div>
             </div>
           )}
@@ -563,7 +573,18 @@ export default function Profile() {
         .profile-ward-text {
           font-size: 0.85rem;
           color: #687067;
-          margin: 0 0 20px;
+          margin: 0 0 14px;
+        }
+        .guest-banner-row {
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          padding: 8px 14px;
+          background: #fbf9f4;
+          border: 1px solid #172019;
+          border-radius: 6px;
+          margin: 4px 0 18px;
+          flex-wrap: wrap;
         }
         .profile-header-actions {
           display: flex;

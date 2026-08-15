@@ -215,6 +215,13 @@ export function InteractiveGisMap({
           handleSelectPin(pin);
         });
       });
+
+      setTimeout(() => {
+        if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+      }, 150);
+      setTimeout(() => {
+        if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+      }, 450);
     }
 
     initMap();
@@ -226,7 +233,16 @@ export function InteractiveGisMap({
         mapInstanceRef.current = null;
       }
     };
-  }, [activePinId, bufferRadius, handleSelectPin, showBuffer]);
+  }, [bufferRadius, handleSelectPin, showBuffer]);
+
+  // Synchronize map center when selectedIncidentId prop changes from parent
+  useEffect(() => {
+    if (!mapInstanceRef.current || !selectedIncidentId) return;
+    const pin = DEMO_INCIDENT_PINS.find((p) => p.id === selectedIncidentId);
+    if (pin) {
+      mapInstanceRef.current.flyTo([pin.lat, pin.lng], 16, { duration: 0.8 });
+    }
+  }, [selectedIncidentId]);
 
   const handleLayerSwitch = (layer: "positron" | "osm" | "dark") => {
     setMapLayer(layer);
@@ -242,11 +258,15 @@ export function InteractiveGisMap({
 
     const urls = {
       positron: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-      osm: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      osm: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
     };
 
-    LModule.tileLayer(urls[layer], { maxZoom: 19, subdomains: "abcd" }).addTo(map);
+    LModule.tileLayer(urls[layer], { maxZoom: 19, subdomains: layer === "osm" ? "" : "abcd" }).addTo(map);
+
+    setTimeout(() => {
+      if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+    }, 150);
   };
 
   const handleZoom = (delta: number) => {
@@ -514,11 +534,11 @@ export function InteractiveGisMap({
           overflow: hidden;
         }
         .tool-btn {
-          width: 34px;
-          height: 34px;
+          width: 26px;
+          height: 26px;
           border: 0;
           background: transparent;
-          font-size: 1.2rem;
+          font-size: 0.95rem;
           font-weight: 800;
           cursor: pointer;
           display: grid;

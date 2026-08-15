@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Background Rounded Architectural Shield -->
+  <rect width="64" height="64" rx="14" fill="#172019" />
+  <rect x="2" y="2" width="60" height="60" rx="12" stroke="#0f5f4f" stroke-width="2" />
+
+  <!-- Tripartite Civic Intelligence Blocks -->
+  <!-- 01: Observable Evidence Fact (Forest Green) -->
+  <rect x="14" y="14" width="16" height="16" rx="4" fill="#0f5f4f" stroke="#fffdf7" stroke-width="1.5" />
+  <circle cx="22" cy="22" r="3" fill="#fffdf7" />
+
+  <!-- 02: Citizen Voice / Signal (Crimson Rose) -->
+  <rect x="34" y="14" width="16" height="16" rx="4" fill="#e84d7a" stroke="#fffdf7" stroke-width="1.5" />
+  <path d="M42 19v6M39 22h6" stroke="#fffdf7" stroke-width="2" stroke-linecap="round" />
+
+  <!-- 03: Spatial Grounding / Policy Compass (Gold) -->
+  <rect x="14" y="34" width="16" height="16" rx="4" fill="#e3b950" stroke="#fffdf7" stroke-width="1.5" />
+  <path d="M19 45l6-6M25 45l-6-6" stroke="#172019" stroke-width="2" stroke-linecap="round" />
+
+  <!-- 04: Human Decision Gate / Verified Shield (Mint White) -->
+  <rect x="34" y="34" width="16" height="16" rx="4" fill="#dce8dd" stroke="#172019" stroke-width="1.5" />
+  <path d="M38 42l3 3 5-5" stroke="#0f5f4f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

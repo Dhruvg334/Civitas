@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Nav, Footer } from "@/components/site";
 
@@ -5,26 +7,69 @@ export default function NotFound() {
   return (
     <>
       <Nav />
-      <main style={{ minHeight: "70vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
-        <div style={{ textAlign: "center", maxWidth: "480px" }}>
-          <span style={{ fontSize: "3.5rem", fontWeight: "800", background: "linear-gradient(135deg, #6366f1, #3b82f6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "block" }}>
-            404
-          </span>
-          <h1 style={{ fontSize: "1.75rem", fontWeight: "700", margin: "0.5rem 0", color: "#f8fafc" }}>
-            Incident Context Not Found
-          </h1>
-          <p style={{ color: "#94a3b8", fontSize: "0.9375rem", marginBottom: "1.75rem", lineHeight: "1.6" }}>
-            The requested incident record, trace, or page does not exist or has been archived.
+      <main className="not-found-main">
+        <div className="not-found-card">
+          <span className="not-found-code">404</span>
+          <h1 className="not-found-title">Page or Dossier Not Found</h1>
+          <p className="not-found-lead">
+            The requested incident record, documentation slug, or workflow trace does not exist or has been relocated.
           </p>
-          <Link
-            href="/workspace"
-            style={{ display: "inline-block", padding: "0.75rem 1.5rem", background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "#ffffff", borderRadius: "8px", textDecoration: "none", fontWeight: "600" }}
-          >
-            Go to Operational Workspace
-          </Link>
+          <div className="not-found-actions">
+            <Link href="/workspace" className="button large">
+              Go to Command Center →
+            </Link>
+            <Link href="/" className="outline large">
+              Return Home
+            </Link>
+          </div>
         </div>
       </main>
       <Footer />
+
+      <style jsx>{`
+        .not-found-main {
+          min-height: 65vh;
+          display: grid;
+          place-items: center;
+          padding: 60px 20px;
+        }
+        .not-found-card {
+          max-width: 540px;
+          text-align: center;
+          padding: 40px;
+          border: 2px solid #172019;
+          background: #ffffff;
+          box-shadow: 6px 6px 0 #172019;
+          border-radius: 8px;
+        }
+        .not-found-code {
+          font-size: 3.8rem;
+          font-weight: 900;
+          color: #e84d7a;
+          line-height: 1;
+          display: block;
+          margin-bottom: 8px;
+          font-family: Georgia, serif;
+        }
+        .not-found-title {
+          font-size: 2rem;
+          font-family: Georgia, serif;
+          margin: 0 0 12px;
+          color: #172019;
+        }
+        .not-found-lead {
+          color: #555e54;
+          font-size: 0.95rem;
+          line-height: 1.6;
+          margin: 0 0 28px;
+        }
+        .not-found-actions {
+          display: flex;
+          justify-content: center;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+      `}</style>
     </>
   );
 }

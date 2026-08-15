@@ -28,7 +28,7 @@ export default function SignIn() {
     if (role === "resident") {
       setEmail("dhruv.gupta@civic.local");
       setName("Dhruv Gupta");
-      setNotice("✓ Authenticated as Resident (Dhruv Gupta · Ward 12)");
+      setNotice("Welcome back, Dhruv Gupta! Signed in to your Ward 12 resident dashboard.");
     } else if (role === "supervisor") {
       userData = {
         name: "Sarah Chen",
@@ -40,7 +40,7 @@ export default function SignIn() {
       };
       setEmail("supervisor.chen@bhubaneswar.gov.in");
       setName("Sarah Chen (Public Works)");
-      setNotice("✓ Authenticated as Municipal Supervisor (Full Review Clearance)");
+      setNotice("Municipal supervisor clearance active. Sarah Chen authorized for review.");
     } else {
       userData = {
         name: "Marcus Vance",
@@ -52,7 +52,7 @@ export default function SignIn() {
       };
       setEmail("field.dispatch@waterdept.gov.in");
       setName("Marcus Vance (Field Dispatch)");
-      setNotice("✓ Authenticated as Field Crew Lead (Work Order Dispatch)");
+      setNotice("Field crew dispatch session active. Marcus Vance authorized for work orders.");
     }
 
     try {
@@ -67,20 +67,21 @@ export default function SignIn() {
     if (create) {
       setOnboarding(true);
     } else {
+      const userName = name || email.split("@")[0];
       const userData = {
-        name: name || email.split("@")[0],
+        name: userName,
         email,
         role: "resident" as const,
         roleTitle: "Registered Citizen",
         ward: "Ward 12 · Bhubaneswar",
-        avatarInitials: (name || email).slice(0, 2).toUpperCase(),
+        avatarInitials: userName.slice(0, 2).toUpperCase(),
       };
       try {
         localStorage.setItem("civitas_current_user", JSON.stringify(userData));
       } catch {
         // ignore
       }
-      setNotice("✓ Authenticated successfully with Civitas FastAPI backend session.");
+      setNotice(`Welcome back, ${userName}! Signed in successfully to Civitas.`);
     }
   };
 
@@ -230,6 +231,14 @@ export default function SignIn() {
               <button type="submit" className="button large auth-submit-btn">
                 {create ? "Create Civitas Account →" : "Sign In to Workspace →"}
               </button>
+
+              {!create && (
+                <div className="forgot-password-row">
+                  <Link href="/reset-password" className="forgot-password-link">
+                    Forgot your password? Reset it here →
+                  </Link>
+                </div>
+              )}
 
               {notice && (
                 <div className="auth-notice-alert" role="status">

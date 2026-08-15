@@ -70,6 +70,7 @@ export function ResolutionSlider({
       <div className="verifier-toggle-bar">
         <div className="toggle-group">
           <button
+            type="button"
             className={`toggle-btn ${activeView === "slider" ? "active" : ""}`}
             onClick={() => {
               setActiveView("slider");
@@ -79,6 +80,7 @@ export function ResolutionSlider({
             ⇄ Interactive Split Slider
           </button>
           <button
+            type="button"
             className={`toggle-btn ${activeView === "before" ? "active" : ""}`}
             onClick={() => {
               setActiveView("before");
@@ -88,6 +90,7 @@ export function ResolutionSlider({
             1. View Incident Photo
           </button>
           <button
+            type="button"
             className={`toggle-btn ${activeView === "after" ? "active" : ""}`}
             onClick={() => {
               setActiveView("after");
@@ -99,11 +102,11 @@ export function ResolutionSlider({
         </div>
 
         <span className="drag-hint">
-          {activeView === "slider" ? "Drag divider left/right to compare" : "Full frame preview"}
+          {activeView === "slider" ? "Drag center handle to inspect before vs after" : "Full frame preview"}
         </span>
       </div>
 
-      {/* COMPARATIVE VISUAL CANVAS */}
+      {/* COMPARATIVE VISUAL CANVAS (HEIGHT: 480px) */}
       <div
         ref={containerRef}
         className="slider-viewport"
@@ -115,87 +118,106 @@ export function ResolutionSlider({
         onTouchEnd={() => (isDragging.current = false)}
         onTouchMove={handleTouchMove}
       >
-        {/* AFTER PANEL (Background - Clean Paved Road) */}
+        {/* AFTER PANEL (Clean Paved Road) */}
         <div className="image-panel after-panel">
-          <svg className="evidence-canvas-svg" viewBox="0 0 900 420" preserveAspectRatio="none">
+          <svg className="evidence-canvas-svg" viewBox="0 0 900 480" preserveAspectRatio="none">
             {/* Background Road Surface */}
-            <rect width="900" height="420" fill="#2c332d" />
-            <rect x="0" y="0" width="900" height="90" fill="#dedad0" />
+            <rect width="900" height="480" fill="#242c26" />
+            
             {/* Sidewalk Curb */}
-            <line x1="0" y1="90" x2="900" y2="90" stroke="#172019" strokeWidth="4" />
-            <line x1="0" y1="94" x2="900" y2="94" stroke="#8a9489" strokeWidth="2" />
+            <rect x="0" y="0" width="900" height="100" fill="#dedad0" />
+            <line x1="0" y1="100" x2="900" y2="100" stroke="#172019" strokeWidth="4" />
+            <line x1="0" y1="104" x2="900" y2="104" stroke="#8a9489" strokeWidth="2" />
             
-            {/* Road Lane Markings */}
-            <line x1="50" y1="250" x2="180" y2="250" stroke="#e8e4d8" strokeWidth="6" strokeDasharray="20 15" />
-            <line x1="260" y1="250" x2="390" y2="250" stroke="#e8e4d8" strokeWidth="6" strokeDasharray="20 15" />
-            <line x1="470" y1="250" x2="600" y2="250" stroke="#e8e4d8" strokeWidth="6" strokeDasharray="20 15" />
-            <line x1="680" y1="250" x2="810" y2="250" stroke="#e8e4d8" strokeWidth="6" strokeDasharray="20 15" />
+            {/* Sidewalk Tile Lines */}
+            <line x1="150" y1="0" x2="150" y2="100" stroke="#c2bcb0" strokeWidth="1.5" />
+            <line x1="300" y1="0" x2="300" y2="100" stroke="#c2bcb0" strokeWidth="1.5" />
+            <line x1="450" y1="0" x2="450" y2="100" stroke="#c2bcb0" strokeWidth="1.5" />
+            <line x1="600" y1="0" x2="600" y2="100" stroke="#c2bcb0" strokeWidth="1.5" />
+            <line x1="750" y1="0" x2="750" y2="100" stroke="#c2bcb0" strokeWidth="1.5" />
 
-            {/* Fresh Asphalt Patch & Clamped Pipeline Area */}
-            <rect x="260" y="140" width="380" height="170" rx="10" fill="#1e241f" stroke="#0f5f4f" strokeWidth="3" strokeDasharray="6 4" />
-            <rect x="290" y="195" width="320" height="60" rx="6" fill="#121813" />
+            {/* School Crosswalk Stripes */}
+            <rect x="60" y="20" width="40" height="60" fill="#ffffff" rx="2" />
+            <rect x="130" y="20" width="40" height="60" fill="#ffffff" rx="2" />
+            <rect x="200" y="20" width="40" height="60" fill="#ffffff" rx="2" />
+
+            {/* Road Lane Markings */}
+            <line x1="50" y1="290" x2="190" y2="290" stroke="#e8e4d8" strokeWidth="8" strokeDasharray="30 20" />
+            <line x1="270" y1="290" x2="410" y2="290" stroke="#e8e4d8" strokeWidth="8" strokeDasharray="30 20" />
+            <line x1="490" y1="290" x2="630" y2="290" stroke="#e8e4d8" strokeWidth="8" strokeDasharray="30 20" />
+            <line x1="710" y1="290" x2="850" y2="290" stroke="#e8e4d8" strokeWidth="8" strokeDasharray="30 20" />
+
+            {/* Repaired Trench & Hot-Mix Asphalt Patch */}
+            <rect x="240" y="150" width="420" height="220" rx="12" fill="#181e19" stroke="#0f5f4f" strokeWidth="3" strokeDasharray="8 6" />
+            <rect x="270" y="210" width="360" height="95" rx="8" fill="#0f1511" />
             
-            {/* Subsurface Repair Badge */}
-            <g transform="translate(300, 160)">
-              <rect width="190" height="26" rx="4" fill="#0f5f4f" />
-              <text x="95" y="17" fill="#ffffff" fontSize="11" fontWeight="bold" textAnchor="middle">
+            {/* Status Badges on Canvas */}
+            <g transform="translate(280, 175)">
+              <rect width="210" height="30" rx="5" fill="#0f5f4f" />
+              <text x="105" y="20" fill="#ffffff" fontSize="11" fontWeight="900" letterSpacing="0.08em" textAnchor="middle">
                 ASPHALT SEALED & CURED
               </text>
             </g>
 
-            {/* Verified Pipe Collar */}
-            <rect x="420" y="210" width="60" height="30" rx="4" fill="#64748b" stroke="#94a3b8" strokeWidth="2" />
-            <text x="450" y="230" fill="#ffffff" fontSize="10" fontWeight="bold" textAnchor="middle">
-              CLAMP
+            {/* Clamped Pipe Cross-section */}
+            <rect x="420" y="235" width="80" height="42" rx="6" fill="#475569" stroke="#94a3b8" strokeWidth="2.5" />
+            <text x="460" y="261" fill="#ffffff" fontSize="11" fontWeight="bold" textAnchor="middle">
+              COLLAR
             </text>
 
-            <text x="450" y="280" fill="#dce8dd" fontSize="12" fontWeight="bold" textAnchor="middle">
-              ✓ Water Main Pressure Normal (4.2 Bar) · No Active Leakage
+            <text x="450" y="340" fill="#dce8dd" fontSize="13" fontWeight="bold" textAnchor="middle">
+              ✓ Water Main Pressure Normal (4.2 Bar) · Zero Surface Leakage
             </text>
           </svg>
           <span className="panel-badge after-badge">
-            <FlatIcon name="check" size={12} color="#ffffff" />
+            <FlatIcon name="check" size={14} color="#ffffff" />
             {afterLabel}
           </span>
         </div>
 
-        {/* BEFORE PANEL (Foreground - Ruptured pipe & water puddle) */}
+        {/* BEFORE PANEL (Ruptured Pipe & Water Flood) */}
         <div
           className="image-panel before-panel"
           style={{ clipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)` }}
         >
-          <svg className="evidence-canvas-svg" viewBox="0 0 900 420" preserveAspectRatio="none">
-            {/* Background Damaged Road */}
-            <rect width="900" height="420" fill="#38332c" />
-            <rect x="0" y="0" width="900" height="90" fill="#b8b0a0" />
-            <line x1="0" y1="90" x2="900" y2="90" stroke="#172019" strokeWidth="4" />
-
-            {/* Road Markings Damaged */}
-            <line x1="50" y1="250" x2="180" y2="250" stroke="#8c8270" strokeWidth="6" strokeDasharray="20 15" />
-            <line x1="680" y1="250" x2="810" y2="250" stroke="#8c8270" strokeWidth="6" strokeDasharray="20 15" />
-
-            {/* Large Water Puddle & Cavity */}
-            <ellipse cx="440" cy="220" rx="220" ry="110" fill="#1e3a5f" opacity="0.9" />
-            <ellipse cx="440" cy="220" rx="170" ry="80" fill="#2563eb" opacity="0.6" />
+          <svg className="evidence-canvas-svg" viewBox="0 0 900 480" preserveAspectRatio="none">
+            {/* Damaged Road Base */}
+            <rect width="900" height="480" fill="#302a24" />
             
-            {/* Burst Spray Graphic */}
-            <path d="M 380 230 Q 420 120 450 110 Q 480 120 520 230" stroke="#93c5fd" strokeWidth="16" fill="none" opacity="0.85" />
-            <path d="M 400 240 Q 440 140 450 130 Q 460 140 500 240" stroke="#ffffff" strokeWidth="6" fill="none" opacity="0.95" />
+            {/* Broken Sidewalk Curb */}
+            <rect x="0" y="0" width="900" height="100" fill="#b0a797" />
+            <line x1="0" y1="100" x2="900" y2="100" stroke="#172019" strokeWidth="4" />
+            
+            {/* Submerged / Damaged Lane Lines */}
+            <line x1="50" y1="290" x2="190" y2="290" stroke="#786f5e" strokeWidth="8" strokeDasharray="30 20" />
+            <line x1="710" y1="290" x2="850" y2="290" stroke="#786f5e" strokeWidth="8" strokeDasharray="30 20" />
+
+            {/* Large Water Flood Surface */}
+            <ellipse cx="440" cy="250" rx="270" ry="140" fill="#1e3a5f" opacity="0.92" />
+            <ellipse cx="440" cy="250" rx="200" ry="95" fill="#2563eb" opacity="0.65" />
+            
+            {/* Water Plume Spray */}
+            <path d="M 380 260 Q 430 110 450 100 Q 470 110 520 260" stroke="#93c5fd" strokeWidth="22" fill="none" opacity="0.8" />
+            <path d="M 400 270 Q 440 130 450 120 Q 460 130 500 270" stroke="#ffffff" strokeWidth="8" fill="none" opacity="0.95" />
+
+            {/* Water Ripple Rings */}
+            <ellipse cx="440" cy="250" rx="120" ry="50" fill="none" stroke="#60a5fa" strokeWidth="3" strokeDasharray="10 8" />
+            <ellipse cx="440" cy="250" rx="170" ry="75" fill="none" stroke="#93c5fd" strokeWidth="2" strokeDasharray="8 6" />
 
             {/* Hazard Alert Banner */}
-            <g transform="translate(290, 150)">
-              <rect width="320" height="34" rx="4" fill="#e84d7a" />
-              <text x="160" y="22" fill="#ffffff" fontSize="13" fontWeight="bold" textAnchor="middle">
+            <g transform="translate(260, 165)">
+              <rect width="360" height="38" rx="6" fill="#e84d7a" />
+              <text x="180" y="25" fill="#ffffff" fontSize="13" fontWeight="900" letterSpacing="0.06em" textAnchor="middle">
                 ⚠️ ACTIVE WATER MAIN BURST (INC-0241)
               </text>
             </g>
 
-            <text x="450" y="310" fill="#fecdd3" fontSize="12" fontWeight="bold" textAnchor="middle">
-              High-pressure flow flooded school crosswalk (3 Reports Clustered)
+            <text x="440" y="360" fill="#fecdd3" fontSize="13" fontWeight="bold" textAnchor="middle">
+              High-pressure plume flooded school crosswalk (3 Reports Clustered)
             </text>
           </svg>
           <span className="panel-badge before-badge">
-            <FlatIcon name="alert" size={12} color="#ffffff" />
+            <FlatIcon name="alert" size={14} color="#ffffff" />
             {beforeLabel}
           </span>
         </div>
@@ -254,15 +276,15 @@ export function ResolutionSlider({
           border: 2px solid #172019;
           background: #ffffff;
           box-shadow: 6px 6px 0 #172019;
-          padding: 24px;
+          padding: 28px;
           border-radius: 8px;
         }
         .verifier-header {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 18px;
-          padding-bottom: 16px;
+          margin-bottom: 20px;
+          padding-bottom: 18px;
           border-bottom: 1px solid #e2ded4;
           gap: 16px;
         }
@@ -288,7 +310,7 @@ export function ResolutionSlider({
           border-radius: 3px;
         }
         .verifier-title {
-          font-size: 1.35rem;
+          font-size: 1.5rem;
           font-family: Georgia, serif;
           margin: 0;
           color: #172019;
@@ -297,12 +319,12 @@ export function ResolutionSlider({
           display: flex;
           align-items: center;
           gap: 8px;
-          padding: 6px 12px;
+          padding: 6px 14px;
           border: 1px solid #0f5f4f;
           background: #dce8dd;
           color: #0f5f4f;
           border-radius: 4px;
-          font-size: 0.72rem;
+          font-size: 0.74rem;
           font-weight: 850;
           letter-spacing: 0.08em;
           white-space: nowrap;
@@ -317,7 +339,7 @@ export function ResolutionSlider({
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 12px;
+          margin-bottom: 16px;
           gap: 12px;
           flex-wrap: wrap;
         }
@@ -326,10 +348,10 @@ export function ResolutionSlider({
           gap: 6px;
         }
         .toggle-btn {
-          padding: 6px 12px;
+          padding: 7px 14px;
           border: 1px solid #172019;
           background: #fbf9f4;
-          font-size: 0.74rem;
+          font-size: 0.76rem;
           font-weight: 800;
           border-radius: 4px;
           cursor: pointer;
@@ -344,15 +366,15 @@ export function ResolutionSlider({
           color: #ffffff;
         }
         .drag-hint {
-          font-size: 0.72rem;
+          font-size: 0.74rem;
           color: #687067;
           font-weight: 700;
         }
         .slider-viewport {
           position: relative;
           width: 100%;
-          height: 320px;
-          border: 1px solid #172019;
+          height: 480px;
+          border: 2px solid #172019;
           border-radius: 6px;
           overflow: hidden;
           cursor: ew-resize;
@@ -370,24 +392,24 @@ export function ResolutionSlider({
         }
         .panel-badge {
           position: absolute;
-          top: 12px;
+          top: 14px;
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          padding: 5px 10px;
-          font-size: 0.72rem;
+          gap: 8px;
+          padding: 6px 12px;
+          font-size: 0.75rem;
           font-weight: 850;
           border-radius: 4px;
           border: 1px solid #172019;
           box-shadow: 2px 2px 0 #172019;
         }
         .before-badge {
-          left: 12px;
+          left: 14px;
           background: #e84d7a;
           color: #ffffff;
         }
         .after-badge {
-          right: 12px;
+          right: 14px;
           background: #0f5f4f;
           color: #ffffff;
         }
@@ -395,9 +417,9 @@ export function ResolutionSlider({
           position: absolute;
           top: 0;
           bottom: 0;
-          width: 3px;
+          width: 4px;
           background: #ffffff;
-          box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+          box-shadow: 0 0 14px rgba(0, 0, 0, 0.7);
           transform: translateX(-50%);
           pointer-events: none;
           z-index: 10;
@@ -407,29 +429,37 @@ export function ResolutionSlider({
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 38px;
-          height: 38px;
+          width: 42px;
+          height: 42px;
           border-radius: 50%;
           background: #ffffff;
           border: 2px solid #172019;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
           display: grid;
           place-items: center;
-          font-size: 1rem;
+          font-size: 1.1rem;
           font-weight: 900;
           color: #172019;
         }
         .verifier-checklist-grid {
           display: grid;
-          grid-template-columns: 1.2fr 1fr;
-          gap: 16px;
-          margin-top: 18px;
+          grid-template-columns: 1.4fr 1fr;
+          gap: 20px;
+          margin-top: 24px;
         }
         .evidence-card {
           border: 1px solid #172019;
-          padding: 16px;
+          background: #ffffff;
+          padding: 20px;
           border-radius: 6px;
+        }
+        .resolved-card {
+          background: #f4f8f5;
+          border-color: #0f5f4f;
+        }
+        .residual-card {
           background: #fbf9f4;
+          border-color: #d97706;
         }
         .card-top-row {
           display: flex;
@@ -440,12 +470,12 @@ export function ResolutionSlider({
           border-bottom: 1px solid #e2ded4;
         }
         .card-tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
           font-size: 0.68rem;
           font-weight: 900;
           letter-spacing: 0.08em;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
         }
         .resolved-tag {
           color: #0f5f4f;
@@ -454,8 +484,9 @@ export function ResolutionSlider({
           color: #b45309;
         }
         .card-meta {
-          font-size: 0.68rem;
+          font-size: 0.65rem;
           color: #687067;
+          font-weight: 700;
         }
         .evidence-list {
           margin: 0;
@@ -469,20 +500,30 @@ export function ResolutionSlider({
           display: flex;
           align-items: flex-start;
           gap: 8px;
-          font-size: 0.8rem;
+          font-size: 0.82rem;
           line-height: 1.45;
+        }
+        .resolved-item span {
           color: #172019;
+        }
+        .residual-item span {
+          color: #78350f;
         }
         .bullet-dash {
           color: #b45309;
-          font-size: 0.9rem;
+          font-weight: 900;
         }
-        @media (max-width: 800px) {
+        @media (max-width: 860px) {
+          .slider-viewport {
+            height: 380px;
+          }
           .verifier-checklist-grid {
             grid-template-columns: 1fr;
           }
+        }
+        @media (max-width: 540px) {
           .slider-viewport {
-            height: 250px;
+            height: 320px;
           }
         }
       `}</style>
