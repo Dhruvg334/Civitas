@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Footer, Nav } from "@/components/site";
 import { OnboardingPanel } from "@/components/onboarding-panel";
 import { FlatIcon } from "@/components/flat-icons";
+import { signInWithPassword } from "@/lib/auth";
 
 interface LiveMetricNode {
   id: string;
@@ -59,6 +60,7 @@ export default function SignIn() {
   const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [activeFeedIndex, setActiveFeedIndex] = useState(0);
@@ -71,43 +73,27 @@ export default function SignIn() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setAuthError(null);
+    setNotice("");
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
       if (isSignUp) {
         setShowOnboarding(true);
       } else {
-        const userName = name || (email ? email.split("@")[0] : "Resident");
-        const role = email.includes("supervisor") || email.includes("reviewer") ? "reviewer" : "citizen";
-        const session = {
-          accessToken: btoa(JSON.stringify({ sub: email || "citizen-1", role, iat: Date.now() })),
-          user: {
-            id: email || "usr-citizen-01",
-            email: email || "resident@civic.local",
-            name: userName,
-            role,
-            roleTitle: role === "reviewer" ? "Municipal Reviewer · Ward 12" : "Registered Citizen · Ward 12",
-            ward: "Ward 12 · DAV Public School Zone",
-            avatarInitials: userName.slice(0, 2).toUpperCase(),
-          },
-        };
-        try {
-          localStorage.setItem("civitas_session", JSON.stringify(session));
-          localStorage.setItem("civitas_current_user", JSON.stringify(session.user));
-          window.dispatchEvent(new Event("storage"));
-          window.dispatchEvent(new Event("civitas_auth_changed"));
-        } catch {
-          // ignore
-        }
-        setNotice(`✓ Welcome back, ${userName}! Signed in successfully.`);
+        const user = await signInWithPassword(email, password);
+        setNotice(`✓ Welcome back, ${user.name}! Signed in successfully.`);
         setTimeout(() => {
-          router.push(role === "reviewer" ? "/workspace" : "/profile");
+          router.push(user.role === "reviewer" || user.role === "supervisor" ? "/workspace" : "/profile");
         }, 600);
       }
-    }, 400);
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : "Authentication failed. Please check your credentials.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const activeNode = TELEMETRY_FEED[activeFeedIndex];
@@ -307,6 +293,12 @@ export default function SignIn() {
                     <Link href="/reset-password" className="reset-pw-anchor">
                       Forgot your password? Reset here →
                     </Link>
+                  </div>
+                )}
+
+                {authError && (
+                  <div className="auth-notice-toast error" role="alert" style={{ background: "rgba(239, 68, 68, 0.12)", border: "1px solid #f87171", color: "#b91c1c", marginTop: "12px" }}>
+                    <span>{authError}</span>
                   </div>
                 )}
 

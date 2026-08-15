@@ -6,7 +6,7 @@
     "apps/web"
   ],
   "scripts": {
-    "build": "npm --workspace apps/web run build",
+    "build": "node scripts/build-web.mjs",
     "lint": "npm --workspace apps/web run lint",
     "typecheck": "npm --workspace apps/web run typecheck",
     "test": "npm --workspace apps/web run test",

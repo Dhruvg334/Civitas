@@ -3,10 +3,10 @@
  *
  * Grounded in the FastAPI backend contracts with envelope validation,
  * explicit demo-mode control, LangGraph workflow runtime endpoints,
- * and zero fabricated tokens.
+ * media upload support, and zero fabricated tokens.
  */
 
-import { getAuthHeaders, isAuthenticated } from "./auth";
+import { getAuthHeadersAsync } from "./auth";
 
 export class ApiError extends Error {
   readonly status: number;
@@ -37,10 +37,15 @@ export function unwrapEnvelope<T>(payload: CivitasEnvelope<T>): T {
   return payload.data;
 }
 
-const API_BASE_URL =
-  typeof window !== "undefined"
-    ? (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1")
-    : (process.env.INTERNAL_API_URL || "http://localhost:8000/api/v1");
+export function getApiBaseUrl(): string {
+  const raw =
+    typeof window !== "undefined"
+      ? (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1")
+      : (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1");
+  const trimmed = raw.replace(/\/+$/, "");
+  if (trimmed.endsWith("/api/v1")) return trimmed;
+  return `${trimmed}/api/v1`;
+}
 
 export function isDemoMode(): boolean {
   return process.env.NEXT_PUBLIC_CIVITAS_DEMO_MODE === "true";
@@ -117,6 +122,24 @@ export interface WorkflowReviewRequest {
   notes?: string;
   routing?: RoutingOverride;
   operational_plan?: EditableWorkOrder;
+}
+
+export interface UploadedMediaRecord {
+  media_id: string;
+  incident_id: string;
+  kind: "image" | "video";
+  mime_type: string;
+  bytes_size: number;
+  storage_path: string;
+  uploaded_at: string;
+  url?: string;
+}
+
+export interface UserProfileResponse {
+  user_id: string;
+  email: string;
+  role: string;
+  display_name: string;
 }
 
 interface RawIncidentPayload {
@@ -273,12 +296,30 @@ export function formatWorkflowStatus(status: WorkflowStatusType | string): {
 }
 
 /**
+ * Fetch verified profile identity for current session.
+ */
+export async function fetchMe(): Promise<UserProfileResponse | null> {
+  const headers = await getAuthHeadersAsync();
+  if (!headers.Authorization) {
+    return null;
+  }
+  const res = await fetch(`${getApiBaseUrl()}/me`, { headers });
+  if (!res.ok) {
+    if (res.status === 401) return null;
+    throw new ApiError(`Failed to fetch current user profile (HTTP ${res.status})`, res.status);
+  }
+  const envelope = (await res.json()) as CivitasEnvelope<UserProfileResponse>;
+  return unwrapEnvelope(envelope);
+}
+
+/**
  * Fetch incident list from backend operations API.
  */
 export async function fetchIncidents(): Promise<IncidentRecord[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/incidents`, {
-      headers: getAuthHeaders(),
+    const headers = await getAuthHeadersAsync();
+    const res = await fetch(`${getApiBaseUrl()}/incidents`, {
+      headers,
       next: { revalidate: 5 },
     });
     if (!res.ok) {
@@ -316,7 +357,6 @@ export async function fetchIncidents(): Promise<IncidentRecord[]> {
     }));
   } catch (err) {
     if (isDemoMode()) {
-      console.info("Using demo mode seeded incidents:", err);
       return DEMO_SEEDED_INCIDENTS;
     }
     throw err instanceof ApiError ? err : new ApiError(err instanceof Error ? err.message : "Unable to reach Civitas API", 503);
@@ -328,8 +368,9 @@ export async function fetchIncidents(): Promise<IncidentRecord[]> {
  */
 export async function fetchIncidentDetail(id: string): Promise<IncidentRecord> {
   try {
-    const res = await fetch(`${API_BASE_URL}/incidents/${id}`, {
-      headers: getAuthHeaders(),
+    const headers = await getAuthHeadersAsync();
+    const res = await fetch(`${getApiBaseUrl()}/incidents/${id}`, {
+      headers,
     });
     if (!res.ok) {
       throw new ApiError(`Incident ${id} not found or inaccessible (HTTP ${res.status})`, res.status);
@@ -377,17 +418,18 @@ export async function submitReport(payload: {
   longitude?: number;
 }): Promise<{ report_id: string; status: string; description: string }> {
   try {
-    const res = await fetch(`${API_BASE_URL}/reports`, {
+    const headers = await getAuthHeadersAsync();
+    const res = await fetch(`${getApiBaseUrl()}/reports`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(),
+        ...headers,
       },
       body: JSON.stringify({
         description: payload.description,
         location: {
-          latitude: payload.latitude || 20.2961,
-          longitude: payload.longitude || 85.8245,
+          latitude: payload.latitude !== undefined ? payload.latitude : 20.29614,
+          longitude: payload.longitude !== undefined ? payload.longitude : 85.82451,
         },
         citizen_selected_category: payload.category || null,
       }),
@@ -416,15 +458,89 @@ export async function submitReport(payload: {
 }
 
 /**
+ * Upload photographic or video media attached to a report.
+ */
+export async function uploadReportMedia(
+  reportId: string,
+  file: File,
+  capturedAt?: string
+): Promise<UploadedMediaRecord> {
+  const allowedMime = new Set([
+    "image/png",
+    "image/jpeg",
+    "image/jpg",
+    "image/webp",
+    "video/mp4",
+    "video/webm",
+    "video/quicktime",
+    "video/x-matroska",
+  ]);
+
+  if (!allowedMime.has(file.type.toLowerCase())) {
+    throw new ApiError(
+      `File format '${file.type}' is not supported. Please upload PNG, JPG, WEBP, or MP4.`,
+      415
+    );
+  }
+
+  const maxBytes = 50 * 1024 * 1024; // 50MB
+  if (file.size > maxBytes) {
+    throw new ApiError("Uploaded file exceeds the maximum permitted 50MB size limit.", 413);
+  }
+
+  try {
+    const headers = await getAuthHeadersAsync();
+    const formData = new FormData();
+    formData.append("file", file);
+    if (capturedAt) {
+      formData.append("captured_at", capturedAt);
+    }
+
+    const res = await fetch(`${getApiBaseUrl()}/reports/${encodeURIComponent(reportId)}/media`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+
+    if (!res.ok) {
+      let msg = `Media upload failed (HTTP ${res.status})`;
+      try {
+        const body = await res.json();
+        if (body?.error?.message) msg = body.error.message;
+        else if (body?.detail) msg = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail);
+      } catch {}
+      throw new ApiError(msg, res.status);
+    }
+
+    const envelope = (await res.json()) as CivitasEnvelope<UploadedMediaRecord>;
+    return unwrapEnvelope(envelope);
+  } catch (err) {
+    if (isDemoMode()) {
+      return {
+        media_id: `med-demo-${Math.floor(1000 + Math.random() * 9000)}`,
+        incident_id: reportId,
+        kind: file.type.startsWith("video") ? "video" : "image",
+        mime_type: file.type,
+        bytes_size: file.size,
+        storage_path: `${reportId}/${file.name}`,
+        uploaded_at: new Date().toISOString(),
+      };
+    }
+    throw err instanceof ApiError ? err : new ApiError(err instanceof Error ? err.message : "Media upload failed", 500);
+  }
+}
+
+/**
  * Start LangGraph agent workflow for a submitted report.
  */
 export async function startWorkflow(reportId: string): Promise<WorkflowSummary> {
   try {
-    const res = await fetch(`${API_BASE_URL}/reports/${encodeURIComponent(reportId)}/workflow`, {
+    const headers = await getAuthHeadersAsync();
+    const res = await fetch(`${getApiBaseUrl()}/reports/${encodeURIComponent(reportId)}/workflow`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(),
+        ...headers,
       },
     });
     if (!res.ok) {
@@ -461,8 +577,9 @@ export async function startWorkflow(reportId: string): Promise<WorkflowSummary> 
  */
 export async function getWorkflow(workflowId: string): Promise<WorkflowSummary> {
   try {
-    const res = await fetch(`${API_BASE_URL}/workflows/${encodeURIComponent(workflowId)}`, {
-      headers: getAuthHeaders(),
+    const headers = await getAuthHeadersAsync();
+    const res = await fetch(`${getApiBaseUrl()}/workflows/${encodeURIComponent(workflowId)}`, {
+      headers,
     });
     if (!res.ok) {
       throw new ApiError(`Workflow ${workflowId} not found (HTTP ${res.status})`, res.status);
@@ -494,15 +611,16 @@ export async function submitWorkflowClarification(
   workflowId: string,
   answers: Record<string, string>
 ): Promise<WorkflowSummary> {
-  if (!isAuthenticated() && !isDemoMode()) {
+  const headers = await getAuthHeadersAsync();
+  if (!headers.Authorization && !isDemoMode()) {
     throw new ApiError("Authentication required to submit clarification responses.", 401);
   }
   try {
-    const res = await fetch(`${API_BASE_URL}/workflows/${encodeURIComponent(workflowId)}/clarification`, {
+    const res = await fetch(`${getApiBaseUrl()}/workflows/${encodeURIComponent(workflowId)}/clarification`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(),
+        ...headers,
       },
       body: JSON.stringify({ answers }),
     });
@@ -538,15 +656,16 @@ export async function submitWorkflowReview(
   workflowId: string,
   payload: WorkflowReviewRequest
 ): Promise<WorkflowSummary> {
-  if (!isAuthenticated() && !isDemoMode()) {
+  const headers = await getAuthHeadersAsync();
+  if (!headers.Authorization && !isDemoMode()) {
     throw new ApiError("Municipal Reviewer authentication required to execute review decisions.", 401);
   }
   try {
-    const res = await fetch(`${API_BASE_URL}/workflows/${encodeURIComponent(workflowId)}/review`, {
+    const res = await fetch(`${getApiBaseUrl()}/workflows/${encodeURIComponent(workflowId)}/review`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(),
+        ...headers,
       },
       body: JSON.stringify({
         action: payload.action,
@@ -590,20 +709,21 @@ export async function approveWorkOrder(
   reviewAction: "approve" | "edit" | "reroute" | "reject",
   notes?: string
 ): Promise<{ status: string; updated_at: string }> {
-  if (!isAuthenticated() && !isDemoMode()) {
+  const headers = await getAuthHeadersAsync();
+  if (!headers.Authorization && !isDemoMode()) {
     throw new ApiError("Reviewer authentication required.", 401);
   }
   try {
     const endpoint =
       reviewAction === "reject"
-        ? `${API_BASE_URL}/work-orders/${encodeURIComponent(workOrderId)}/reject`
-        : `${API_BASE_URL}/work-orders/${encodeURIComponent(workOrderId)}/approve`;
+        ? `${getApiBaseUrl()}/work-orders/${encodeURIComponent(workOrderId)}/reject`
+        : `${getApiBaseUrl()}/work-orders/${encodeURIComponent(workOrderId)}/approve`;
 
     const res = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(),
+        ...headers,
       },
       body: JSON.stringify({ notes }),
     });
@@ -626,8 +746,9 @@ export async function approveWorkOrder(
  */
 export async function fetchIncidentTrace(id: string): Promise<IncidentTraceStep[]> {
   try {
-    const res = await fetch(`${API_BASE_URL}/incidents/${encodeURIComponent(id)}/trace`, {
-      headers: getAuthHeaders(),
+    const headers = await getAuthHeadersAsync();
+    const res = await fetch(`${getApiBaseUrl()}/incidents/${encodeURIComponent(id)}/trace`, {
+      headers,
     });
     if (!res.ok) throw new ApiError(`Trace not found (HTTP ${res.status})`, res.status);
     const envelope = (await res.json()) as CivitasEnvelope<IncidentTraceStep[]>;

@@ -51,6 +51,7 @@ class Principal:
 
     user_id: str
     role: Role
+    email: str | None = None
 
     def can(self, required: Role) -> bool:
         return ROLE_RANK[self.role] >= ROLE_RANK[required]
@@ -116,7 +117,8 @@ def get_current_principal(
     role = _normalize_role(
         (payload.get("app_metadata") or {}).get("role") or payload.get("role")
     )
-    return Principal(user_id=str(sub), role=role)
+    email = payload.get("email")
+    return Principal(user_id=str(sub), role=role, email=str(email) if email else None)
 
 
 def require_role(minimum: Role):

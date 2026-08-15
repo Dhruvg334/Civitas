@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Footer, Nav, Status } from "@/components/site";
 import { FlatIcon } from "@/components/flat-icons";
 import { getSession, clearSession, setSession, CivicUser, UserSession } from "@/lib/auth";
-import { submitWorkflowClarification } from "@/lib/api";
+import { submitWorkflowClarification, fetchMe, isDemoMode } from "@/lib/api";
 
 const DEFAULT_PERSONAS: Record<string, CivicUser> = {
   resident: {
@@ -92,21 +92,41 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState<"overview" | "reports" | "ward" | "settings">("overview");
   const [clarificationReply, setClarificationReply] = useState<string>("");
   const [clarificationSent, setClarificationSent] = useState<boolean>(false);
+  const [clarificationError, setClarificationError] = useState<string | null>(null);
   const [savedNotice, setSavedNotice] = useState<string>("");
+  const [demoModeActive] = useState<boolean>(() => isDemoMode());
   const [, startTransition] = useTransition();
 
   useEffect(() => {
-    const syncUser = () => {
-      startTransition(() => {
-        const session = getSession();
-        if (session && session.user) {
+    const syncUser = async () => {
+      const session = getSession();
+      if (session && session.user) {
+        startTransition(() => {
           setUser(session.user);
           setIsGuest(false);
-        } else {
+        });
+        try {
+          const verified = await fetchMe();
+          if (verified) {
+            startTransition(() => {
+              setUser((prev) => ({
+                ...prev,
+                id: verified.user_id,
+                email: verified.email,
+                role: verified.role as CivicUser["role"],
+                name: verified.display_name || prev.name,
+              }));
+            });
+          }
+        } catch {
+          // Keep active session user
+        }
+      } else {
+        startTransition(() => {
           setUser(GUEST_PERSONA);
           setIsGuest(true);
-        }
-      });
+        });
+      }
     };
     syncUser();
     window.addEventListener("storage", syncUser);
@@ -118,15 +138,16 @@ export default function Profile() {
   }, []);
 
   const handleSwitchPersona = (roleKey: "resident" | "supervisor" | "field") => {
+    if (!demoModeActive) return;
     const selected = DEFAULT_PERSONAS[roleKey];
     const session: UserSession = {
-      accessToken: btoa(JSON.stringify({ sub: selected.id, role: selected.role, iat: Date.now() })),
+      accessToken: "demo-preview-token",
       user: selected,
     };
     setSession(session);
     setUser(selected);
     setIsGuest(false);
-    setSavedNotice(`✓ Switched session to ${selected.name} (${selected.roleTitle})`);
+    setSavedNotice(`✓ Switched demo preview to ${selected.name} (${selected.roleTitle})`);
     setTimeout(() => setSavedNotice(""), 4000);
   };
 
@@ -140,19 +161,21 @@ export default function Profile() {
 
   const handleSendClarification = async (e: React.FormEvent) => {
     e.preventDefault();
+    setClarificationError(null);
     try {
       await submitWorkflowClarification("wf-demo-light-0238", {
         q1: clarificationReply || "Lamp post is standing upright, but bulb housing is broken.",
       });
       setClarificationSent(true);
       setSavedNotice("✓ Clarification response submitted to LangGraph workflow runtime.");
-    } catch {
-      setClarificationSent(true);
-    }
-    setTimeout(() => {
+      setTimeout(() => {
+        setClarificationSent(false);
+        setSavedNotice("");
+      }, 5000);
+    } catch (err) {
+      setClarificationError(err instanceof Error ? err.message : "Failed to submit clarification response.");
       setClarificationSent(false);
-      setSavedNotice("");
-    }, 5000);
+    }
   };
 
   return (
@@ -193,39 +216,55 @@ export default function Profile() {
               </div>
             )}
 
-            <div className="profile-header-actions">
-              <span className="persona-switcher-kicker">QUICK PERSONA SWITCH:</span>
-              <div className="persona-pill-group">
+            {demoModeActive ? (
+              <div className="profile-header-actions">
+                <span className="persona-switcher-kicker">
+                  DEMO PERSONA SWITCHER: <small style={{ fontWeight: "normal", color: "#687067" }}>(Demo-only interface preview. This does not change backend authorization.)</small>
+                </span>
+                <div className="persona-pill-group">
+                  <button
+                    type="button"
+                    className={`persona-pill ${user.role === "citizen" ? "active" : ""}`}
+                    onClick={() => handleSwitchPersona("resident")}
+                  >
+                    <FlatIcon name="user" size={12} /> Resident (Dhruv)
+                  </button>
+                  <button
+                    type="button"
+                    className={`persona-pill ${user.role === "reviewer" || (user.role as string) === "supervisor" ? "active" : ""}`}
+                    onClick={() => handleSwitchPersona("supervisor")}
+                  >
+                    <FlatIcon name="shield" size={12} /> Supervisor (Sarah)
+                  </button>
+                  <button
+                    type="button"
+                    className={`persona-pill ${user.role === "triage" ? "active" : ""}`}
+                    onClick={() => handleSwitchPersona("field")}
+                  >
+                    <FlatIcon name="zap" size={12} /> Field Lead (Marcus)
+                  </button>
+                  {!isGuest && (
+                    <button
+                      type="button"
+                      className="persona-pill signout-pill"
+                      onClick={handleSignOut}
+                    >
+                      Sign Out
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : !isGuest ? (
+              <div className="profile-header-actions" style={{ marginTop: "16px" }}>
                 <button
                   type="button"
-                  className={`persona-pill ${user.role === "citizen" ? "active" : ""}`}
-                  onClick={() => handleSwitchPersona("resident")}
-                >
-                  <FlatIcon name="user" size={12} /> Resident (Dhruv)
-                </button>
-                <button
-                  type="button"
-                  className={`persona-pill ${user.role === "reviewer" || (user.role as string) === "supervisor" ? "active" : ""}`}
-                  onClick={() => handleSwitchPersona("supervisor")}
-                >
-                  <FlatIcon name="shield" size={12} /> Supervisor (Sarah)
-                </button>
-                <button
-                  type="button"
-                  className={`persona-pill ${user.role === "triage" ? "active" : ""}`}
-                  onClick={() => handleSwitchPersona("field")}
-                >
-                  <FlatIcon name="zap" size={12} /> Field Lead (Marcus)
-                </button>
-                <button
-                  type="button"
-                  className="persona-pill signout-pill"
+                  className="button small"
                   onClick={handleSignOut}
                 >
-                  Sign Out
+                  Sign Out of Session
                 </button>
               </div>
-            </div>
+            ) : null}
           </div>
         </section>
 
@@ -309,6 +348,11 @@ export default function Profile() {
                   </div>
                 ) : (
                   <form onSubmit={handleSendClarification} className="clarification-form">
+                    {clarificationError && (
+                      <div className="clarification-error-box" role="alert" style={{ background: "#fee2e2", border: "1px solid #f87171", padding: "8px 12px", borderRadius: "6px", color: "#991b1b", marginBottom: "8px", fontSize: "0.875rem" }}>
+                        ⚠️ {clarificationError}
+                      </div>
+                    )}
                     <input
                       type="text"
                       placeholder="e.g. The pole is straight, but all 3 lights in the cluster are completely dark."
@@ -318,7 +362,7 @@ export default function Profile() {
                       className="clarification-input"
                     />
                     <button type="submit" className="button small">
-                      Send Reply to Field Crew →
+                      {clarificationError ? "Retry Sending Reply →" : "Send Reply to Field Crew →"}
                     </button>
                   </form>
                 )}

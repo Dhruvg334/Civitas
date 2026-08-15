@@ -1,44 +1,59 @@
 "use client";
 
-import { useState, useId } from "react";
+import { useState, useEffect, useId } from "react";
 import Link from "next/link";
 import { Footer, Nav, SectionLabel, Status } from "@/components/site";
-import { startWorkflow, submitReport } from "@/lib/api";
+import { startWorkflow, submitReport, uploadReportMedia, isDemoMode } from "@/lib/api";
+import { INCIDENT_CATEGORIES } from "@/lib/taxonomy";
 import { FlatIcon } from "@/components/flat-icons";
 
-const CATEGORIES = [
-  { id: "Water leak", label: "Water leak / Pipe Burst", icon: "water", desc: "Pipeline rupture, standing puddle, or flooded street" },
-  { id: "Pothole or road damage", label: "Pothole / Road Damage", icon: "pothole", desc: "Deep asphalt cavity, road erosion, or sunken manhole" },
-  { id: "Broken streetlight", label: "Broken Streetlight & Power", icon: "streetlight", desc: "Dark luminaire, exposed wiring, or damaged lamp post" },
-  { id: "Fallen tree", label: "Fallen Tree & Branches", icon: "tree", desc: "Snapped branch, fallen trunk, or sidewalk blockage" },
-  { id: "Drain blockage", label: "Drain Blockage & Sewage", icon: "drain", desc: "Clogged stormwater grate, refuse backflow" },
-  { id: "Garbage overflow", label: "Garbage & Waste Dumping", icon: "garbage", desc: "Uncollected municipal solid waste, debris mound" },
-  { id: "Pests and mold", label: "Pests, Vectors & Mold Infestation", icon: "hazard", desc: "Standing stagnant water vector breeding, mold on public structures" },
-  { id: "Traffic signal damage", label: "Traffic Signal & Signs", icon: "crossing", desc: "Flickering traffic lights, missing pedestrian signs" },
-];
+interface MediaState {
+  file: File | null;
+  name: string;
+  size: string;
+  previewUrl: string;
+  uploadStatus: "idle" | "selected" | "uploading" | "uploaded" | "failed";
+  mediaId?: string;
+  error?: string;
+}
 
 export default function Report() {
   const fileInputId = useId();
   const [step, setStep] = useState(1);
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Water leak");
-  const [latitude, setLatitude] = useState("20.29614");
-  const [longitude, setLongitude] = useState("85.82451");
-  const [landmarkHint, setLandmarkHint] = useState("14m from DAV Public School Gate, Ward 12");
+  const [latitude, setLatitude] = useState(() => (isDemoMode() ? "20.29614" : ""));
+  const [longitude, setLongitude] = useState(() => (isDemoMode() ? "85.82451" : ""));
+  const [landmarkHint, setLandmarkHint] = useState(() => (isDemoMode() ? "14m from DAV Public School Gate, Ward 12 (Demo Location)" : ""));
   
   // Real media upload state
-  const [mediaFile, setMediaFile] = useState<{ name: string; size: string; previewUrl: string } | null>({
+  const [mediaFile, setMediaFile] = useState<MediaState | null>(() => (isDemoMode() ? {
+    file: null,
     name: "incident_water_main_01.jpg",
     size: "2.4 MB",
     previewUrl: "",
-  });
+    uploadStatus: "selected",
+  } : null));
+  const [mediaUploadError, setMediaUploadError] = useState<string | null>(null);
   const [geoLocating, setGeoLocating] = useState(false);
   const [geoNotice, setGeoNotice] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [workflowStartError, setWorkflowStartError] = useState<string | null>(null);
   const [submittedReportId, setSubmittedReportId] = useState<string | null>(null);
   const [activeWorkflowId, setActiveWorkflowId] = useState<string | null>(null);
   const [workflowStatus, setWorkflowStatus] = useState<string | null>(null);
+  const [isRetryingWorkflow, setIsRetryingWorkflow] = useState(false);
+  const [isRetryingMedia, setIsRetryingMedia] = useState(false);
+
+  // Cleanup object URLs to avoid browser memory leaks
+  useEffect(() => {
+    return () => {
+      if (mediaFile?.previewUrl && mediaFile.previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(mediaFile.previewUrl);
+      }
+    };
+  }, [mediaFile?.previewUrl]);
 
   // Dynamic Report Quality Score calculation
   const calculateQualityScore = () => {
@@ -82,18 +97,24 @@ export default function Report() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (mediaFile?.previewUrl && mediaFile.previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(mediaFile.previewUrl);
+      }
       const url = URL.createObjectURL(file);
       setMediaFile({
+        file,
         name: file.name,
         size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
         previewUrl: url,
+        uploadStatus: "selected",
       });
+      setMediaUploadError(null);
     }
   };
 
   const handleFetchCurrentLocation = () => {
     if (!navigator.geolocation) {
-      setGeoNotice("Geolocation is not supported by your browser.");
+      setGeoNotice("Geolocation is not supported by your browser. Please enter coordinates manually.");
       return;
     }
     setGeoLocating(true);
@@ -105,17 +126,20 @@ export default function Report() {
         const lng = pos.coords.longitude.toFixed(5);
         setLatitude(lat);
         setLongitude(lng);
-        setLandmarkHint(`Detected WGS84 coordinates: ${lat}° N, ${lng}° E · Ward 12 Zone`);
+        setLandmarkHint(`Detected WGS84 coordinates: ${lat}° N, ${lng}° E`);
         setGeoLocating(false);
         setGeoNotice("✓ Precise GPS location acquired from device sensor.");
       },
       () => {
-        // Fallback demo coordinates
-        setLatitude("20.29614");
-        setLongitude("85.82451");
-        setLandmarkHint("Near DAV Public School Gate, Ward 12 (Simulated PostGIS Pin)");
         setGeoLocating(false);
-        setGeoNotice("Location simulated at Ward 12 infrastructure zone.");
+        if (isDemoMode()) {
+          setLatitude("20.29614");
+          setLongitude("85.82451");
+          setLandmarkHint("Near DAV Public School Gate, Ward 12 (Demo Preset)");
+          setGeoNotice("Location set to demo preset at Ward 12 infrastructure zone.");
+        } else {
+          setGeoNotice("Location access was unavailable. Enter your location coordinates manually or try again.");
+        }
       },
       { timeout: 8000 }
     );
@@ -125,7 +149,7 @@ export default function Report() {
     setLatitude(lat);
     setLongitude(lng);
     setLandmarkHint(landmark);
-    setGeoNotice(`✓ Pinned to ${landmark}`);
+    setGeoNotice(`✓ Selected ${landmark}`);
   };
 
   const next = (event: React.FormEvent) => {
@@ -138,26 +162,89 @@ export default function Report() {
   const handleSubmitReport = async () => {
     setSubmitting(true);
     setSubmitError(null);
+    setMediaUploadError(null);
+    setWorkflowStartError(null);
+
+    let reportId = "";
     try {
       const res = await submitReport({
-        description: description || "Water leaking from underground pipeline near school crossing.",
+        description: description || "Civic incident report submitted via web portal.",
         category: category || undefined,
         latitude: latitude ? parseFloat(latitude) : undefined,
         longitude: longitude ? parseFloat(longitude) : undefined,
       });
+      reportId = res.report_id;
       setSubmittedReportId(res.report_id);
-
-      try {
-        const wf = await startWorkflow(res.report_id);
-        setActiveWorkflowId(wf.workflow_id);
-        setWorkflowStatus(wf.status);
-      } catch {
-        // Workflow initiation failure should not discard the submitted report ID
-      }
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Failed to submit civic report to backend.");
+      setSubmitting(false);
+      return;
+    }
+
+    // Attempt real media upload if a file was selected
+    if (mediaFile?.file) {
+      try {
+        setMediaFile((prev) => prev ? { ...prev, uploadStatus: "uploading" } : null);
+        const uploaded = await uploadReportMedia(reportId, mediaFile.file);
+        setMediaFile((prev) => prev ? {
+          ...prev,
+          uploadStatus: "uploaded",
+          mediaId: uploaded.media_id,
+        } : null);
+      } catch (uploadErr) {
+        setMediaUploadError(uploadErr instanceof Error ? uploadErr.message : "Media upload failed.");
+        setMediaFile((prev) => prev ? { ...prev, uploadStatus: "failed" } : null);
+      }
+    }
+
+    // Trigger LangGraph automated processing
+    try {
+      const wf = await startWorkflow(reportId);
+      setActiveWorkflowId(wf.workflow_id);
+      setWorkflowStatus(wf.status);
+    } catch (wfErr) {
+      setWorkflowStartError(
+        wfErr instanceof Error
+          ? wfErr.message
+          : "Automated workflow runtime could not be started for this report."
+      );
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleRetryWorkflow = async () => {
+    if (!submittedReportId) return;
+    setIsRetryingWorkflow(true);
+    setWorkflowStartError(null);
+    try {
+      const wf = await startWorkflow(submittedReportId);
+      setActiveWorkflowId(wf.workflow_id);
+      setWorkflowStatus(wf.status);
+    } catch (err) {
+      setWorkflowStartError(err instanceof Error ? err.message : "Failed to trigger workflow processing.");
+    } finally {
+      setIsRetryingWorkflow(false);
+    }
+  };
+
+  const handleRetryMedia = async () => {
+    if (!submittedReportId || !mediaFile?.file) return;
+    setIsRetryingMedia(true);
+    setMediaUploadError(null);
+    try {
+      setMediaFile((prev) => prev ? { ...prev, uploadStatus: "uploading" } : null);
+      const uploaded = await uploadReportMedia(submittedReportId, mediaFile.file);
+      setMediaFile((prev) => prev ? {
+        ...prev,
+        uploadStatus: "uploaded",
+        mediaId: uploaded.media_id,
+      } : null);
+    } catch (err) {
+      setMediaUploadError(err instanceof Error ? err.message : "Media upload failed.");
+      setMediaFile((prev) => prev ? { ...prev, uploadStatus: "failed" } : null);
+    } finally {
+      setIsRetryingMedia(false);
     }
   };
 
@@ -249,7 +336,9 @@ export default function Report() {
                 <div className="success-info-grid">
                   <div className="info-tile">
                     <span>STATUS</span>
-                    <Status tone="good">{workflowStatus ? `WORKFLOW: ${workflowStatus}` : "INTAKE_COMPLETE"}</Status>
+                    <Status tone={workflowStartError ? "warn" : "good"}>
+                      {workflowStatus ? `WORKFLOW: ${workflowStatus}` : workflowStartError ? "REPORT_STORED_WORKFLOW_PENDING" : "INTAKE_COMPLETE"}
+                    </Status>
                   </div>
                   {activeWorkflowId && (
                     <div className="info-tile">
@@ -266,6 +355,36 @@ export default function Report() {
                     <p>Supervisor authorization & field crew dispatch</p>
                   </div>
                 </div>
+
+                {workflowStartError && (
+                  <div className="report-error-alert" role="alert" style={{ background: "#fef3c7", border: "1px solid #f59e0b", padding: "12px 16px", borderRadius: "8px", color: "#92400e", margin: "16px 0" }}>
+                    <b>Automated Workflow Start Notice</b>
+                    <p style={{ margin: "4px 0 8px" }}>{workflowStartError}</p>
+                    <button
+                      type="button"
+                      className="button small"
+                      onClick={handleRetryWorkflow}
+                      disabled={isRetryingWorkflow}
+                    >
+                      {isRetryingWorkflow ? "Starting Workflow..." : "Retry Starting Automated Processing →"}
+                    </button>
+                  </div>
+                )}
+
+                {mediaUploadError && (
+                  <div className="report-error-alert" role="alert" style={{ background: "#fef3c7", border: "1px solid #f59e0b", padding: "12px 16px", borderRadius: "8px", color: "#92400e", margin: "16px 0" }}>
+                    <b>Media Evidence Upload Notice</b>
+                    <p style={{ margin: "4px 0 8px" }}>{mediaUploadError}</p>
+                    <button
+                      type="button"
+                      className="button small"
+                      onClick={handleRetryMedia}
+                      disabled={isRetryingMedia}
+                    >
+                      {isRetryingMedia ? "Retrying Upload..." : "Retry Uploading Media File →"}
+                    </button>
+                  </div>
+                )}
 
                 <div className="success-actions-row">
                   <Link className="button large" href="/workspace">
@@ -303,9 +422,9 @@ export default function Report() {
                     </div>
 
                     <div className="field-group">
-                      <span className="field-label">Select Issue Category ({CATEGORIES.length} options)</span>
+                      <span className="field-label">Select Issue Category ({INCIDENT_CATEGORIES.length} options)</span>
                       <div className="category-tiles-grid">
-                        {CATEGORIES.map((c) => {
+                        {INCIDENT_CATEGORIES.map((c) => {
                           const isSelected = category === c.id;
                           return (
                             <div
@@ -451,34 +570,36 @@ export default function Report() {
                         </div>
                       </div>
 
-                      <div className="quick-presets-row">
-                        <span className="preset-kicker">QUICK PRESET LANDMARKS:</span>
-                        <div className="preset-pill-group">
-                          <button
-                            type="button"
-                            className="landmark-preset-btn"
-                            onClick={() => handlePresetLocation("20.29614", "85.82451", "14m from DAV Public School Gate, Ward 12")}
-                          >
-                            DAV School Gate
-                          </button>
-                          <button
-                            type="button"
-                            className="landmark-preset-btn"
-                            onClick={() => handlePresetLocation("20.30150", "85.83120", "East Gate Junction, Ward 12 Commercial Crossroad")}
-                          >
-                            East Gate Crossing
-                          </button>
-                          <button
-                            type="button"
-                            className="landmark-preset-btn"
-                            onClick={() => handlePresetLocation("20.29180", "85.82050", "Park Road near Community Center")}
-                          >
-                            Park Road
-                          </button>
+                      {isDemoMode() && (
+                        <div className="quick-presets-row">
+                          <span className="preset-kicker">DEMO PRESET LANDMARKS (Ward 12):</span>
+                          <div className="preset-pill-group">
+                            <button
+                              type="button"
+                              className="landmark-preset-btn"
+                              onClick={() => handlePresetLocation("20.29614", "85.82451", "14m from DAV Public School Gate, Ward 12 (Demo Location)")}
+                            >
+                              DAV School Gate
+                            </button>
+                            <button
+                              type="button"
+                              className="landmark-preset-btn"
+                              onClick={() => handlePresetLocation("20.30150", "85.83120", "East Gate Junction, Ward 12 Commercial Crossroad (Demo Location)")}
+                            >
+                              East Gate Crossing
+                            </button>
+                            <button
+                              type="button"
+                              className="landmark-preset-btn"
+                              onClick={() => handlePresetLocation("20.29180", "85.82050", "Park Road near Community Center (Demo Location)")}
+                            >
+                              Park Road
+                            </button>
+                          </div>
                         </div>
-                      </div>
+                      )}
 
-                      <p className="landmark-detected">📍 {landmarkHint}</p>
+                      {landmarkHint && <p className="landmark-detected">📍 {landmarkHint}</p>}
                     </div>
 
                     <div className="step-actions-footer">

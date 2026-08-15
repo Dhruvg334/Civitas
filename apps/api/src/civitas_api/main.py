@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from civitas_api.core.config import get_settings
 from civitas_api.routers import (
+    auth,
     clarifications,
     health,
     incidents,
@@ -59,6 +60,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(health.router)
+app.include_router(auth.router)
 app.include_router(reports.router)
 app.include_router(incidents.router)
 app.include_router(incidents_ops.router)

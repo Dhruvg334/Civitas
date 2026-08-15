@@ -98,13 +98,12 @@ export function AgentTraceVisualizer({
     <div className="trace-visualizer">
       <div className="visualizer-header">
         <div>
-          <span className="kicker">12-LAYER AGENTIC OBSERVABILITY · {incidentId} ({workflowId})</span>
-          <h3>LangGraph Agent Execution Trace</h3>
+          <span className="kicker">AGENTIC OBSERVABILITY · {incidentId} ({workflowId})</span>
+          <h3>Illustrative Workflow Execution Trace</h3>
         </div>
         <div className="trace-metrics">
+          <span>Mode: <b>Illustrative Trace</b></span>
           <span>Step: <b>{currentStep || "active"}</b></span>
-          <span>Total Latency: <b>944 ms</b></span>
-          <span>Tokens: <b>1,690</b></span>
         </div>
       </div>
 
