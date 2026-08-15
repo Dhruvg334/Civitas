@@ -276,16 +276,16 @@ export default function Docs({
       <nav className="docs-pagination-nav" aria-label="Docs pagination">
         {page.prevPage ? (
           <Link href={page.prevPage.href} className="pagination-link prev">
-            <small>PREVIOUS TOPIC</small>
-            <span>{page.prevPage.label}</span>
+            <span className="pagination-kicker">PREVIOUS TOPIC</span>
+            <span className="pagination-title">{page.prevPage.label}</span>
           </Link>
         ) : (
           <div />
         )}
         {page.nextPage ? (
           <Link href={page.nextPage.href} className="pagination-link next">
-            <small>NEXT TOPIC</small>
-            <span>{page.nextPage.label}</span>
+            <span className="pagination-kicker">NEXT TOPIC</span>
+            <span className="pagination-title">{page.nextPage.label}</span>
           </Link>
         ) : (
           <div />
@@ -435,6 +435,11 @@ export default function Docs({
         .pagination-link.next {
           margin-left: auto;
           text-align: right;
+          align-items: flex-end;
+        }
+        .pagination-link.prev {
+          text-align: left;
+          align-items: flex-start;
         }
         .pagination-link:hover {
           background: #172019;
@@ -442,22 +447,26 @@ export default function Docs({
           box-shadow: 2px 2px 0 #0f5f4f;
           transform: translateY(-2px);
         }
-        .pagination-link:hover small {
-          color: #dce8dd;
-        }
-        .pagination-link:hover span {
-          color: #ffffff;
-        }
-        .pagination-link small {
+        .pagination-kicker {
+          display: block;
           font-size: 0.65rem;
           font-weight: 900;
           letter-spacing: 0.1em;
           color: #0f5f4f;
+          text-transform: uppercase;
         }
-        .pagination-link span {
+        .pagination-title {
+          display: block;
           font-size: 1rem;
           font-weight: 800;
           color: #172019;
+          line-height: 1.3;
+        }
+        .pagination-link:hover .pagination-kicker {
+          color: #dce8dd;
+        }
+        .pagination-link:hover .pagination-title {
+          color: #ffffff;
         }
         @media (max-width: 600px) {
           .doc-section-card {

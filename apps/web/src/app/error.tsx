@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { FlatIcon } from "@/components/flat-icons";
 
 export default function Error({
   error,
@@ -16,8 +17,10 @@ export default function Error({
 
   return (
     <main style={{ minHeight: "80vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center" }}>
-      <div style={{ background: "rgba(18, 24, 38, 0.8)", border: "1px solid rgba(239, 68, 68, 0.3)", padding: "2.5rem", borderRadius: "16px", maxWidth: "500px" }}>
-        <span style={{ fontSize: "2.5rem", marginBottom: "1rem", display: "block" }}>⚠️</span>
+      <div style={{ background: "rgba(18, 24, 38, 0.8)", border: "1px solid rgba(239, 68, 68, 0.3)", padding: "2.5rem", borderRadius: "16px", maxWidth: "500px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div style={{ marginBottom: "1rem" }}>
+          <FlatIcon name="alert" size={38} color="#f87171" />
+        </div>
         <h1 style={{ fontSize: "1.5rem", fontWeight: "700", color: "#f87171", marginBottom: "0.5rem" }}>
           Unexpected Application Error
         </h1>

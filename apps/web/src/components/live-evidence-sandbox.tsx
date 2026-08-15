@@ -199,10 +199,16 @@ export function LiveEvidenceSandbox() {
                   <FlatIcon name="camera" size={13} color="#0f5f4f" />
                   <span>{activePreset.mediaType}</span>
                 </div>
-                <span className="gps-tag">📍 {activePreset.gps}</span>
+                <span className="gps-tag">
+                  <FlatIcon name="pin" size={12} color="#687067" />
+                  <span>{activePreset.gps}</span>
+                </span>
               </div>
               <b className="media-tag-title">{activePreset.mediaLabel}</b>
-              <small className="landmark-text">🏛️ Landmark: {activePreset.landmark}</small>
+              <div className="landmark-text">
+                <FlatIcon name="landmark" size={12} color="#495248" />
+                <span>Landmark: {activePreset.landmark}</span>
+              </div>
             </div>
 
             <button
@@ -211,12 +217,19 @@ export function LiveEvidenceSandbox() {
               onClick={handleRunIntake}
               disabled={isProcessing}
             >
-              {isProcessing ? "Executing LangGraph Reasoning..." : "Run Multimodal Extraction ⚡"}
+              {isProcessing ? (
+                "Executing LangGraph Reasoning..."
+              ) : (
+                <span className="btn-label-with-icon">
+                  <FlatIcon name="workflow" size={14} />
+                  <span>Run Multimodal Extraction</span>
+                </span>
+              )}
             </button>
           </div>
 
           <div className="boundary-guarantee-note">
-            <span className="shield-icon">🛡️</span>
+            <FlatIcon name="shield" size={18} color="#0f5f4f" />
             <div>
               <b>Boundary Integrity Rule</b>
               <p>
@@ -296,10 +309,10 @@ export function LiveEvidenceSandbox() {
                 </div>
                 <span className={`status-pill status-${supervisorStatus}`}>
                   {supervisorStatus === "approved"
-                    ? "✓ DISPATCH AUTHORIZED"
+                    ? "DISPATCH AUTHORIZED"
                     : supervisorStatus === "clarification"
-                    ? "💬 WAITING CITIZEN PHOTO"
-                    : "⏳ AWAITING SUPERVISOR"}
+                    ? "WAITING CITIZEN PHOTO"
+                    : "AWAITING SUPERVISOR"}
                 </span>
               </div>
 
@@ -485,6 +498,9 @@ export function LiveEvidenceSandbox() {
           color: #0f5f4f;
         }
         .gps-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
           font-size: 0.62rem;
           font-weight: 700;
           color: #687067;
@@ -494,12 +510,21 @@ export function LiveEvidenceSandbox() {
           color: #172019;
         }
         .landmark-text {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
           font-size: 0.68rem;
           color: #495248;
         }
         .run-reasoning-btn {
           width: 100%;
           padding: 10px;
+        }
+        .btn-label-with-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
         }
         .boundary-guarantee-note {
           display: flex;

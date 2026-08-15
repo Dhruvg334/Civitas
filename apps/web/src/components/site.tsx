@@ -33,6 +33,7 @@ function Wordmark() {
         <i />
         <i />
         <i />
+        <i />
       </span>
       <span>Civitas</span>
     </Link>
@@ -568,9 +569,35 @@ export function Status({
   tone?: "neutral" | "good" | "warn" | "danger";
   children: React.ReactNode;
 }) {
+  const formatLabel = (val: string) => {
+    switch (val.toUpperCase()) {
+      case "WAITING_FOR_REVIEW":
+      case "WAITING FOR REVIEW":
+        return "Review Required";
+      case "WAITING_FOR_CLARIFICATION":
+      case "WAITING FOR CLARIFICATION":
+        return "Clarification";
+      case "ASSIGNED":
+        return "Assigned";
+      case "RESOLVED":
+        return "Resolved";
+      case "IN_PROGRESS":
+      case "IN PROGRESS":
+        return "In Progress";
+      case "SIGNED_OUT_PREVIEW":
+      case "SIGNED OUT PREVIEW":
+        return "Signed Out Preview";
+      default:
+        return val.replaceAll("_", " ");
+    }
+  };
+
+  const label = typeof children === "string" ? formatLabel(children) : children;
+
   return (
-    <span className={`status-tag tone-${tone}`}>
-      {typeof children === "string" ? children.replaceAll("_", " ").toLowerCase() : children}
+    <span className={`status-pill-badge tone-${tone}`}>
+      <span className="status-badge-dot" />
+      <span className="status-badge-text">{label}</span>
     </span>
   );
 }
@@ -669,7 +696,7 @@ export function DocsPage({
         }
         .docs-left-sidebar {
           position: sticky;
-          top: 140px;
+          top: 90px;
           display: flex;
           flex-direction: column;
           gap: 24px;
@@ -739,7 +766,7 @@ export function DocsPage({
         }
         .docs-right-toc {
           position: sticky;
-          top: 140px;
+          top: 90px;
         }
         .toc-sticky-box {
           border-left: 2px solid #e2ded4;

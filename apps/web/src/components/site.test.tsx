@@ -21,6 +21,6 @@ describe("navigation", () => {
     expect(html).toContain("Governance");
   });
   it("makes workflow status readable", () => {
-    expect(renderToStaticMarkup(<Status>WAITING_FOR_REVIEW</Status>)).toContain("waiting for review");
+    expect(renderToStaticMarkup(<Status>WAITING_FOR_REVIEW</Status>)).toContain("Review Required");
   });
 });

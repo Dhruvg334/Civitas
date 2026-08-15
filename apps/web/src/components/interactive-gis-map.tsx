@@ -529,27 +529,44 @@ export function InteractiveGisMap({
           flex-direction: column;
           border: 1px solid #172019;
           background: #ffffff;
-          box-shadow: 3px 3px 0 #172019;
-          border-radius: 6px;
+          box-shadow: 2px 2px 0 #172019;
+          border-radius: 4px;
           overflow: hidden;
+          width: 22px;
+          max-width: 22px;
         }
         .tool-btn {
-          width: 26px;
-          height: 26px;
+          width: 22px;
+          height: 22px;
+          padding: 0;
           border: 0;
           background: transparent;
-          font-size: 0.95rem;
+          font-size: 0.85rem;
           font-weight: 800;
           cursor: pointer;
           display: grid;
           place-items: center;
           transition: background 0.15s ease;
+          line-height: 1;
         }
         .tool-btn:first-child {
           border-bottom: 1px solid #e2ded4;
         }
         .tool-btn:hover {
           background: #fbf9f4;
+        }
+        :global(.leaflet-control-zoom) {
+          border: 1px solid #172019 !important;
+          box-shadow: 2px 2px 0 #172019 !important;
+          border-radius: 4px !important;
+          overflow: hidden !important;
+        }
+        :global(.leaflet-control-zoom a) {
+          width: 22px !important;
+          height: 22px !important;
+          line-height: 22px !important;
+          font-size: 0.85rem !important;
+          border-bottom: 1px solid #e2ded4 !important;
         }
         .landmark-jumps {
           display: flex;

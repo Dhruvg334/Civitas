@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Footer, Nav, SectionLabel, Status } from "@/components/site";
 import { MiniMap } from "@/components/civic-visuals";
+import { FlatIcon } from "@/components/flat-icons";
+import { fetchIncidents } from "@/lib/api";
 
 interface IncidentItem {
   id: string;
@@ -39,7 +41,7 @@ const INITIAL_INCIDENTS: IncidentItem[] = [
     category: "Parks & Urban Forestry",
     priority: "P2",
     status: "ASSIGNED",
-    tone: "good",
+    tone: "neutral",
     reportsCount: 2,
     ward: "Ward 12 · Park Road",
     landmark: "Opposite Community Garden",
@@ -52,7 +54,7 @@ const INITIAL_INCIDENTS: IncidentItem[] = [
     category: "Electrical & Public Lighting",
     priority: "P3",
     status: "WAITING_FOR_CLARIFICATION",
-    tone: "neutral",
+    tone: "danger",
     reportsCount: 1,
     ward: "Ward 12 · East Gate",
     landmark: "Commercial Junction Poles #104-106",
@@ -75,11 +77,56 @@ const INITIAL_INCIDENTS: IncidentItem[] = [
 ];
 
 export default function Workspace() {
+  const [incidents, setIncidents] = useState<IncidentItem[]>(INITIAL_INCIDENTS);
   const [selectedIncidentId, setSelectedIncidentId] = useState<string>("INC-0241");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeFilter, setActiveFilter] = useState<string>("ALL");
 
-  const filteredIncidents = INITIAL_INCIDENTS.filter((item) => {
+  useEffect(() => {
+    let isMounted = true;
+    fetchIncidents().then((liveRecords) => {
+      if (!isMounted || !liveRecords || !liveRecords.length) return;
+      setIncidents(
+        liveRecords.map((r) => {
+          const prioMap: Record<string, "P1" | "P2" | "P3"> = {
+            High: "P1",
+            Critical: "P1",
+            P1: "P1",
+            Medium: "P2",
+            P2: "P2",
+            Low: "P3",
+            P3: "P3",
+          };
+          const priority = prioMap[r.priority] || "P2";
+          let tone: "neutral" | "good" | "warn" | "danger" = "neutral";
+          if (r.status === "WAITING_FOR_REVIEW") tone = "warn";
+          else if (r.status === "RESOLVED") tone = "good";
+          else if (r.status === "WAITING_FOR_CLARIFICATION") tone = "danger";
+
+          return {
+            id: r.id,
+            title: r.title,
+            category: r.category,
+            priority,
+            status: r.status,
+            tone,
+            reportsCount: r.reportsCount || 1,
+            ward: "Ward 12 · Bhubaneswar",
+            landmark: r.location?.landmark || "Ward 12 Area",
+            time: "Live Sync",
+            department: r.primaryDepartment || "Municipal Dispatch",
+          };
+        })
+      );
+    }).catch(() => {
+      // Fallback preserved
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filteredIncidents = incidents.filter((item) => {
     const matchesSearch =
       item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -137,7 +184,7 @@ export default function Workspace() {
             {/* SEARCH & FILTER CONTROLS */}
             <div className="queue-controls-card">
               <div className="search-bar-wrap">
-                <span className="search-icon">🔍</span>
+                <FlatIcon name="search" size={14} color="#687067" />
                 <input
                   type="text"
                   placeholder="Filter by ID, street, or department..."
@@ -199,11 +246,15 @@ export default function Workspace() {
                     </div>
 
                     <h3 className="incident-title">{incident.title}</h3>
-                    <p className="incident-landmark">📍 {incident.landmark}</p>
+                    <div className="incident-landmark">
+                      <FlatIcon name="pin" size={12} color="#0f5f4f" />
+                      <span>{incident.landmark}</span>
+                    </div>
 
                     <div className="card-bottom-row">
                       <span className="cluster-tag">
-                        👥 <b>{incident.reportsCount}</b> citizen reports clustered
+                        <FlatIcon name="users" size={13} color="#0f5f4f" />
+                        <span><b>{incident.reportsCount}</b> citizen reports clustered</span>
                       </span>
                       <Link
                         href={`/incidents/${incident.id}`}
@@ -444,6 +495,9 @@ export default function Workspace() {
           line-height: 1.3;
         }
         .incident-landmark {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
           font-size: 0.75rem;
           color: #0f5f4f;
           font-weight: 750;
@@ -458,6 +512,9 @@ export default function Workspace() {
           font-size: 0.72rem;
         }
         .cluster-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
           color: #555e54;
         }
         .inspect-link {

@@ -336,7 +336,10 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
                           </span>
                         </div>
                         <b className="loc-title">{loc.name}</b>
-                        <small className="loc-landmarks">📍 {loc.landmarks}</small>
+                        <small className="loc-landmarks">
+                          <FlatIcon name="pin" size={11} color="#687067" />
+                          <span>{loc.landmarks}</span>
+                        </small>
                       </div>
                     );
                   })}
@@ -555,7 +558,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
 
             <div className="modal-actions-footer single-action">
               <button type="button" className="button large launch-workspace-btn" onClick={handleFinish}>
-                Complete Onboarding & Enter Command Center ⚡
+                Complete Onboarding & Enter Command Center →
               </button>
             </div>
           </div>
