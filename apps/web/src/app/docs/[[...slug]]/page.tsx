@@ -1,28 +1,467 @@
+"use client";
+
+import { use } from "react";
+import Link from "next/link";
 import { DocsPage } from "@/components/site";
+import { DocsApiExplorer } from "@/components/docs-api-explorer";
 
-type Block = { heading: string; body: string; bullets?: string[]; code?: string };
-type Doc = { title: string; intro: string; blocks: Block[] };
+interface Block {
+  heading: string;
+  body: string;
+  alert?: { type: "note" | "important" | "warning"; title: string; content: string };
+  bullets?: string[];
+  code?: string;
+}
 
-const core: Block[] = [
-  { heading: "Operating principle", body: "Civitas treats a civic report as evidence that requires interpretation, not as an instruction that should automatically create a municipal action. It preserves the difference between what a resident reported, what media appears to show, context retrieved from systems or policy, and conclusions made by tools or agents. This boundary is carried into traces, review screens and citizen communication." },
-  { heading: "Typed contracts", body: "Public API envelopes, ML outputs, workflow state, knowledge evidence and review actions are schema-validated. Typed contracts make failures visible at a boundary instead of allowing malformed data to move quietly into a later decision. A schema is also how the web product can safely render status without depending on private workflow internals." },
-  { heading: "Failure behavior", body: "A missing report, unavailable ML result, malformed structured output, insufficient municipal evidence or invalid review transition is a first-class state. Civitas records warnings and errors, stops or requests review when needed, and does not replace missing evidence with a plausible response." },
-  { heading: "Traceability", body: "Each meaningful node can retain a trace identifier, tool or model name, status, latency, retry count, validation result and referenced knowledge IDs. Secrets, authorization headers, unnecessary raw private data and hidden chain-of-thought are not recorded as operational trace content." },
-];
+interface Doc {
+  title: string;
+  intro: string;
+  slug: string;
+  blocks: Block[];
+  nextPage?: { label: string; href: string };
+  prevPage?: { label: string; href: string };
+}
 
 const docs: Record<string, Doc> = {
-  "": { title: "Civitas system guide", intro: "A practical engineering reference for the product path from citizen report to a reviewed municipal recommendation.", blocks: [{ heading: "What the system connects", body: "Civitas joins report intake, media and location context, deterministic ML, municipal knowledge retrieval, agentic reasoning, work-order planning, human review and resident updates. These capabilities are connected by a typed workflow rather than one universal prompt." }, { heading: "Who uses it", body: "Residents supply a report and can answer a focused clarification. Municipal reviewers see routing, supporting evidence and operational recommendations. Service owners operate the API, knowledge corpus, model configuration and checkpoint infrastructure." }, { heading: "Decision lifecycle", body: "A report first becomes structured evidence. Related reports can become a shared incident. ML and policy evidence support routing and planning. A critic checks the recommendation. High-impact action pauses for a reviewer before a safe citizen update is produced.", code: "report → evidence → ML + knowledge → routing → plan\n       → critic → human review → citizen update" }, ...core] },
-  architecture: { title: "System architecture", intro: "Explicit boundaries keep the product testable, operationally comprehensible and safe to evolve.", blocks: [{ heading: "Runtime topology", body: "Next.js provides the product interface. FastAPI owns authentication, persistence, workflow execution and the internal ML bridge. PostgreSQL or Supabase holds application data and workflow metadata. LangGraph checkpoint state uses a PostgreSQL-compatible saver in production. Groq is accessed only through a provider-neutral client.", code: "Next.js product\n    ↓ typed envelopes\nFastAPI runtime ── LangGraph workflow\n    ├─ local ML + geospatial packages\n    ├─ KnowledgeService + policy APIs\n    └─ PostgreSQL / Supabase + checkpoints" }, { heading: "Why the ML bridge is internal", body: "The existing unified ReportAnalysis pipeline remains installed with the FastAPI runtime. The protected internal analyze route is a thin contract boundary, not a separately deployed ML microservice. This avoids duplicated model logic while preserving an adapter boundary for testing and composition." }, { heading: "Persistence split", body: "Workflow-run metadata maps a workflow ID, report ID, incident ID, trace ID, status and stable thread ID. It intentionally does not duplicate LangGraph checkpoint payloads. Canonical report, assessment, routing, work-order and review structures remain where the backend already owns them." }, { heading: "Composition", body: "Production composition wires Groq, HTTP-capable tools, persistence, trace handling and the durable saver. Test composition wires deterministic fakes and an in-memory saver. Graph logic is shared; only dependencies differ." }, ...core] },
-  workflow: { title: "Workflow and operations", intro: "The graph turns a report into a reviewable recommendation through bounded nodes, explicit interrupts and idempotent resume behavior.", blocks: [{ heading: "Context and evidence", body: "The context loader deterministically normalizes report description, citizen category, coordinates, media metadata, existing incident links, clarification answers and persisted ML references. The evidence agent then produces strict structured output with observable facts, reported claims, hazards, landmarks, contradictions, uncertainty and missing information." }, { heading: "Deterministic intelligence", body: "Duplicate detection, cluster context, severity and priority are obtained through the ML intelligence tool. The workflow does not ask an LLM to recreate scores. Model metadata, uncertainty and feature contributions remain associated with the resulting state so a reviewer can distinguish model output from narrative interpretation." }, { heading: "Grounding, routing and planning", body: "Knowledge retrieval uses category, department, jurisdiction and policy-purpose filters before deterministic keyword ranking. Routing may interpret retrieved policy but every policy-dependent claim must cite a valid knowledge reference. Planning proposes actions, constraints and non-binding timing only when supported by playbooks or data." }, { heading: "Interrupt and resume", body: "Clarification questions are limited to decision-relevant information. When needed, the graph checkpoints and returns WAITING_FOR_CLARIFICATION. Human review similarly checkpoints at WAITING_FOR_REVIEW. Answers and reviewer actions resume the same stable thread; the graph is not rebuilt from the beginning." }, { heading: "Revision loop", body: "The critic returns PASS, REVISE, HUMAN_REVIEW_REQUIRED or ABSTAIN with concise machine-readable issues. Revision routes back only to the responsible node and has a bounded count. Repeated starts reuse active or completed runs to prevent duplicate work orders and duplicate decisions." }, ...core] },
-  safety: { title: "Governance, safety and evaluation", intro: "Civitas is designed to expose uncertainty and preserve a human decision point rather than manufacture confidence.", blocks: [{ heading: "Evidence states", body: "The product maintains observed, reported, retrieved and inferred categories. An image-derived observation is not silently merged with a resident assertion, and an inference is never presented as municipal policy. Unknown fields remain unknown until supported evidence becomes available." }, { heading: "Knowledge abstention", body: "Knowledge outcomes are SUPPORTED, PARTIALLY_SUPPORTED or INSUFFICIENT_KNOWLEDGE. Missing policy does not authorize a fabricated jurisdiction rule. The workflow may continue with a limitation, request human review or abstain, depending on the decision impact." }, { heading: "Review controls", body: "Review actions are deliberately narrow: approve, edit, reroute, reject and request more evidence. Edit and reroute fields are validated against canonical schemas. Reject cannot create an approved final work order. Review intent and relevant state are persisted before resume." }, { heading: "Evaluation method", body: "The evaluation service compares a single competent prompt, a structured mega-prompt and the actual Civitas graph on the same 25-case corpus. Offline deterministic execution tests contracts and reproducibility; it is not presented as a live-model quality result. Live Groq execution is manual and records model, latency, usage and failures separately." }, { heading: "Useful measures", body: "Metrics include structured-output validity, category and department correctness, escalation, valid and fabricated policy references, unsupported municipal claims, work-order completeness, prohibited timeline promises, clarification and abstention correctness, review correctness, failures, latency and model calls. Percentages always carry the evaluated case count." }, ...core] },
-  api: { title: "API and integration", intro: "The API provides typed operational boundaries for citizen reporting, workflow runtime, internal analysis and review actions.", blocks: [{ heading: "Envelope contract", body: "Endpoints return a shared success or error envelope. The web client validates the envelope before using data so an error response cannot be mistaken for a workflow state. Error types remain useful for UI messaging without leaking implementation details or secrets." }, { heading: "Workflow runtime", body: "POST /api/v1/reports/{report_id}/workflow starts or reuses an active run. GET /api/v1/workflows/{workflow_id} returns safe status and interrupt data. Clarification and review routes validate inputs, persist the action through backend-owned structures and resume the same graph thread.", code: "POST /api/v1/reports/{report_id}/workflow\nGET  /api/v1/workflows/{workflow_id}\nPOST /api/v1/workflows/{workflow_id}/clarification\nPOST /api/v1/workflows/{workflow_id}/review" }, { heading: "Internal ML analysis", body: "POST /api/v1/ml/analyze is protected by the existing internal authentication configuration. It loads stored report context where possible and returns the shared ML result contract: media intelligence, duplicate and cluster information, severity, priority, uncertainty, model metadata, warnings and trace ID." }, { heading: "Authorization and privacy", body: "Citizen actions must respect ownership and access rules. Municipal review requires an appropriate reviewer role. Internal routes cannot be anonymously exposed in production. Client-side location permission is optional and should be reviewed before report submission." }, { heading: "Deployment readiness", body: "Production configuration is environment-driven for API auth, database/checkpoint connection and Groq models. Readiness includes the state needed to serve runtime traffic; liveness alone does not prove that a workflow can safely execute." }, ...core] },
+  "": {
+    title: "Civitas System Guide",
+    intro: "A practical engineering reference for the product path from citizen report to a reviewed municipal recommendation.",
+    slug: "",
+    nextPage: { label: "System Architecture →", href: "/docs/architecture" },
+    blocks: [
+      {
+        heading: "Operating Principle: Evidence Over Direct Instruction",
+        body: "Civitas treats incoming citizen reports as evidence that requires interpretation, rather than raw instructions that automatically trigger municipal actions. It preserves the vital boundary between what a resident reported, what media appears to show, context retrieved from GIS systems or city policies, and conclusions reached by deterministic tools or agents.",
+        alert: {
+          type: "important",
+          title: "Core Governance Boundary",
+          content: "Observable evidence, retrieved knowledge, model outputs, inferences, and human decisions are kept strictly distinct in every contract, database record, and UI surface.",
+        },
+        bullets: [
+          "Preserve contradictory claims across multiple citizen reports instead of silently overwriting them.",
+          "Expose model uncertainty explicitly rather than fabricating high confidence.",
+          "Enforce human approval checkpoints for high-impact routing, work-order creation, and ticket closure.",
+        ],
+      },
+      {
+        heading: "Decision Lifecycle & Golden Slice",
+        body: "A citizen report undergoes a multi-stage deterministic pipeline. Disparate reports are clustered into shared incidents via PostGIS spatial indexing. ML models extract visual features, policy playbooks are retrieved via hybrid grounding, and a critic node verifies the draft work order before pausing for human supervisor authorization.",
+        code: `Citizen Report (Text + Media + GPS)
+       │
+       ▼
+[01 Intake Context Normalization]
+       │
+       ▼
+[02 Multimodal ML & Spatial Clustering] ──► (DBSCAN + CLIP Zero-Shot)
+       │
+       ▼
+[03 Policy Grounding & Retrieval]      ──► (PostGIS + Playbooks)
+       │
+       ▼
+[04 Work Order Synthesis & Routing]
+       │
+       ▼
+[05 Critic Node Validation]             ──► (Check Constraints)
+       │
+       ▼
+[06 Human Supervisor Gate]              ──► (Approve / Edit / Reroute / Reject)`,
+      },
+      {
+        heading: "Typed Shared Contracts",
+        body: "Public API envelopes, ML inference payloads, LangGraph checkpoint state, knowledge evidence, and human review actions are strictly schema-validated with Pydantic and TypeScript. Typed contracts make failures immediately visible at component boundaries instead of allowing corrupted data to silently influence downstream municipal decisions.",
+      },
+      {
+        heading: "Traceability & Observability",
+        body: "Every node execution records a unique trace identifier, model name, token usage metrics, latency, retry counts, validation state, and referenced policy IDs. Secrets, authorization headers, and unnecessary raw private resident data are never persisted into operational trace logs.",
+      },
+    ],
+  },
+  architecture: {
+    title: "System Architecture",
+    intro: "Explicit architectural boundaries keep the platform testable, operationally comprehensible, and safe to evolve.",
+    slug: "architecture",
+    prevPage: { label: "← System Guide", href: "/docs" },
+    nextPage: { label: "Operations & Workflow →", href: "/docs/workflow" },
+    blocks: [
+      {
+        heading: "Runtime Topology & Stack",
+        body: "The Civitas architecture separates user interfaces, operational runtime, workflow orchestration, and geospatial storage into independent, reviewable modules.",
+        code: `Next.js 16 (App Router + Leaflet GIS)
+    │  (Typed HTTP Envelopes)
+    ▼
+FastAPI Operational Backend (apps/api)
+    ├── Internal ML Engine (CLIP Zero-Shot, DBSCAN)
+    ├── Geospatial Service (PostGIS 3.4 + H3 Indexing)
+    ├── Knowledge Service (Policy & Playbook Retrieval)
+    └── LangGraph Workflow Orchestrator (Checkpoint Saver)
+        │
+        ▼
+PostgreSQL / Supabase (Application Data + LangGraph State)`,
+      },
+      {
+        heading: "Why the ML Bridge is Internal",
+        body: "The unified ReportAnalysis pipeline remains directly installed with the FastAPI runtime as a clean internal adapter. The internal analyze endpoint is a contract boundary rather than a separately deployed microservice, avoiding cold-start latency and duplicated model logic while keeping inference fully testable.",
+        alert: {
+          type: "note",
+          title: "Inference Isolation",
+          content: "ML inference runs deterministically with fallback heuristics if GPU acceleration or model checkpoints are unavailable.",
+        },
+      },
+      {
+        heading: "Persistence & State Storage Split",
+        body: "Workflow-run metadata records execution IDs, report references, incident associations, trace IDs, and thread IDs in PostgreSQL. Canonical report, assessment, routing, work-order, and human review structures remain owned by the backend persistence layer.",
+      },
+    ],
+  },
+  workflow: {
+    title: "Workflow and Operations",
+    intro: "The LangGraph orchestration graph turns incoming reports into reviewable work orders through bounded nodes and explicit checkpoints.",
+    slug: "workflow",
+    prevPage: { label: "← System Architecture", href: "/docs/architecture" },
+    nextPage: { label: "Governance & Safety →", href: "/docs/safety" },
+    blocks: [
+      {
+        heading: "Context Normalization & Evidence Extraction",
+        body: "The context loader deterministically normalizes citizen descriptions, categories, GPS coordinates, media metadata, existing incident associations, and clarification responses. The evidence agent produces structured output identifying observable facts, reported claims, hazards, landmarks, and contradictions.",
+        bullets: [
+          "Differentiates what is directly visible in media from citizen assertions.",
+          "Identifies spatial landmarks (e.g. '14m from DAV Public School Gate').",
+          "Flags safety-critical hazards and missing information.",
+        ],
+      },
+      {
+        heading: "Deterministic Intelligence & Geospatial Grounding",
+        body: "Duplicate detection, spatial clustering, severity calculation, and priority assignment are derived using deterministic algorithms and PostGIS queries. The workflow does not rely on an LLM to guess coordinates or compute distance buffers.",
+      },
+      {
+        heading: "Checkpoint Interrupt & Human Resume",
+        body: "When clarification is needed from a citizen or when a high-impact work order is prepared, the LangGraph graph saves state to PostgreSQL and transitions to WAITING_FOR_CLARIFICATION or WAITING_FOR_REVIEW. Resuming reuses the existing stable thread ID without rebuilding state from scratch.",
+        alert: {
+          type: "important",
+          title: "Idempotent Execution",
+          content: "Starting a workflow for an existing report ID reuses active or completed runs to prevent duplicate work orders.",
+        },
+      },
+    ],
+  },
+  safety: {
+    title: "Governance, Safety and Evaluation",
+    intro: "Civitas is engineered to expose uncertainty and preserve human accountability rather than manufacture artificial confidence.",
+    slug: "safety",
+    prevPage: { label: "← Operations & Workflow", href: "/docs/workflow" },
+    nextPage: { label: "API Reference →", href: "/docs/api" },
+    blocks: [
+      {
+        heading: "Evidence State Categorization",
+        body: "The platform tracks four distinct categories of information across all workflows and user interfaces:",
+        bullets: [
+          "Observed: Directly confirmed by media analysis or sensor data.",
+          "Reported: Asserted by citizens in their raw text submission.",
+          "Retrieved: Extracted from verified municipal policy playbooks and PostGIS databases.",
+          "Inferred: Recommended by agentic models and subject to human review.",
+        ],
+      },
+      {
+        heading: "Policy Grounding & Abstention",
+        body: "Every policy-dependent claim in a work order or routing decision must cite a valid retrieved municipal playbook (e.g., PLAY-WATER-01). If no grounding playbook exists, the workflow records INSUFFICIENT_KNOWLEDGE and requests manual human supervisor review.",
+        alert: {
+          type: "warning",
+          title: "Zero Hallucination Tolerance",
+          content: "Agents are strictly prohibited from inventing municipal jurisdictions, response SLAs, or repair commitments.",
+        },
+      },
+      {
+        heading: "Supervisor Review Controls",
+        body: "Review actions are deliberately constrained to five canonical operations: Approve, Edit Work Order, Reroute Department, Reject, and Request Additional Evidence. Rejections cannot create an active work order.",
+      },
+    ],
+  },
+  api: {
+    title: "API & Integration Reference",
+    intro: "Typed operational boundaries for citizen reporting, workflow execution, ML inference, and supervisor review actions.",
+    slug: "api",
+    prevPage: { label: "← Governance & Safety", href: "/docs/safety" },
+    blocks: [
+      {
+        heading: "Civitas Envelope Specification",
+        body: "Every API endpoint wraps its payload in a standardized Civitas Envelope. Successful responses include a success boolean, data payload, and metadata. Error responses return structured error codes and human-actionable messages without leaking private secrets.",
+      },
+    ],
+  },
 };
 
-const legacy: Record<string, string> = { agents: "workflow", ml: "architecture", knowledge: "safety", evaluation: "safety", deployment: "api" };
+const legacySlugs: Record<string, string> = {
+  agents: "workflow",
+  ml: "architecture",
+  knowledge: "safety",
+  evaluation: "safety",
+  deployment: "api",
+};
 
-export default async function Docs({ params }: { params: Promise<{ slug?: string[] }> }) {
-  const { slug = [] } = await params;
-  const key = legacy[slug[0] ?? ""] ?? slug[0] ?? "";
+export default function Docs({
+  params,
+}: {
+  params: Promise<{ slug?: string[] }>;
+}) {
+  const { slug = [] } = use(params);
+  const rawKey = slug[0] ?? "";
+  const key = legacySlugs[rawKey] ?? rawKey;
   const page = docs[key] ?? docs[""];
-  return <DocsPage title={page.title} intro={page.intro}>{page.blocks.map((block, index) => <section className="doc-section" key={block.heading} id={`section-${index + 1}`}><div className="doc-section-number">{String(index + 1).padStart(2, "0")}</div><div><h2>{block.heading}</h2><p>{block.body}</p>{block.bullets && <ul>{block.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>}{block.code && <pre><code>{block.code}</code></pre>}</div></section>)}</DocsPage>;
+
+  const tocItems = page.blocks.map((b, i) => ({
+    id: `section-${i + 1}`,
+    label: b.heading,
+  }));
+
+  return (
+    <DocsPage
+      title={page.title}
+      intro={page.intro}
+      activeSlug={page.slug}
+      tocItems={tocItems}
+    >
+      {/* SECTION BLOCKS */}
+      <div className="docs-sections-list">
+        {page.blocks.map((block, index) => (
+          <section
+            className="doc-section-card"
+            key={block.heading}
+            id={`section-${index + 1}`}
+          >
+            <div className="section-number-pill">
+              {String(index + 1).padStart(2, "0")}
+            </div>
+
+            <div className="section-content-wrap">
+              <h2 className="section-heading">{block.heading}</h2>
+              <p className="section-body">{block.body}</p>
+
+              {block.alert && (
+                <div className={`doc-alert-box alert-${block.alert.type}`}>
+                  <span className="alert-badge">{block.alert.type.toUpperCase()}</span>
+                  <div className="alert-content">
+                    <b>{block.alert.title}</b>
+                    <p>{block.alert.content}</p>
+                  </div>
+                </div>
+              )}
+
+              {block.bullets && (
+                <ul className="section-bullet-list">
+                  {block.bullets.map((bullet) => (
+                    <li key={bullet}>{bullet}</li>
+                  ))}
+                </ul>
+              )}
+
+              {block.code && (
+                <div className="section-code-wrap">
+                  <div className="code-header">
+                    <span className="code-lang">SCHEMA / FLOW</span>
+                  </div>
+                  <pre>
+                    <code>{block.code}</code>
+                  </pre>
+                </div>
+              )}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      {/* SPECIAL INTERACTIVE API EXPLORER FOR /docs/api */}
+      {page.slug === "api" && <DocsApiExplorer />}
+
+      {/* PAGINATION FOOTER */}
+      <nav className="docs-pagination-nav" aria-label="Docs pagination">
+        {page.prevPage ? (
+          <Link href={page.prevPage.href} className="pagination-link prev">
+            <small>PREVIOUS TOPIC</small>
+            <span>{page.prevPage.label}</span>
+          </Link>
+        ) : (
+          <div />
+        )}
+        {page.nextPage ? (
+          <Link href={page.nextPage.href} className="pagination-link next">
+            <small>NEXT TOPIC</small>
+            <span>{page.nextPage.label}</span>
+          </Link>
+        ) : (
+          <div />
+        )}
+      </nav>
+
+      <style jsx>{`
+        .docs-sections-list {
+          display: flex;
+          flex-direction: column;
+          gap: 40px;
+        }
+        .doc-section-card {
+          display: grid;
+          grid-template-columns: 48px 1fr;
+          gap: 24px;
+          padding-bottom: 36px;
+          border-bottom: 1px solid #e2ded4;
+        }
+        .section-number-pill {
+          font-size: 0.85rem;
+          font-weight: 900;
+          color: #0f5f4f;
+          font-family: monospace;
+          background: #dce8dd;
+          height: 36px;
+          display: grid;
+          place-items: center;
+          border: 1px solid #0f5f4f;
+          border-radius: 4px;
+        }
+        .section-content-wrap {
+          min-width: 0;
+        }
+        .section-heading {
+          font-size: 1.55rem;
+          font-family: Georgia, serif;
+          margin: 0 0 12px;
+          color: #172019;
+          line-height: 1.25;
+        }
+        .section-body {
+          font-size: 0.95rem;
+          line-height: 1.68;
+          color: #495248;
+          margin: 0 0 16px;
+        }
+        .doc-alert-box {
+          display: flex;
+          gap: 14px;
+          padding: 14px 18px;
+          border: 1px solid #172019;
+          margin: 18px 0;
+          background: #fbf9f4;
+          border-radius: 6px;
+          box-shadow: 3px 3px 0 #172019;
+        }
+        .alert-important {
+          border-left: 6px solid #e84d7a;
+        }
+        .alert-warning {
+          border-left: 6px solid #e3b950;
+        }
+        .alert-note {
+          border-left: 6px solid #0f5f4f;
+        }
+        .alert-badge {
+          font-size: 0.6rem;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          padding: 3px 6px;
+          background: #172019;
+          color: #ffffff;
+          border-radius: 3px;
+          height: max-content;
+        }
+        .alert-content b {
+          display: block;
+          font-size: 0.88rem;
+          color: #172019;
+          margin-bottom: 4px;
+        }
+        .alert-content p {
+          font-size: 0.84rem;
+          color: #555e54;
+          margin: 0;
+          line-height: 1.5;
+        }
+        .section-bullet-list {
+          margin: 14px 0 18px 20px;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .section-bullet-list li {
+          font-size: 0.9rem;
+          color: #495248;
+          line-height: 1.5;
+        }
+        .section-code-wrap {
+          margin: 20px 0;
+          border: 1px solid #172019;
+          background: #172019;
+          border-radius: 6px;
+          overflow: hidden;
+        }
+        .code-header {
+          padding: 6px 14px;
+          background: #232d25;
+          border-bottom: 1px solid #333f36;
+          font-size: 0.62rem;
+          font-weight: 850;
+          letter-spacing: 0.1em;
+          color: #9da99e;
+        }
+        .section-code-wrap pre {
+          margin: 0;
+          padding: 16px;
+          color: #fbf9f4;
+          font-size: 0.8rem;
+          font-family: monospace;
+          line-height: 1.55;
+          overflow-x: auto;
+        }
+        .docs-pagination-nav {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 50px;
+          padding-top: 30px;
+          border-top: 2px solid #172019;
+          gap: 20px;
+        }
+        .pagination-link {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          padding: 12px 18px;
+          border: 1px solid #172019;
+          background: #ffffff;
+          box-shadow: 3px 3px 0 #172019;
+          text-decoration: none;
+          border-radius: 4px;
+          transition: all 0.15s ease;
+        }
+        .pagination-link:hover {
+          background: #172019;
+          color: #ffffff;
+        }
+        .pagination-link:hover small {
+          color: #dce8dd;
+        }
+        .pagination-link:hover span {
+          color: #ffffff;
+        }
+        .pagination-link small {
+          font-size: 0.6rem;
+          font-weight: 850;
+          letter-spacing: 0.08em;
+          color: #0f5f4f;
+        }
+        .pagination-link span {
+          font-size: 0.95rem;
+          font-weight: 800;
+          color: #172019;
+        }
+        @media (max-width: 600px) {
+          .doc-section-card {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+          .docs-pagination-nav {
+            flex-direction: column;
+          }
+        }
+      `}</style>
+    </DocsPage>
+  );
 }
