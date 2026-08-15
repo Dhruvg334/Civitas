@@ -233,7 +233,7 @@ export function InteractiveGisMap({
         mapInstanceRef.current = null;
       }
     };
-  }, [bufferRadius, handleSelectPin, showBuffer]);
+  }, [activePinId, bufferRadius, handleSelectPin, showBuffer]);
 
   // Synchronize map center when selectedIncidentId prop changes from parent
   useEffect(() => {

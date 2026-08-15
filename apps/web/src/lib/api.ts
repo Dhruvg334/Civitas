@@ -23,7 +23,9 @@ export function getAuthHeaders(): Record<string, string> {
         const parsed = JSON.parse(stored);
         if (parsed.token) token = parsed.token;
       }
-    } catch {}
+    } catch {
+      // Ignore session read error
+    }
   }
   // Standard development principal bearer token (Role: Supervisor)
   if (!token) {
@@ -35,11 +37,13 @@ export function getAuthHeaders(): Record<string, string> {
   };
 }
 
+export type IncidentPriority = "Low" | "Medium" | "High" | "Critical" | "P1" | "P2" | "P3";
+
 export interface IncidentRecord {
   id: string;
   title: string;
   category: string;
-  priority: "Low" | "Medium" | "High" | "Critical" | "P1" | "P2" | "P3";
+  priority: IncidentPriority;
   severityScore: number;
   reportsCount: number;
   primaryDepartment: string;
@@ -60,6 +64,48 @@ export interface IncidentTraceStep {
   status: "completed" | "in_progress" | "waiting_review" | "pending";
   timestamp: string;
   details: string;
+}
+
+interface RawIncidentPayload {
+  incident_id?: string;
+  id?: string;
+  title?: string;
+  category?: string;
+  priority?: IncidentPriority;
+  priority_level?: IncidentPriority;
+  severity_score?: number;
+  severityScore?: number;
+  duplicates_seen?: number;
+  reportsCount?: number;
+  assigned_department?: string;
+  primaryDepartment?: string;
+  secondary_departments?: string[];
+  status?: string;
+  landmark?: string;
+  latitude?: number | string;
+  longitude?: number | string;
+  reported_at?: string;
+  submittedAt?: string;
+  assigned_work_order_id?: string;
+  workOrderId?: string;
+  work_order_summary?: string;
+  workOrderSummary?: string;
+}
+
+interface RawIncidentDetailPayload extends RawIncidentPayload {
+  assessment?: {
+    severity_score?: number;
+    priority_level?: IncidentPriority;
+  };
+  work_orders?: Array<{
+    work_order_id?: string;
+    summary?: string;
+  }>;
+}
+
+interface RawIncidentListContainer {
+  incidents?: RawIncidentPayload[];
+  count?: number;
 }
 
 // Fallback seed data when backend API is unreachable
@@ -147,17 +193,19 @@ export async function fetchIncidents(): Promise<IncidentRecord[]> {
       next: { revalidate: 5 },
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const envelope = (await res.json()) as CivitasEnvelope<any>;
+    const envelope = (await res.json()) as CivitasEnvelope<RawIncidentListContainer | RawIncidentPayload[]>;
     const unwrapped = unwrapEnvelope(envelope);
-    const rawList = Array.isArray(unwrapped) ? unwrapped : unwrapped.incidents || [];
+    const rawList: RawIncidentPayload[] = Array.isArray(unwrapped)
+      ? unwrapped
+      : unwrapped.incidents || [];
 
     if (!rawList.length) return SEEDED_INCIDENTS;
 
-    return rawList.map((item: any) => ({
-      id: item.incident_id || item.id,
+    return rawList.map((item: RawIncidentPayload) => ({
+      id: item.incident_id || item.id || "INC-UNKNOWN",
       title: item.title || (item.category ? `${item.category.replace(/_/g, " ")} Incident` : `Incident ${item.incident_id || item.id}`),
       category: item.category ? item.category.replace(/_/g, " ") : "General Incident",
-      priority: (item.priority_level || item.priority || "Medium") as any,
+      priority: (item.priority_level || item.priority || "Medium") as IncidentPriority,
       severityScore: item.severity_score || 65,
       reportsCount: item.duplicates_seen || item.reportsCount || 1,
       primaryDepartment: item.assigned_department || item.primaryDepartment || "Municipal Operations",
@@ -184,14 +232,14 @@ export async function fetchIncidentDetail(id: string): Promise<IncidentRecord> {
       headers: getAuthHeaders(),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const envelope = (await res.json()) as CivitasEnvelope<any>;
+    const envelope = (await res.json()) as CivitasEnvelope<RawIncidentDetailPayload>;
     const data = unwrapEnvelope(envelope);
 
     return {
       id: data.incident_id || data.id || id,
       title: data.title || (data.category ? `${data.category.replace(/_/g, " ")} Incident` : `Incident ${id}`),
       category: data.category ? data.category.replace(/_/g, " ") : "Municipal Incident",
-      priority: (data.assessment?.priority_level || data.priority || "High") as any,
+      priority: (data.assessment?.priority_level || data.priority || "High") as IncidentPriority,
       severityScore: data.assessment?.severity_score || data.severityScore || 78,
       reportsCount: data.duplicates_seen || data.reportsCount || 1,
       primaryDepartment: data.assigned_department || data.primaryDepartment || "Water Supply & Drainage",
@@ -296,7 +344,7 @@ export async function submitClarification(
       }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const envelope = (await res.json()) as CivitasEnvelope<any>;
+    const envelope = (await res.json()) as CivitasEnvelope<{ status: string; clarification_id: string }>;
     return unwrapEnvelope(envelope);
   } catch (err) {
     console.info("Simulating clarification response (local fallback):", err);
@@ -327,7 +375,7 @@ export async function submitResolution(
       }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const envelope = (await res.json()) as CivitasEnvelope<any>;
+    const envelope = (await res.json()) as CivitasEnvelope<{ status: string; submission_id: string }>;
     return unwrapEnvelope(envelope);
   } catch (err) {
     console.info("Simulating resolution submission (local fallback):", err);
