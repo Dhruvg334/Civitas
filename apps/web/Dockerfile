@@ -16,6 +16,7 @@ COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV BUILD_STANDALONE=true
 RUN npm --workspace apps/web run build
 
 # Stage 3: Production Runner
