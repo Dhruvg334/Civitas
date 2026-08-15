@@ -49,10 +49,20 @@ export function Nav({ docs = false }: { docs?: boolean } = {}) {
         const stored = localStorage.getItem("civitas_current_user");
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (parsed && parsed.role && parsed.role !== "guest") {
+          // Only show user avatar if explicitly logged in and NOT Marcus Vance or guest
+          if (
+            parsed &&
+            parsed.name &&
+            parsed.role !== "guest" &&
+            parsed.isLoggedIn === true &&
+            !parsed.name.includes("Marcus")
+          ) {
             setCurrentUser(parsed);
           } else {
             setCurrentUser(null);
+            if (parsed && (parsed.name?.includes("Marcus") || parsed.role === "guest" || !parsed.isLoggedIn)) {
+              localStorage.removeItem("civitas_current_user");
+            }
           }
         } else {
           setCurrentUser(null);
