@@ -102,15 +102,15 @@ export default function Incident({
               <div className="clustered-sources-list">
                 <div className="source-row">
                   <span className="source-tag">REPORT A</span>
-                  <span>📸 Geotagged Photo (20.2961° N, 85.8245° E) · Submitted 12m ago</span>
+                  <span>Geotagged Photo (20.2961° N, 85.8245° E) · Submitted 12m ago</span>
                 </div>
                 <div className="source-row">
                   <span className="source-tag">REPORT B</span>
-                  <span>📝 Citizen Text Description (&quot;Water burst beside DAV school gate&quot;)</span>
+                  <span>Citizen Text Description (&quot;Water burst beside DAV school gate&quot;)</span>
                 </div>
                 <div className="source-row">
                   <span className="source-tag">REPORT C</span>
-                  <span>🎥 5s Video Clip · Citizen category corrected from Pothole → Water Leak</span>
+                  <span>5s Video Clip · Citizen category corrected from Pothole → Water Leak</span>
                 </div>
               </div>
             </section>

@@ -4,13 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { Footer, Nav, SectionLabel, Status } from "@/components/site";
 import { submitReport } from "@/lib/api";
+import { FlatIcon } from "@/components/flat-icons";
 
 const CATEGORIES = [
-  { id: "Water leak", label: "Water leak", icon: "💧", desc: "Pipeline rupture, standing puddle, or flooded street" },
-  { id: "Pothole or road damage", label: "Pothole or road damage", icon: "🕳️", desc: "Deep asphalt cavity, road erosion, or sunken manhole" },
-  { id: "Broken streetlight", label: "Broken streetlight", icon: "💡", desc: "Dark luminaire, exposed wiring, or damaged lamp post" },
-  { id: "Fallen tree", label: "Fallen tree", icon: "🌳", desc: "Snapped branch, fallen trunk, or sidewalk blockage" },
-  { id: "Garbage overflow", label: "Garbage overflow", icon: "🗑️", desc: "Clogged stormwater grate, refuse overflow" },
+  { id: "Water leak", label: "Water leak", icon: "water", desc: "Pipeline rupture, standing puddle, or flooded street" },
+  { id: "Pothole or road damage", label: "Pothole or road damage", icon: "pothole", desc: "Deep asphalt cavity, road erosion, or sunken manhole" },
+  { id: "Broken streetlight", label: "Broken streetlight", icon: "streetlight", desc: "Dark luminaire, exposed wiring, or damaged lamp post" },
+  { id: "Fallen tree", label: "Fallen tree", icon: "tree", desc: "Snapped branch, fallen trunk, or sidewalk blockage" },
+  { id: "Garbage overflow", label: "Garbage overflow", icon: "drain", desc: "Clogged stormwater grate, refuse overflow" },
 ];
 
 export default function Report() {
@@ -97,7 +98,9 @@ export default function Report() {
           <section className="report-stage-card">
             {submittedReportId ? (
               <div className="report-success-box">
-                <div className="success-icon-badge">✓</div>
+                <div className="success-icon-badge">
+                  <FlatIcon name="check" size={28} color="#ffffff" />
+                </div>
                 <h2 className="success-title">Report Submitted Successfully</h2>
                 <p className="success-subtitle">
                   Assigned reference <b>{submittedReportId}</b> and linked to Ward 12 PostGIS cluster queue.
@@ -122,8 +125,8 @@ export default function Report() {
                   <Link className="button large" href="/workspace">
                     View in Command Center →
                   </Link>
-                  <Link className="outline large" href="/demo-workflow">
-                    Track in Demo Workflow
+                  <Link className="outline large" href="/profile">
+                    Track in Resident Profile
                   </Link>
                 </div>
               </div>
@@ -180,7 +183,9 @@ export default function Report() {
                           className={`category-tile ${category === c.id ? "selected" : ""}`}
                           onClick={() => setCategory(c.id)}
                         >
-                          <span className="cat-icon">{c.icon}</span>
+                          <div className="cat-icon-wrap">
+                            <FlatIcon name={c.icon} size={22} color={category === c.id ? "#e84d7a" : "#0f5f4f"} />
+                          </div>
                           <b className="cat-label">{c.label}</b>
                           <p className="cat-desc">{c.desc}</p>
                         </div>
@@ -210,7 +215,9 @@ export default function Report() {
                       onClick={() => setMediaUploaded(!mediaUploaded)}
                     >
                       <input type="file" accept="image/*,video/*" style={{ display: "none" }} />
-                      <span className="dropzone-icon">{mediaUploaded ? "✅" : "📸"}</span>
+                      <div className="dropzone-icon">
+                        <FlatIcon name={mediaUploaded ? "check" : "camera"} size={28} color="#0f5f4f" />
+                      </div>
                       <b>{mediaUploaded ? "photo_evidence_01.jpg attached" : "Drop media here or choose a file"}</b>
                       <small>
                         {mediaUploaded
@@ -249,9 +256,9 @@ export default function Report() {
 
                     <div className="location-box">
                       <div className="location-box-header">
-                        <b>📍 Incident Location Coordinates</b>
+                        <b>Incident Location Coordinates</b>
                         <button type="button" className="gps-btn" onClick={handleSimulateGPS}>
-                          🛰️ Detect My Location
+                          <FlatIcon name="map" size={12} /> Detect My Location
                         </button>
                       </div>
 
@@ -526,8 +533,8 @@ export default function Report() {
           background: #ffffff;
           box-shadow: 4px 4px 0 #172019;
         }
-        .cat-icon {
-          font-size: 1.3rem;
+        .cat-icon-wrap {
+          margin-bottom: 2px;
         }
         .cat-label {
           font-size: 0.9rem;
@@ -561,7 +568,7 @@ export default function Report() {
           border-color: #0f5f4f;
         }
         .dropzone-icon {
-          font-size: 1.8rem;
+          margin-bottom: 4px;
         }
         .media-dropzone b {
           font-size: 0.9rem;
@@ -604,6 +611,9 @@ export default function Report() {
           margin-bottom: 14px;
         }
         .gps-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
           padding: 5px 10px;
           border: 1px solid #0f5f4f;
           background: #dce8dd;
@@ -676,9 +686,6 @@ export default function Report() {
           height: 56px;
           border-radius: 50%;
           background: #0f5f4f;
-          color: #ffffff;
-          font-size: 1.8rem;
-          font-weight: 900;
           display: grid;
           place-items: center;
           margin: 0 auto 16px;

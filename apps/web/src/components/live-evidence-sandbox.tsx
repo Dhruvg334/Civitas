@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FlatIcon } from "@/components/flat-icons";
 
 interface Preset {
   id: string;
@@ -21,7 +22,7 @@ const PRESETS: Preset[] = [
   {
     id: "water",
     label: "Water Main Leak",
-    icon: "💧",
+    icon: "water",
     text: "Heavy water bursting from underground pipeline near DAV School gate. Kids are crossing into flooded street.",
     category: "water_leakage",
     landmark: "14m from DAV Public School Gate (Hazard Buffer active)",
@@ -35,7 +36,7 @@ const PRESETS: Preset[] = [
   {
     id: "tree",
     label: "Fallen Tree",
-    icon: "🌳",
+    icon: "tree",
     text: "Large banyan branch snapped in heavy wind and completely blocking the inbound lane on Park Road.",
     category: "fallen_tree",
     landmark: "Park Road, opposite Ward Community Center",
@@ -49,7 +50,7 @@ const PRESETS: Preset[] = [
   {
     id: "light",
     label: "Streetlight Outage",
-    icon: "💡",
+    icon: "streetlight",
     text: "Three streetlights in a row are flickering and dark along the East Gate crossing at night.",
     category: "streetlight",
     landmark: "East Gate Commercial Crossroad, Poles #104-106",
@@ -92,7 +93,7 @@ export function LiveEvidenceSandbox() {
               className={`preset-chip ${activePreset.id === p.id ? "active" : ""}`}
               onClick={() => handleSelectPreset(p)}
             >
-              <span>{p.icon}</span>
+              <FlatIcon name={p.icon} size={14} />
               <span>{p.label}</span>
             </button>
           ))}

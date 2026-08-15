@@ -174,7 +174,7 @@ export function InteractiveGisMap({
       // Landmark Markers (DAV Public School, Ward East Gate)
       const schoolIcon = LModule.divIcon({
         className: "landmark-poi-icon",
-        html: `<div class="landmark-badge school-poi"><span class="poi-icon">🏫</span><span class="poi-label">DAV Public School</span></div>`,
+        html: `<div class="landmark-badge school-poi"><span class="poi-label">DAV Public School</span></div>`,
         iconSize: [140, 30],
         iconAnchor: [70, 15],
       });
@@ -182,7 +182,7 @@ export function InteractiveGisMap({
 
       const eastGateIcon = LModule.divIcon({
         className: "landmark-poi-icon",
-        html: `<div class="landmark-badge junction-poi"><span class="poi-icon">🚦</span><span class="poi-label">East Gate Crossing</span></div>`,
+        html: `<div class="landmark-badge junction-poi"><span class="poi-label">East Gate Crossing</span></div>`,
         iconSize: [130, 30],
         iconAnchor: [65, 15],
       });
@@ -284,19 +284,19 @@ export function InteractiveGisMap({
               className={`layer-btn ${mapLayer === "positron" ? "active" : ""}`}
               onClick={() => handleLayerSwitch("positron")}
             >
-              🗺️ Clean
+              Clean (Voyager)
             </button>
             <button
               className={`layer-btn ${mapLayer === "osm" ? "active" : ""}`}
               onClick={() => handleLayerSwitch("osm")}
             >
-              🌐 Street
+              Street (OSM)
             </button>
             <button
               className={`layer-btn ${mapLayer === "dark" ? "active" : ""}`}
               onClick={() => handleLayerSwitch("dark")}
             >
-              🌙 Night
+              Night (Dark)
             </button>
           </div>
         </div>
@@ -320,21 +320,21 @@ export function InteractiveGisMap({
               onClick={() => handleJumpToLandmark(20.29614, 85.82451, 16)}
               title="Focus DAV School Crossing"
             >
-              🏫 School Zone
+              School Zone
             </button>
             <button
               className="jump-pill"
               onClick={() => handleJumpToLandmark(20.3015, 85.8312, 16)}
               title="Focus East Gate Junction"
             >
-              🚦 East Gate
+              East Gate
             </button>
             <button
               className="jump-pill"
               onClick={() => handleJumpToLandmark(20.2918, 85.8205, 16)}
               title="Focus Park Road"
             >
-              🌳 Park Road
+              Park Road
             </button>
           </div>
 
@@ -397,7 +397,7 @@ export function InteractiveGisMap({
                 className="outline small dispatch-btn"
                 onClick={() => handleDispatch(activePopupPin.id)}
               >
-                ⚡ Dispatch Crew
+                Dispatch Crew
               </button>
             </div>
           )}

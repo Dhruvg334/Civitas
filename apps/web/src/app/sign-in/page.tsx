@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { Footer, Nav } from "@/components/site";
 import { OnboardingPanel } from "@/components/onboarding-panel";
+import { FlatIcon } from "@/components/flat-icons";
 
 export default function SignIn() {
   const [create, setCreate] = useState(false);
@@ -15,18 +16,49 @@ export default function SignIn() {
   const [onboarding, setOnboarding] = useState(false);
 
   const handlePersonaLogin = (role: "resident" | "supervisor" | "field") => {
+    let userData = {
+      name: "Dhruv Gupta",
+      email: "dhruvg.030304@gmail.com",
+      role: "resident",
+      roleTitle: "Citizen Reporter · Ward 12 Resident",
+      ward: "Ward 12 · DAV Public School Zone",
+      avatarInitials: "DG",
+    };
+
     if (role === "resident") {
       setEmail("dhruv.gupta@civic.local");
       setName("Dhruv Gupta");
       setNotice("✓ Authenticated as Resident (Dhruv Gupta · Ward 12)");
     } else if (role === "supervisor") {
+      userData = {
+        name: "Sarah Chen",
+        email: "supervisor.chen@bhubaneswar.gov.in",
+        role: "supervisor",
+        roleTitle: "Municipal Supervisor · Public Works Dept",
+        ward: "Bhubaneswar Municipal Zone 1",
+        avatarInitials: "SC",
+      };
       setEmail("supervisor.chen@bhubaneswar.gov.in");
       setName("Sarah Chen (Public Works)");
       setNotice("✓ Authenticated as Municipal Supervisor (Full Review Clearance)");
     } else {
+      userData = {
+        name: "Marcus Vance",
+        email: "field.dispatch@waterdept.gov.in",
+        role: "field",
+        roleTitle: "Field Crew Dispatch Lead · Water & Drainage",
+        ward: "Ward 12 Infrastructure Grid",
+        avatarInitials: "MV",
+      };
       setEmail("field.dispatch@waterdept.gov.in");
       setName("Marcus Vance (Field Dispatch)");
       setNotice("✓ Authenticated as Field Crew Lead (Work Order Dispatch)");
+    }
+
+    try {
+      localStorage.setItem("civitas_current_user", JSON.stringify(userData));
+    } catch {
+      // ignore
     }
   };
 
@@ -35,6 +67,19 @@ export default function SignIn() {
     if (create) {
       setOnboarding(true);
     } else {
+      const userData = {
+        name: name || email.split("@")[0],
+        email,
+        role: "resident" as const,
+        roleTitle: "Registered Citizen",
+        ward: "Ward 12 · Bhubaneswar",
+        avatarInitials: (name || email).slice(0, 2).toUpperCase(),
+      };
+      try {
+        localStorage.setItem("civitas_current_user", JSON.stringify(userData));
+      } catch {
+        // ignore
+      }
       setNotice("✓ Authenticated successfully with Civitas FastAPI backend session.");
     }
   };
@@ -62,7 +107,9 @@ export default function SignIn() {
                   className="persona-btn"
                   onClick={() => handlePersonaLogin("resident")}
                 >
-                  <span className="persona-icon">👤</span>
+                  <div className="persona-icon-wrap">
+                    <FlatIcon name="user" size={16} color="#0f5f4f" />
+                  </div>
                   <div className="persona-text">
                     <b>Resident Persona</b>
                     <small>Dhruv Gupta · Ward 12 Citizen</small>
@@ -74,7 +121,9 @@ export default function SignIn() {
                   className="persona-btn"
                   onClick={() => handlePersonaLogin("supervisor")}
                 >
-                  <span className="persona-icon">🛡️</span>
+                  <div className="persona-icon-wrap">
+                    <FlatIcon name="shield" size={16} color="#172019" />
+                  </div>
                   <div className="persona-text">
                     <b>Municipal Supervisor</b>
                     <small>Sarah Chen · Public Works Approval</small>
@@ -86,7 +135,9 @@ export default function SignIn() {
                   className="persona-btn"
                   onClick={() => handlePersonaLogin("field")}
                 >
-                  <span className="persona-icon">⚡</span>
+                  <div className="persona-icon-wrap">
+                    <FlatIcon name="zap" size={16} color="#e84d7a" />
+                  </div>
                   <div className="persona-text">
                     <b>Field Crew Lead</b>
                     <small>Marcus Vance · Dispatch Ops</small>

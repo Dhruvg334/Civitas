@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { FlatIcon } from "@/components/flat-icons";
 
 const links = [
-  ["About App", "/about/app"],
+  ["Explore Civitas", "/about/app"],
   ["Why It Is Needed", "/about/why"],
-  ["Team behind", "/about/developers"],
+  ["Engineering Team", "/about/developers"],
 ] as const;
 
 export function AboutMenu({ isActive = false }: { isActive?: boolean }) {
@@ -36,11 +37,12 @@ export function AboutMenu({ isActive = false }: { isActive?: boolean }) {
         aria-haspopup="menu"
         onClick={() => setOpen((value) => !value)}
       >
-        About
+        <span>Explore</span>
+        <FlatIcon name="chevron-down" size={14} className={`menu-chevron ${open ? "open" : ""}`} />
       </button>
       {open && (
         <div className="about-popover" role="menu">
-          <p className="popover-kicker">Explore Civitas</p>
+          <p className="popover-kicker">EXPLORE CIVITAS</p>
           {links.map(([label, href]) => (
             <Link
               role="menuitem"

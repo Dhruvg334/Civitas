@@ -2,29 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AboutMenu } from "@/components/about-menu";
 import { CookieControls } from "@/components/cookie-controls";
+import { FlatIcon } from "@/components/flat-icons";
 
 const productLinks: Array<[string, string]> = [
   ["Workspace", "/workspace"],
-  ["Demo", "/demo-workflow"],
   ["Docs", "/docs"],
-  ["Profile", "/profile"],
 ];
 
-const docsNavTabs: Array<{ label: string; href: string; slug: string }> = [
-  { label: "Overview", href: "/docs", slug: "" },
-  { label: "System Architecture", href: "/docs/architecture", slug: "architecture" },
-  { label: "Operations & Workflow", href: "/docs/workflow", slug: "workflow" },
-  { label: "Governance & Safety", href: "/docs/safety", slug: "safety" },
-  { label: "API Reference", href: "/docs/api", slug: "api" },
+const docsNavTabs: Array<{ label: string; href: string; slug: string; icon: string }> = [
+  { label: "Overview", href: "/docs", slug: "", icon: "overview" },
+  { label: "System Architecture", href: "/docs/architecture", slug: "architecture", icon: "architecture" },
+  { label: "Operations & Workflow", href: "/docs/workflow", slug: "workflow", icon: "workflow" },
+  { label: "Governance & Safety", href: "/docs/safety", slug: "safety", icon: "shield" },
+  { label: "API Reference", href: "/docs/api", slug: "api", icon: "api" },
 ];
 
 const aboutLinks: Array<[string, string]> = [
-  ["About App", "/about/app"],
+  ["Explore Civitas", "/about/app"],
   ["Why It Is Needed", "/about/why"],
-  ["Team behind", "/about/developers"],
+  ["Engineering Team", "/about/developers"],
 ];
 
 function Wordmark() {
@@ -42,6 +41,26 @@ function Wordmark() {
 
 export function Nav({ docs = false }: { docs?: boolean } = {}) {
   const pathname = usePathname() || "";
+  const [currentUser, setCurrentUser] = useState<{ name: string; role: string } | null>(null);
+
+  useEffect(() => {
+    const syncUser = () => {
+      try {
+        const stored = localStorage.getItem("civitas_current_user");
+        if (stored) {
+          setCurrentUser(JSON.parse(stored));
+        }
+      } catch {
+        // ignore
+      }
+    };
+    const timer = setTimeout(syncUser, 0);
+    window.addEventListener("storage", syncUser);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("storage", syncUser);
+    };
+  }, []);
 
   const isLinkActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -52,6 +71,7 @@ export function Nav({ docs = false }: { docs?: boolean } = {}) {
 
   const isAboutActive = pathname.startsWith("/about");
   const isReportActive = pathname.startsWith("/report");
+  const isAuthActive = pathname.startsWith("/sign-in") || pathname.startsWith("/profile");
 
   return (
     <>
@@ -74,13 +94,36 @@ export function Nav({ docs = false }: { docs?: boolean } = {}) {
             })}
             <AboutMenu isActive={isAboutActive} />
           </div>
+
           <div className="nav-end">
             <Link
-              className={`button small ${isReportActive ? "active-button" : ""}`}
+              className={`button small report-cta-btn ${isReportActive ? "active-button" : ""}`}
               href="/report"
             >
               Report an issue
             </Link>
+
+            {/* SIGN IN / PROFILE BUTTON AT FAR RIGHT */}
+            {currentUser ? (
+              <Link
+                href="/profile"
+                className={`nav-user-pill ${isAuthActive ? "active" : ""}`}
+                title={`Signed in as ${currentUser.name}`}
+              >
+                <span className="user-avatar-dot">
+                  {currentUser.name.slice(0, 2).toUpperCase()}
+                </span>
+                <span className="user-nav-name">{currentUser.name.split(" ")[0]}</span>
+              </Link>
+            ) : (
+              <Link
+                href="/sign-in"
+                className={`outline small sign-in-btn ${isAuthActive ? "active" : ""}`}
+              >
+                Sign In
+              </Link>
+            )}
+
             <details className="mobilemenu">
               <summary aria-label="Open navigation">
                 <span />
@@ -105,12 +148,78 @@ export function Nav({ docs = false }: { docs?: boolean } = {}) {
                     {label}
                   </Link>
                 ))}
+                <Link href="/profile" className={pathname.startsWith("/profile") ? "active" : ""}>
+                  Resident Profile
+                </Link>
+                <Link href="/sign-in" className={pathname.startsWith("/sign-in") ? "active" : ""}>
+                  Sign In / Switch Persona
+                </Link>
               </div>
             </details>
           </div>
         </nav>
       </header>
       {docs && <DocsSubNav />}
+
+      <style jsx>{`
+        .nav-end {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .report-cta-btn {
+          white-space: nowrap;
+        }
+        .sign-in-btn {
+          padding: 7px 14px;
+          font-size: 0.78rem;
+          font-weight: 800;
+          border: 1px solid #172019;
+          background: #ffffff;
+          color: #172019;
+          border-radius: 4px;
+          text-decoration: none;
+          transition: all 0.15s ease;
+          box-shadow: 2px 2px 0 #172019;
+          white-space: nowrap;
+        }
+        .sign-in-btn:hover,
+        .sign-in-btn.active {
+          background: #172019;
+          color: #ffffff;
+        }
+        .nav-user-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 4px 10px;
+          border: 1px solid #172019;
+          background: #fbf9f4;
+          border-radius: 20px;
+          text-decoration: none;
+          color: #172019;
+          font-size: 0.75rem;
+          font-weight: 800;
+          box-shadow: 2px 2px 0 #172019;
+          transition: all 0.15s ease;
+        }
+        .nav-user-pill:hover,
+        .nav-user-pill.active {
+          background: #172019;
+          color: #ffffff;
+        }
+        .user-avatar-dot {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: #0f5f4f;
+          color: #ffffff;
+          display: grid;
+          place-items: center;
+          font-size: 0.65rem;
+          font-weight: 900;
+        }
+      `}</style>
     </>
   );
 }
@@ -146,7 +255,8 @@ export function DocsSubNav({
                 href={tab.href}
                 className={`docs-tab-link ${isTabActive ? "active" : ""}`}
               >
-                {tab.label}
+                <FlatIcon name={tab.icon} size={14} />
+                <span>{tab.label}</span>
               </Link>
             );
           })}
@@ -154,7 +264,7 @@ export function DocsSubNav({
 
         <div className="docs-subnav-right">
           <div className="docs-search-wrapper">
-            <span className="search-icon">🔍</span>
+            <FlatIcon name="search" size={14} color="#687067" />
             <input
               type="text"
               placeholder="Filter topics & schemas..."
@@ -164,7 +274,7 @@ export function DocsSubNav({
               aria-label="Filter documentation"
             />
           </div>
-          <span className="docs-version-pill">v0.1.0-alpha · LangGraph</span>
+          <span className="docs-version-pill">v0.1.0 · LangGraph</span>
         </div>
       </div>
 
@@ -175,7 +285,7 @@ export function DocsSubNav({
           position: sticky;
           top: 74px;
           z-index: 40;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         }
         .docs-subnav-inner {
           width: min(calc(100% - 40px), 1280px);
@@ -183,75 +293,82 @@ export function DocsSubNav({
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 0;
-          gap: 20px;
+          padding: 8px 0;
+          gap: 16px;
+          flex-wrap: wrap;
         }
         .docs-nav-tabs {
           display: flex;
           align-items: center;
-          gap: 0;
+          gap: 8px;
           overflow-x: auto;
+          padding: 2px 0;
         }
         .docs-tab-link {
-          padding: 14px 18px;
-          border-right: 1px solid #e2ded4;
-          font-size: 0.8rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 7px 14px;
+          border: 1px solid #e2ded4;
+          background: #fbf9f4;
+          border-radius: 4px;
+          font-size: 0.78rem;
           font-weight: 750;
           color: #555e54;
           text-decoration: none;
           white-space: nowrap;
           transition: all 0.15s ease;
         }
-        .docs-tab-link:first-child {
-          border-left: 1px solid #e2ded4;
-        }
         .docs-tab-link:hover {
+          border-color: #172019;
           color: #172019;
-          background: #fbf9f4;
+          background: #ffffff;
         }
         .docs-tab-link.active {
-          color: #ffffff;
+          border-color: #172019;
           background: #172019;
+          color: #ffffff;
+          box-shadow: 2px 2px 0 #0f5f4f;
         }
         .docs-subnav-right {
           display: flex;
           align-items: center;
-          gap: 14px;
+          gap: 12px;
         }
         .docs-search-wrapper {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
           background: #fbf9f4;
           border: 1px solid #172019;
           padding: 5px 10px;
           border-radius: 4px;
         }
-        .search-icon {
-          font-size: 0.75rem;
-        }
         .docs-search-input {
           border: 0;
           background: transparent;
-          font-size: 0.78rem;
+          font-size: 0.76rem;
           outline: none;
+          font-family: inherit;
           width: 170px;
+          color: #172019;
         }
         .docs-version-pill {
-          font-size: 0.65rem;
-          font-weight: 850;
-          background: #dce8dd;
-          color: #0f5f4f;
           padding: 4px 8px;
           border: 1px solid #0f5f4f;
+          background: #dce8dd;
+          color: #0f5f4f;
+          font-size: 0.64rem;
+          font-weight: 850;
           border-radius: 4px;
+          letter-spacing: 0.05em;
           white-space: nowrap;
         }
-        @media (max-width: 900px) {
+        @media (max-width: 960px) {
           .docs-subnav-inner {
             flex-direction: column;
             align-items: stretch;
-            padding: 8px 0;
+            gap: 10px;
           }
           .docs-subnav-right {
             justify-content: space-between;
@@ -269,17 +386,11 @@ export function Footer() {
   return (
     <footer className="footer-grid-shell">
       <div className="footer-content">
+        {/* BRAND & MISSION */}
         <div className="footer-col brand-col">
-          <Link className="brand footer-brand" href="/">
-            <span className="brand-mark" aria-hidden="true">
-              <i />
-              <i />
-              <i />
-            </span>
-            <span>Civitas</span>
-          </Link>
+          <Wordmark />
           <p className="footer-tagline">
-            Evidence-backed civic incident intelligence with human oversight.
+            Evidence-backed civic incident intelligence with human oversight and transparent PostGIS clustering.
           </p>
           <div className="footer-status-pill">
             <span className="live-dot" />
@@ -287,26 +398,29 @@ export function Footer() {
           </div>
         </div>
 
+        {/* PRODUCT */}
         <div className="footer-col">
           <span className="footer-heading">PRODUCT</span>
           <Link href="/workspace">Command Center</Link>
-          <Link href="/demo-workflow">Workflow Demo</Link>
-          <Link href="/report">Report Issue</Link>
+          <Link href="/report">Submit Citizen Report</Link>
           <Link href="/docs">System Docs</Link>
+          <Link href="/docs/api">REST API Explorer</Link>
         </div>
 
+        {/* GOVERNANCE */}
         <div className="footer-col">
           <span className="footer-heading">GOVERNANCE</span>
-          <Link href="/about/app">About Civitas</Link>
+          <Link href="/about/app">Explore Civitas</Link>
           <Link href="/docs/architecture">Architecture</Link>
-          <Link href="/privacy">Privacy & Location</Link>
-          <Link href="/terms">Terms of Use</Link>
+          <Link href="/privacy">Privacy & Geolocation</Link>
+          <Link href="/terms">Terms of Service</Link>
         </div>
 
+        {/* ACCOUNT */}
         <div className="footer-col">
           <span className="footer-heading">ACCOUNT</span>
           <Link href="/profile">Resident Profile</Link>
-          <Link href="/sign-in">Sign In / Register</Link>
+          <Link href="/sign-in">Sign In / Switch Persona</Link>
           <div className="footer-cookie-wrapper">
             <CookieControls />
           </div>
@@ -357,6 +471,12 @@ export function Footer() {
           letter-spacing: 0.08em;
           width: max-content;
           margin-top: 6px;
+        }
+        .live-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #0f5f4f;
         }
         .footer-col {
           display: flex;
@@ -411,23 +531,8 @@ export function Footer() {
   );
 }
 
-export function Status({
-  children,
-  tone = "neutral",
-}: {
-  children: string;
-  tone?: "neutral" | "good" | "warn" | "danger";
-}) {
-  return (
-    <span className={`status status-${tone}`}>
-      <i aria-hidden="true" />
-      {children.replaceAll("_", " ").toLowerCase()}
-    </span>
-  );
-}
-
 export function SectionLabel({
-  index,
+  index = "01",
   children,
 }: {
   index?: string;
@@ -435,9 +540,23 @@ export function SectionLabel({
 }) {
   return (
     <div className="section-label">
-      {index && <span>{index}</span>}
+      <span>{index}</span>
       <p>{children}</p>
     </div>
+  );
+}
+
+export function Status({
+  tone = "neutral",
+  children,
+}: {
+  tone?: "neutral" | "good" | "warn" | "danger";
+  children: React.ReactNode;
+}) {
+  return (
+    <span className={`status-tag tone-${tone}`}>
+      {typeof children === "string" ? children.replaceAll("_", " ").toLowerCase() : children}
+    </span>
   );
 }
 
@@ -461,57 +580,66 @@ export function DocsPage({
       <Nav />
       <DocsSubNav activeSlug={activeSlug} onSearchChange={setSearchFilter} />
       <main className="docs-dual-layout">
-        {/* LEFT TOPIC SIDEBAR */}
+        {/* LEFT TOPIC SIDEBAR WITH FLAT ICONS */}
         <aside className="docs-left-sidebar" aria-label="Documentation topics">
           <div className="sidebar-group">
             <span className="sidebar-group-title">GETTING STARTED</span>
             <Link href="/docs" className={activeSlug === "" ? "active" : ""}>
-              📄 System Overview
+              <FlatIcon name="overview" size={14} />
+              <span>System Overview</span>
             </Link>
             <Link href="/docs/architecture" className={activeSlug === "architecture" ? "active" : ""}>
-              🏗️ System Architecture
+              <FlatIcon name="architecture" size={14} />
+              <span>System Architecture</span>
             </Link>
           </div>
 
           <div className="sidebar-group">
             <span className="sidebar-group-title">OPERATIONS & AI</span>
             <Link href="/docs/workflow" className={activeSlug === "workflow" ? "active" : ""}>
-              ⚡ Workflow & Operations
+              <FlatIcon name="workflow" size={14} />
+              <span>Workflow & Operations</span>
             </Link>
             <Link href="/docs/safety" className={activeSlug === "safety" ? "active" : ""}>
-              🛡️ Governance & Safety
+              <FlatIcon name="shield" size={14} />
+              <span>Governance & Safety</span>
             </Link>
           </div>
 
           <div className="sidebar-group">
             <span className="sidebar-group-title">INTEGRATION</span>
             <Link href="/docs/api" className={activeSlug === "api" ? "active" : ""}>
-              🔌 REST API Reference
+              <FlatIcon name="api" size={14} />
+              <span>REST API Reference</span>
             </Link>
           </div>
         </aside>
 
         {/* CENTER MAIN ARTICLE */}
-        <article className="docs-main-article">
-          <div className="docs-header-block">
-            <span className="doc-eyebrow">CIVITAS DOCUMENTATION / {activeSlug.toUpperCase() || "OVERVIEW"}</span>
-            <h1 className="doc-main-title">{title}</h1>
-            {intro && <p className="doc-main-intro">{intro}</p>}
+        <article className="docs-article-body">
+          <div className="docs-article-header">
+            <span className="docs-breadcrumb">
+              CIVITAS DOCUMENTATION / {activeSlug ? activeSlug.toUpperCase() : "OVERVIEW"}
+            </span>
+            <h1 className="docs-article-title">{title}</h1>
+            {intro && <p className="docs-article-intro">{intro}</p>}
           </div>
 
-          <div className="doc-content-body">{children}</div>
+          {children}
         </article>
 
-        {/* RIGHT TABLE OF CONTENTS */}
-        {tocItems.length > 0 && (
+        {/* RIGHT ON-THIS-PAGE TOC */}
+        {tocItems && tocItems.length > 0 && (
           <aside className="docs-right-toc" aria-label="Table of contents">
-            <span className="toc-title">ON THIS PAGE</span>
-            <div className="toc-links">
-              {tocItems.map((item) => (
-                <a key={item.id} href={`#${item.id}`}>
-                  {item.label}
-                </a>
-              ))}
+            <div className="toc-sticky-box">
+              <span className="toc-title">ON THIS PAGE</span>
+              <nav className="toc-nav">
+                {tocItems.map((item) => (
+                  <a key={item.id} href={`#${item.id}`}>
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
             </div>
           </aside>
         )}
@@ -520,11 +648,11 @@ export function DocsPage({
 
       <style jsx>{`
         .docs-dual-layout {
-          width: min(calc(100% - 40px), 1280px);
-          margin: 36px auto 100px;
+          width: min(calc(100% - 40px), 1360px);
+          margin: 35px auto 100px;
           display: grid;
-          grid-template-columns: 220px minmax(0, 1fr) 200px;
-          gap: 45px;
+          grid-template-columns: 240px minmax(0, 1fr) 220px;
+          gap: 40px;
           align-items: start;
         }
         .docs-left-sidebar {
@@ -533,112 +661,122 @@ export function DocsPage({
           display: flex;
           flex-direction: column;
           gap: 24px;
-          border-right: 1px solid #e2ded4;
-          padding-right: 20px;
         }
         .sidebar-group {
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 4px;
         }
         .sidebar-group-title {
           font-size: 0.62rem;
           font-weight: 900;
           letter-spacing: 0.12em;
           color: #0f5f4f;
-          margin-bottom: 4px;
+          margin-bottom: 6px;
+          padding-left: 8px;
         }
         .sidebar-group :global(a) {
-          padding: 6px 10px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
           font-size: 0.82rem;
-          font-weight: 750;
+          font-weight: 700;
           color: #555e54;
           text-decoration: none;
           border-radius: 4px;
           transition: all 0.15s ease;
         }
         .sidebar-group :global(a:hover) {
-          color: #172019;
           background: #fbf9f4;
+          color: #172019;
         }
         .sidebar-group :global(a.active) {
-          color: #ffffff;
           background: #172019;
+          color: #ffffff;
+          box-shadow: 2px 2px 0 #0f5f4f;
         }
-        .docs-main-article {
+        .docs-article-body {
           min-width: 0;
         }
-        .docs-header-block {
-          padding-bottom: 28px;
-          border-bottom: 2px solid #172019;
+        .docs-article-header {
+          padding-bottom: 24px;
+          border-bottom: 1px solid #172019;
           margin-bottom: 32px;
         }
-        .doc-eyebrow {
+        .docs-breadcrumb {
           font-size: 0.65rem;
           font-weight: 900;
-          letter-spacing: 0.14em;
+          letter-spacing: 0.12em;
           color: #0f5f4f;
           display: block;
-          margin-bottom: 6px;
+          margin-bottom: 8px;
         }
-        .doc-main-title {
-          font-size: clamp(2.6rem, 4.5vw, 4.2rem);
-          line-height: 0.94;
-          margin: 0 0 14px;
+        .docs-article-title {
+          font-size: clamp(2.4rem, 4vw, 3.8rem);
           font-family: Georgia, serif;
+          margin: 0 0 14px;
           color: #172019;
+          line-height: 1;
         }
-        .doc-main-intro {
+        .docs-article-intro {
           font-size: 1.05rem;
+          color: #555e54;
           line-height: 1.6;
-          color: #495248;
           margin: 0;
         }
         .docs-right-toc {
           position: sticky;
           top: 140px;
-          border-left: 1px solid #e2ded4;
-          padding-left: 18px;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
+        }
+        .toc-sticky-box {
+          border-left: 2px solid #e2ded4;
+          padding-left: 16px;
         }
         .toc-title {
           font-size: 0.62rem;
           font-weight: 900;
           letter-spacing: 0.12em;
           color: #687067;
+          display: block;
+          margin-bottom: 10px;
         }
-        .toc-links {
+        .toc-nav {
           display: flex;
           flex-direction: column;
           gap: 8px;
         }
-        .toc-links a {
+        .toc-nav a {
           font-size: 0.78rem;
           color: #555e54;
           text-decoration: none;
           line-height: 1.4;
           transition: color 0.15s ease;
         }
-        .toc-links a:hover {
+        .toc-nav a:hover {
           color: #e84d7a;
         }
-        @media (max-width: 1050px) {
+        @media (max-width: 1100px) {
           .docs-dual-layout {
-            grid-template-columns: 200px minmax(0, 1fr);
+            grid-template-columns: 220px 1fr;
           }
           .docs-right-toc {
             display: none;
           }
         }
-        @media (max-width: 768px) {
+        @media (max-width: 800px) {
           .docs-dual-layout {
             grid-template-columns: 1fr;
-            margin-top: 20px;
           }
           .docs-left-sidebar {
-            display: none;
+            position: static;
+            flex-direction: row;
+            overflow-x: auto;
+            border-bottom: 1px solid #e2ded4;
+            padding-bottom: 16px;
+          }
+          .sidebar-group {
+            flex-direction: row;
           }
         }
       `}</style>

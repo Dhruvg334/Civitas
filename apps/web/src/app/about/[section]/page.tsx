@@ -3,6 +3,7 @@
 import { use } from "react";
 import Link from "next/link";
 import { Footer, Nav, SectionLabel } from "@/components/site";
+import { FlatIcon } from "@/components/flat-icons";
 
 interface Developer {
   name: string;
@@ -48,7 +49,7 @@ export default function About({
       <>
         <Nav />
         <main className="about-main-shell">
-          <SectionLabel index="03">ABOUT / ENGINEERING TEAM</SectionLabel>
+          <SectionLabel index="03">EXPLORE / ENGINEERING TEAM</SectionLabel>
           <div className="about-hero-block">
             <h1 className="about-title">The Engineers Behind Civitas</h1>
             <p className="about-lead">
@@ -57,9 +58,9 @@ export default function About({
           </div>
 
           <section className="about-badge-card">
-            <span className="badge-kicker">EARLY HACKATHON MVP</span>
+            <span className="badge-kicker">PRODUCTION ARCHITECTURE</span>
             <p>
-              Civitas is an evidence-backed civic incident intelligence MVP. Seeded data and demo endpoints are explicitly distinguished from live municipal telemetry to maintain strict engineering integrity.
+              Civitas is an evidence-backed civic incident intelligence platform. Seeded data and live endpoints are explicitly distinguished to maintain strict engineering integrity.
             </p>
           </section>
 
@@ -105,7 +106,7 @@ export default function About({
       <>
         <Nav />
         <main className="about-main-shell">
-          <SectionLabel index="02">ABOUT / THE CIVIC PROBLEM</SectionLabel>
+          <SectionLabel index="02">EXPLORE / THE CIVIC PROBLEM</SectionLabel>
           <div className="about-hero-block">
             <h1 className="about-title">The Gap Between Citizen Reports & Municipal Action</h1>
             <p className="about-lead">
@@ -154,8 +155,8 @@ export default function About({
               <h3>Civitas bridges this operational gap.</h3>
               <p>Experience how multimodal evidence, PostGIS spatial clustering, and LangGraph work together.</p>
             </div>
-            <Link className="button large" href="/demo-workflow">
-              ⚡ Explore Workflow Demo
+            <Link className="button large" href="/workspace">
+              Open Command Center →
             </Link>
           </div>
         </main>
@@ -165,18 +166,65 @@ export default function About({
     );
   }
 
+  // DEFAULT / "app" SECTION
   return (
     <>
       <Nav />
       <main className="about-main-shell">
-        <SectionLabel index="01">ABOUT / APPLICATION ARCHITECTURE</SectionLabel>
+        <SectionLabel index="01">EXPLORE / CIVITAS PLATFORM</SectionLabel>
         <div className="about-hero-block">
-          <h1 className="about-title">A Civic Intelligence Platform Built on Evidence</h1>
+          <h1 className="about-title">Evidence-Backed Civic Incident Intelligence</h1>
           <p className="about-lead">
-            Civitas turns raw, scattered citizen submissions into verified spatial incidents, policy-grounded work orders, and reviewable field actions.
+            Civitas transforms raw, noisy citizen submissions into verified spatial incidents, policy-grounded work orders, and reviewable field actions with human supervisor oversight.
           </p>
         </div>
 
+        {/* SECTION 1: THE EVIDENCE TRIAD */}
+        <section className="about-section-block">
+          <div className="section-head-mini">
+            <span className="section-sub-kicker">CORE GOVERNANCE PRINCIPLE</span>
+            <h2>The Four Distinct Evidence Boundaries</h2>
+            <p>
+              Unlike traditional CRM systems that treat citizen text as blind execution instructions, Civitas maintains strict boundaries between evidence types:
+            </p>
+          </div>
+
+          <div className="evidence-pillars-grid">
+            <div className="evidence-pillar-card">
+              <div className="pillar-num-badge">01</div>
+              <h3>Observable Evidence (Media)</h3>
+              <p>
+                Visual artifacts (geotagged images, video clips) parsed through zero-shot computer vision models. High confidence, factual, and strictly separated from subjective descriptions.
+              </p>
+            </div>
+
+            <div className="evidence-pillar-card">
+              <div className="pillar-num-badge">02</div>
+              <h3>Reported Claims (Citizen)</h3>
+              <p>
+                Natural language descriptions submitted by residents. Preserved faithfully without model overwriting, even when contradictory or ambiguous.
+              </p>
+            </div>
+
+            <div className="evidence-pillar-card">
+              <div className="pillar-num-badge">03</div>
+              <h3>Retrieved Policy (Playbooks)</h3>
+              <p>
+                Authoritative municipal operating procedures (e.g. <code>PLAY-WATER-01</code>). LLM agents cite verified playbooks instead of inventing arbitrary timelines.
+              </p>
+            </div>
+
+            <div className="evidence-pillar-card">
+              <div className="pillar-num-badge">04</div>
+              <h3>Deterministic Risk (PostGIS)</h3>
+              <p>
+                Spatial distance calculations to sensitive landmarks (schools, hospitals, transit arteries) and DBSCAN density clustering computed via PostGIS 3.4.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 2: FOR CITIZENS & SUPERVISORS */}
         <section className="about-dual-pillars">
           <article className="pillar-card resident">
             <span className="pillar-kicker">FOR CITIZENS & RESIDENTS</span>
@@ -184,11 +232,20 @@ export default function About({
             <p>
               Describe what you see, snap a photo, and let our computer vision models structure the hazard. Track your report from intake to completed road repair.
             </p>
-              <ul className="pillar-list">
-                <li>✓ Instant landmark detection (e.g. &apos;Near DAV Public School&apos;).</li>
-                <li>✓ Real-time status checkpoints rather than email black holes.</li>
-                <li>✓ One-click clarification responses for field questions.</li>
-              </ul>
+            <ul className="pillar-list">
+              <li>
+                <FlatIcon name="check" size={14} color="#0f5f4f" />
+                <span>Instant landmark detection (e.g. &apos;Near DAV Public School&apos;).</span>
+              </li>
+              <li>
+                <FlatIcon name="check" size={14} color="#0f5f4f" />
+                <span>Real-time status checkpoints rather than email black holes.</span>
+              </li>
+              <li>
+                <FlatIcon name="check" size={14} color="#0f5f4f" />
+                <span>One-click clarification responses for field questions.</span>
+              </li>
+            </ul>
           </article>
 
           <article className="pillar-card municipal">
@@ -198,13 +255,23 @@ export default function About({
               Receive clustered incidents with severity scores, recommended departmental routing, and grounded playbooks ready for one-click authorization.
             </p>
             <ul className="pillar-list">
-              <li>✓ 50 duplicate reports consolidated into 1 operational incident.</li>
-              <li>✓ Before/after photo verification to prevent premature ticket closure.</li>
-              <li>✓ Complete LangGraph agent execution trace observability.</li>
+              <li>
+                <FlatIcon name="check" size={14} color="#0f5f4f" />
+                <span>50 duplicate reports consolidated into 1 operational incident.</span>
+              </li>
+              <li>
+                <FlatIcon name="check" size={14} color="#0f5f4f" />
+                <span>Before/after photo verification to prevent premature ticket closure.</span>
+              </li>
+              <li>
+                <FlatIcon name="check" size={14} color="#0f5f4f" />
+                <span>Complete LangGraph agent execution trace observability.</span>
+              </li>
             </ul>
           </article>
         </section>
 
+        {/* SECTION 3: PIPELINE FLOW BANNER */}
         <section className="pipeline-flow-banner">
           <div className="pipeline-node">
             <span>01</span>
@@ -231,6 +298,17 @@ export default function About({
             <b>FIELD ACTION</b>
           </div>
         </section>
+
+        {/* SECTION 4: CALL TO ACTION */}
+        <div className="about-next-box">
+          <div>
+            <h3>Ready to explore the Command Center?</h3>
+            <p>Inspect real-time PostGIS clusters, review pending work orders, or test the evidence sandbox.</p>
+          </div>
+          <Link className="button large" href="/workspace">
+            Open Workspace Command Center →
+          </Link>
+        </div>
       </main>
       <Footer />
       <AboutStyles />
@@ -258,29 +336,96 @@ function AboutStyles() {
         line-height: 1;
       }
       .about-lead {
-        font-size: 1.05rem;
+        font-size: 1.1rem;
         color: #555e54;
-        margin: 0;
-        max-width: 720px;
+        max-width: 780px;
         line-height: 1.6;
+        margin: 0;
       }
-      .about-badge-card {
-        padding: 16px 20px;
-        border: 1px solid #0f5f4f;
-        background: #f4f8f5;
-        border-radius: 6px;
-        margin-bottom: 36px;
+      .about-section-block {
+        margin: 45px 0;
       }
-      .badge-kicker {
-        font-size: 0.62rem;
+      .section-head-mini {
+        margin-bottom: 24px;
+      }
+      .section-sub-kicker {
+        font-size: 0.65rem;
         font-weight: 900;
         letter-spacing: 0.12em;
         color: #0f5f4f;
         display: block;
         margin-bottom: 4px;
       }
+      .section-head-mini h2 {
+        font-size: 1.8rem;
+        font-family: Georgia, serif;
+        margin: 0 0 8px;
+        color: #172019;
+      }
+      .section-head-mini p {
+        font-size: 0.95rem;
+        color: #555e54;
+        max-width: 720px;
+        line-height: 1.55;
+        margin: 0;
+      }
+      .evidence-pillars-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 18px;
+      }
+      .evidence-pillar-card {
+        border: 1px solid #172019;
+        background: #ffffff;
+        padding: 22px;
+        border-radius: 6px;
+        box-shadow: 3px 3px 0 #172019;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .pillar-num-badge {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #172019;
+        color: #ffffff;
+        font-size: 0.72rem;
+        font-weight: 900;
+        display: grid;
+        place-items: center;
+        margin-bottom: 6px;
+      }
+      .evidence-pillar-card h3 {
+        font-size: 1rem;
+        font-family: Georgia, serif;
+        margin: 0;
+        color: #172019;
+      }
+      .evidence-pillar-card p {
+        font-size: 0.8rem;
+        color: #555e54;
+        line-height: 1.5;
+        margin: 0;
+      }
+      .about-badge-card {
+        padding: 16px 20px;
+        border: 1px dashed #0f5f4f;
+        background: #f4f8f5;
+        margin-bottom: 36px;
+        border-radius: 4px;
+      }
+      .badge-kicker {
+        font-size: 0.65rem;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        color: #0f5f4f;
+        display: block;
+        margin-bottom: 4px;
+      }
       .about-badge-card p {
-        font-size: 0.88rem;
+        font-size: 0.85rem;
         color: #333f36;
         margin: 0;
         line-height: 1.5;
@@ -289,12 +434,14 @@ function AboutStyles() {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 24px;
+        margin-bottom: 45px;
       }
       .dev-profile-card {
         border: 2px solid #172019;
         background: #ffffff;
-        box-shadow: 4px 4px 0 #172019;
-        padding: 24px;
+        padding: 28px;
+        border-radius: 8px;
+        box-shadow: 5px 5px 0 #172019;
         display: flex;
         flex-direction: column;
       }
@@ -302,82 +449,79 @@ function AboutStyles() {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 14px;
+        margin-bottom: 16px;
       }
       .dev-index {
         font-size: 0.75rem;
         font-weight: 900;
-        font-family: monospace;
-        color: #0f5f4f;
+        color: #e84d7a;
       }
       .dev-role-badge {
-        font-size: 0.6rem;
-        font-weight: 900;
-        background: #172019;
-        color: #ffffff;
-        padding: 2px 6px;
-        border-radius: 3px;
+        font-size: 0.62rem;
+        font-weight: 850;
+        padding: 3px 8px;
+        background: #fbf9f4;
+        border: 1px solid #172019;
+        border-radius: 4px;
       }
       .dev-name {
-        font-size: 1.4rem;
+        font-size: 1.6rem;
         font-family: Georgia, serif;
-        margin: 0 0 8px;
+        margin: 0 0 10px;
         color: #172019;
       }
       .dev-bio {
         font-size: 0.85rem;
         color: #555e54;
-        line-height: 1.5;
-        margin: 0 0 18px;
+        line-height: 1.55;
+        margin: 0 0 20px;
         flex: 1;
       }
       .dev-stack-pills {
         display: flex;
-        gap: 6px;
         flex-wrap: wrap;
-        margin-bottom: 18px;
+        gap: 6px;
+        margin-bottom: 20px;
       }
       .tech-pill {
-        font-size: 0.65rem;
-        font-weight: 800;
-        background: #fbf9f4;
+        padding: 3px 8px;
         border: 1px solid #e2ded4;
-        padding: 2px 6px;
+        background: #fbf9f4;
+        font-size: 0.68rem;
+        font-weight: 750;
+        color: #0f5f4f;
         border-radius: 3px;
-        color: #495248;
       }
       .dev-github-link {
-        font-size: 0.78rem;
-        font-weight: 800;
-        color: #0f5f4f;
+        font-size: 0.8rem;
+        font-weight: 850;
+        color: #172019;
         text-decoration: none;
-        transition: color 0.15s ease;
-      }
-      .dev-github-link:hover {
-        color: #e84d7a;
+        padding-top: 12px;
+        border-top: 1px solid #e2ded4;
       }
       .problem-cards-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr 1fr;
         gap: 20px;
-        margin-bottom: 40px;
+        margin-bottom: 45px;
       }
       .problem-item-card {
         border: 1px solid #172019;
         background: #ffffff;
         padding: 24px;
-        box-shadow: 3px 3px 0 #172019;
+        border-radius: 6px;
+        box-shadow: 4px 4px 0 #172019;
       }
       .prob-num {
-        font-size: 0.85rem;
+        font-size: 0.72rem;
         font-weight: 900;
         color: #e84d7a;
-        font-family: monospace;
         display: block;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
       }
       .problem-item-card h3 {
-        font-size: 1.15rem;
+        font-size: 1.25rem;
         font-family: Georgia, serif;
         margin: 0 0 8px;
         color: #172019;
@@ -385,68 +529,41 @@ function AboutStyles() {
       .problem-item-card p {
         font-size: 0.85rem;
         color: #555e54;
-        line-height: 1.5;
-        margin: 0;
-      }
-      .about-next-box {
-        border: 2px solid #172019;
-        background: #fbf9f4;
-        padding: 32px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 6px 6px 0 #172019;
-        gap: 20px;
-        flex-wrap: wrap;
-      }
-      .about-next-box h3 {
-        font-size: 1.4rem;
-        font-family: Georgia, serif;
-        margin: 0 0 4px;
-        color: #172019;
-      }
-      .about-next-box p {
-        font-size: 0.9rem;
-        color: #555e54;
+        line-height: 1.55;
         margin: 0;
       }
       .about-dual-pillars {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 28px;
-        margin-bottom: 40px;
+        gap: 24px;
+        margin-bottom: 45px;
       }
       .pillar-card {
         border: 2px solid #172019;
-        padding: 32px;
-        box-shadow: 4px 4px 0 #172019;
-      }
-      .pillar-card.resident {
         background: #ffffff;
-      }
-      .pillar-card.municipal {
-        background: #f4f8f5;
-        border-color: #0f5f4f;
+        padding: 32px;
+        border-radius: 8px;
+        box-shadow: 5px 5px 0 #172019;
       }
       .pillar-kicker {
-        font-size: 0.62rem;
+        font-size: 0.65rem;
         font-weight: 900;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.1em;
         color: #0f5f4f;
         display: block;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
       }
       .pillar-card h2 {
         font-size: 1.6rem;
         font-family: Georgia, serif;
-        margin: 0 0 10px;
+        margin: 0 0 12px;
         color: #172019;
       }
       .pillar-card p {
         font-size: 0.9rem;
         color: #555e54;
         line-height: 1.55;
-        margin: 0 0 18px;
+        margin: 0 0 20px;
       }
       .pillar-list {
         margin: 0;
@@ -454,33 +571,37 @@ function AboutStyles() {
         list-style: none;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 10px;
       }
       .pillar-list li {
-        font-size: 0.85rem;
-        color: #333f36;
+        font-size: 0.82rem;
+        color: #172019;
+        line-height: 1.45;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
       }
       .pipeline-flow-banner {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        padding: 24px 32px;
+        border: 2px solid #172019;
         background: #172019;
         color: #ffffff;
-        padding: 24px 32px;
-        border-radius: 6px;
-        flex-wrap: wrap;
-        gap: 12px;
+        border-radius: 8px;
+        margin-bottom: 45px;
+        overflow-x: auto;
       }
       .pipeline-node {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
       }
       .pipeline-node span {
         font-size: 0.65rem;
         font-weight: 900;
-        color: #dce8dd;
-        font-family: monospace;
+        color: #e84d7a;
       }
       .pipeline-node b {
         font-size: 0.82rem;
@@ -488,9 +609,32 @@ function AboutStyles() {
       }
       .node-sep {
         font-size: 1.2rem;
-        color: #e84d7a;
+        color: #0f5f4f;
+        font-weight: 900;
       }
-      @media (max-width: 900px) {
+      .about-next-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 32px;
+        border: 2px solid #172019;
+        background: #fbf9f4;
+        box-shadow: 5px 5px 0 #172019;
+        border-radius: 8px;
+        gap: 20px;
+      }
+      .about-next-box h3 {
+        font-size: 1.4rem;
+        font-family: Georgia, serif;
+        margin: 0 0 6px;
+        color: #172019;
+      }
+      .about-next-box p {
+        font-size: 0.9rem;
+        color: #555e54;
+        margin: 0;
+      }
+      @media (max-width: 960px) {
         .developers-grid {
           grid-template-columns: 1fr;
         }
@@ -500,12 +644,17 @@ function AboutStyles() {
         .about-dual-pillars {
           grid-template-columns: 1fr;
         }
-        .pipeline-flow-banner {
+        .evidence-pillars-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .about-next-box {
           flex-direction: column;
           align-items: flex-start;
         }
-        .node-sep {
-          display: none;
+      }
+      @media (max-width: 600px) {
+        .evidence-pillars-grid {
+          grid-template-columns: 1fr;
         }
       }
     `}</style>

@@ -5,20 +5,16 @@ import { Footer, Nav } from "@/components/site";
 import { LandingExplorer } from "@/components/landing-explorer";
 import { LiveEvidenceSandbox } from "@/components/live-evidence-sandbox";
 import { ResolutionSlider } from "@/components/resolution-slider";
+import { FlatIcon } from "@/components/flat-icons";
 
 export default function Home() {
   return (
     <>
       <Nav />
       <main className="landing-main-shell">
-        {/* FULLSCREEN HERO SECTION */}
+        {/* HERO SECTION */}
         <section className="hero-fullscreen" aria-label="Civitas hero intro">
           <div className="hero-content-center">
-            <div className="hero-kicker-pill">
-              <span className="live-status-dot" />
-              <span>EVIDENCE-BACKED CIVIC INCIDENT INTELLIGENCE</span>
-            </div>
-
             <h1 className="hero-title">
               Turn chaotic civic reports into verified municipal action.
             </h1>
@@ -32,8 +28,8 @@ export default function Home() {
               <Link className="button large hero-primary-btn" href="/workspace">
                 Open Command Center →
               </Link>
-              <Link className="outline large hero-secondary-btn" href="/demo-workflow">
-                ⚡ Test Workflow Demo
+              <Link className="outline large hero-secondary-btn" href="/report">
+                Submit Citizen Report
               </Link>
             </div>
 
@@ -44,11 +40,6 @@ export default function Home() {
               <span className="bullet-sep">·</span>
               <span>HUMAN-IN-THE-LOOP GATES</span>
             </div>
-          </div>
-
-          <div className="scroll-indicator" aria-hidden="true">
-            <span>SCROLL TO EXPLORE WORKFLOW</span>
-            <span className="arrow-down">↓</span>
           </div>
         </section>
 
@@ -77,7 +68,10 @@ export default function Home() {
         {/* LIVE EVIDENCE SANDBOX */}
         <section className="section-block live-sandbox-section" id="sandbox">
           <div className="section-header-tag">
-            <span className="tag-index">INTERACTIVE</span>
+            <div className="tag-row">
+              <span className="tag-index">01</span>
+              <span className="section-kicker">MULTIMODAL INTELLIGENCE</span>
+            </div>
             <h2>Try the Multimodal Intelligence Engine</h2>
             <p>
               See how Civitas separates raw citizen text from observable media facts and connects them to verified municipal playbooks.
@@ -92,7 +86,10 @@ export default function Home() {
         {/* BEFORE & AFTER RESOLUTION SHOWCASE */}
         <section className="section-block resolution-showcase-section" id="verification">
           <div className="section-header-tag">
-            <span className="tag-index">VERIFICATION</span>
+            <div className="tag-row">
+              <span className="tag-index">03</span>
+              <span className="section-kicker">VERIFICATION</span>
+            </div>
             <h2>Before / After Evidence Verification</h2>
             <p>
               Field crews submit resolution photos. The ML resolution engine compares before vs after imagery to prevent fraudulent ticket closures.
@@ -102,14 +99,15 @@ export default function Home() {
           <div className="resolution-card-wrap">
             <ResolutionSlider
               beforeLabel="Before: Main Pipeline Rupture (INC-0241)"
-              afterLabel="After: Pipe Clamped & Asphalt Patched"
+              afterLabel="After: Clamped Pipe & Backfilled Asphalt"
               classification="RESOLVED"
               resolvedEvidence={[
-                "High-pressure water flow completely halted",
-                "Subsurface trench backfilled and sealed with asphalt",
-                "Road drainage restored; school gate clear",
+                "Subsurface high-pressure water flow completely halted",
+                "Ductile iron repair collar secured and pressure-tested",
+                "Excavated trench backfilled and sealed with hot-mix asphalt",
+                "Pedestrian crossing outside DAV Public School unobstructed",
               ]}
-              remainingEvidence={["Minor surface moisture drying; no standing puddles"]}
+              remainingEvidence={["Minor surface moisture drying on road shoulder; zero standing puddles"]}
             />
           </div>
         </section>
@@ -117,7 +115,10 @@ export default function Home() {
         {/* TRADITIONAL 311 VS CIVITAS ARCHITECTURAL COMPARISON */}
         <section className="section-block comparison-section">
           <div className="section-header-tag">
-            <span className="tag-index">PHILOSOPHY</span>
+            <div className="tag-row">
+              <span className="tag-index">04</span>
+              <span className="section-kicker">PHILOSOPHY</span>
+            </div>
             <h2>Traditional 311 CRM vs Civitas Intelligence</h2>
             <p>
               Why standard civic ticketing systems fail under pressure and how evidence-backed orchestration solves it.
@@ -130,11 +131,23 @@ export default function Home() {
                 <span className="comp-badge bad">TRADITIONAL 311 SYSTEM</span>
                 <h3>Naive Ticket Logging</h3>
               </div>
-              <ul>
-                <li>❌ 50 citizens report same water burst → creates 50 duplicate work orders.</li>
-                <li>❌ Citizen descriptions are taken as blind instruction without media validation.</li>
-                <li>❌ LLM chatbots fabricate delivery SLAs and hallucinate municipal repair commitments.</li>
-                <li>❌ Tickets closed without verifiable image evidence or supervisor review.</li>
+              <ul className="comp-list">
+                <li>
+                  <span className="icon-cross">✕</span>
+                  <span>50 citizens report same water burst → creates 50 duplicate work orders.</span>
+                </li>
+                <li>
+                  <span className="icon-cross">✕</span>
+                  <span>Citizen descriptions are taken as blind instruction without media validation.</span>
+                </li>
+                <li>
+                  <span className="icon-cross">✕</span>
+                  <span>LLM chatbots fabricate delivery SLAs and hallucinate municipal repair commitments.</span>
+                </li>
+                <li>
+                  <span className="icon-cross">✕</span>
+                  <span>Tickets closed without verifiable image evidence or supervisor review.</span>
+                </li>
               </ul>
             </div>
 
@@ -143,34 +156,24 @@ export default function Home() {
                 <span className="comp-badge good">CIVITAS PLATFORM</span>
                 <h3>Evidence-Backed Orchestration</h3>
               </div>
-              <ul>
-                <li>✓ <b>PostGIS Spatial Clustering:</b> 50 reports automatically converge into 1 master incident.</li>
-                <li>✓ <b>Observable Evidence Split:</b> Separates citizen claims from verified photo pixels.</li>
-                <li>✓ <b>Policy Grounding:</b> Every action cites retrieved municipal playbooks (e.g. PLAY-WATER-01).</li>
-                <li>✓ <b>Human Authorization Gate:</b> High-impact work orders require supervisor approval.</li>
+              <ul className="comp-list">
+                <li>
+                  <FlatIcon name="check" size={16} color="#0f5f4f" />
+                  <span>PostGIS 3.4 clusters 50 reports into a single consolidated incident dossier.</span>
+                </li>
+                <li>
+                  <FlatIcon name="check" size={16} color="#0f5f4f" />
+                  <span>Strict separation between observable evidence, claims, and inferences.</span>
+                </li>
+                <li>
+                  <FlatIcon name="check" size={16} color="#0f5f4f" />
+                  <span>Every action grounded in verified municipal playbooks (e.g. PLAY-WATER-01).</span>
+                </li>
+                <li>
+                  <FlatIcon name="check" size={16} color="#0f5f4f" />
+                  <span>Mandatory human-in-the-loop review for high-impact dispatch and closure.</span>
+                </li>
               </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* FINAL CLOSING CALL-TO-ACTION */}
-        <section className="closing-cta-section">
-          <div className="closing-card">
-            <span className="closing-kicker">READY TO DEPLOY</span>
-            <h2 className="closing-title">Upgrade municipal operations with evidence intelligence.</h2>
-            <p className="closing-desc">
-              Explore the real-time command center, inspect LangGraph execution traces, or submit a test citizen report.
-            </p>
-            <div className="closing-buttons">
-              <Link className="button large" href="/workspace">
-                Open Command Center
-              </Link>
-              <Link className="outline large" href="/report">
-                Submit Test Citizen Report
-              </Link>
-              <Link className="outline large" href="/docs">
-                Read System Docs
-              </Link>
             </div>
           </div>
         </section>
@@ -180,83 +183,53 @@ export default function Home() {
       <style jsx>{`
         .landing-main-shell {
           width: 100%;
-          overflow-x: hidden;
+          min-height: 100vh;
         }
         .hero-fullscreen {
           min-height: calc(100vh - 74px);
-          width: 100%;
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
+          padding: 60px 20px;
+          border-bottom: 2px solid #172019;
+          background: #fbf9f4;
           text-align: center;
-          padding: 60px 20px 40px;
-          background: radial-gradient(circle at 50% 20%, rgba(220, 232, 221, 0.4) 0%, rgba(251, 249, 244, 1) 70%);
-          position: relative;
-          box-sizing: border-box;
         }
         .hero-content-center {
-          max-width: 960px;
+          width: min(calc(100% - 40px), 940px);
           margin: 0 auto;
           display: flex;
           flex-direction: column;
           align-items: center;
         }
-        .hero-kicker-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 6px 14px;
-          border: 1px solid #172019;
-          background: #ffffff;
-          box-shadow: 2px 2px 0 #172019;
-          font-size: 0.68rem;
-          font-weight: 900;
-          letter-spacing: 0.1em;
-          color: #0f5f4f;
-          border-radius: 4px;
-          margin-bottom: 24px;
-        }
-        .live-status-dot {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: #10b981;
-          box-shadow: 0 0 6px #10b981;
-        }
         .hero-title {
-          font-size: clamp(2.8rem, 6.2vw, 5.2rem);
-          line-height: 0.94;
+          font-size: clamp(2.8rem, 5.5vw, 4.8rem);
           font-family: Georgia, serif;
-          color: #172019;
           margin: 0 0 20px;
+          line-height: 1.02;
+          color: #172019;
           letter-spacing: -0.02em;
-          max-width: 880px;
         }
         .hero-lead {
-          font-size: clamp(1rem, 1.8vw, 1.22rem);
-          line-height: 1.6;
+          font-size: clamp(1.05rem, 2vw, 1.25rem);
           color: #495248;
-          max-width: 740px;
-          margin: 0 0 32px;
+          line-height: 1.6;
+          margin: 0 0 36px;
+          max-width: 800px;
         }
         .hero-cta-group {
           display: flex;
           gap: 16px;
-          flex-wrap: wrap;
           justify-content: center;
           margin-bottom: 36px;
+          flex-wrap: wrap;
         }
         .hero-primary-btn {
           box-shadow: 4px 4px 0 #172019;
-          font-size: 0.95rem !important;
-          padding: 14px 28px !important;
         }
         .hero-secondary-btn {
-          box-shadow: 4px 4px 0 #172019;
-          font-size: 0.95rem !important;
-          padding: 14px 28px !important;
           background: #ffffff;
+          box-shadow: 4px 4px 0 #172019;
         }
         .hero-trust-bar {
           display: flex;
@@ -272,29 +245,11 @@ export default function Home() {
         .bullet-sep {
           color: #0f5f4f;
         }
-        .scroll-indicator {
-          margin-top: auto;
-          padding-top: 30px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 4px;
-          font-size: 0.62rem;
-          font-weight: 850;
-          letter-spacing: 0.12em;
-          color: #687067;
-        }
-        .arrow-down {
-          font-size: 1rem;
-          animation: bounce 1.8s infinite;
-        }
         .metrics-ticker-ribbon {
-          width: 100%;
-          border-top: 1px solid #172019;
           border-bottom: 1px solid #172019;
           background: #172019;
           color: #ffffff;
-          padding: 24px 20px;
+          padding: 24px 0;
         }
         .metrics-container {
           width: min(calc(100% - 40px), 1180px);
@@ -307,7 +262,7 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           gap: 4px;
-          border-left: 1px solid #333f36;
+          border-left: 1px solid #334035;
           padding-left: 18px;
         }
         .metric-cell:first-child {
@@ -321,10 +276,10 @@ export default function Home() {
           line-height: 1;
         }
         .metric-desc {
-          font-size: 0.75rem;
-          color: #9da99e;
-          font-weight: 700;
+          font-size: 0.72rem;
+          color: #dce8dd;
           line-height: 1.35;
+          font-weight: 600;
         }
         .section-block {
           width: min(calc(100% - 40px), 1180px);
@@ -333,33 +288,43 @@ export default function Home() {
         .section-header-tag {
           margin-bottom: 32px;
         }
+        .tag-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 8px;
+        }
         .tag-index {
           font-size: 0.65rem;
           font-weight: 900;
-          letter-spacing: 0.14em;
+          padding: 2px 6px;
+          border: 1px solid #172019;
+          background: #172019;
+          color: #ffffff;
+          border-radius: 3px;
+        }
+        .section-kicker {
+          font-size: 0.68rem;
+          font-weight: 900;
+          letter-spacing: 0.12em;
           color: #0f5f4f;
-          display: block;
-          margin-bottom: 6px;
         }
         .section-header-tag h2 {
           font-size: clamp(2rem, 3.8vw, 3.2rem);
           font-family: Georgia, serif;
+          margin: 6px 0 10px;
           color: #172019;
-          margin: 0 0 10px;
-          line-height: 1;
+          line-height: 1.05;
         }
         .section-header-tag p {
           font-size: 1rem;
           color: #555e54;
-          margin: 0;
           max-width: 680px;
+          margin: 0;
           line-height: 1.55;
         }
         .resolution-card-wrap {
-          border: 2px solid #172019;
-          background: #ffffff;
-          box-shadow: 6px 6px 0 #172019;
-          padding: 24px;
+          margin-top: 24px;
         }
         .comparison-grid {
           display: grid;
@@ -368,19 +333,20 @@ export default function Home() {
         }
         .comp-card {
           border: 2px solid #172019;
-          padding: 28px;
-          border-radius: 6px;
+          border-radius: 8px;
+          padding: 32px;
+          box-shadow: 6px 6px 0 #172019;
         }
         .comp-card.traditional {
-          background: #fff8f8;
-          box-shadow: 4px 4px 0 #c23358;
+          background: #faf2f2;
         }
         .comp-card.civitas {
           background: #f4f8f5;
-          box-shadow: 4px 4px 0 #0f5f4f;
         }
         .comp-card-header {
-          margin-bottom: 18px;
+          margin-bottom: 20px;
+          padding-bottom: 16px;
+          border-bottom: 1px solid #172019;
         }
         .comp-badge {
           font-size: 0.62rem;
@@ -389,94 +355,47 @@ export default function Home() {
           padding: 3px 8px;
           border-radius: 3px;
           display: inline-block;
-          margin-bottom: 6px;
+          margin-bottom: 8px;
         }
         .comp-badge.bad {
-          background: #fbe6eb;
-          color: #c23358;
+          background: #f87171;
+          color: #450a0a;
         }
         .comp-badge.good {
-          background: #dce8dd;
-          color: #0f5f4f;
+          background: #0f5f4f;
+          color: #ffffff;
         }
         .comp-card h3 {
-          font-size: 1.3rem;
+          font-size: 1.4rem;
           font-family: Georgia, serif;
           margin: 0;
           color: #172019;
         }
-        .comp-card ul {
+        .comp-list {
           margin: 0;
           padding: 0;
           list-style: none;
           display: flex;
           flex-direction: column;
-          gap: 12px;
-        }
-        .comp-card li {
-          font-size: 0.88rem;
-          line-height: 1.5;
-          color: #333f36;
-        }
-        .closing-cta-section {
-          width: min(calc(100% - 40px), 1180px);
-          margin: 80px auto 100px;
-        }
-        .closing-card {
-          border: 2px solid #172019;
-          background: #172019;
-          color: #ffffff;
-          box-shadow: 8px 8px 0 #0f5f4f;
-          padding: 48px;
-          text-align: center;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-        .closing-kicker {
-          font-size: 0.65rem;
-          font-weight: 900;
-          letter-spacing: 0.14em;
-          color: #dce8dd;
-          margin-bottom: 8px;
-        }
-        .closing-title {
-          font-size: clamp(2.2rem, 4vw, 3.4rem);
-          font-family: Georgia, serif;
-          color: #ffffff;
-          margin: 0 0 14px;
-          line-height: 1.05;
-          max-width: 780px;
-        }
-        .closing-desc {
-          font-size: 1rem;
-          color: #9da99e;
-          max-width: 620px;
-          margin: 0 0 28px;
-          line-height: 1.55;
-        }
-        .closing-buttons {
-          display: flex;
           gap: 14px;
-          flex-wrap: wrap;
-          justify-content: center;
         }
-        .closing-buttons :global(.button) {
-          box-shadow: 3px 3px 0 #0f5f4f;
+        .comp-list li {
+          font-size: 0.88rem;
+          color: #172019;
+          line-height: 1.5;
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
         }
-        .closing-buttons :global(.outline) {
-          background: #232d25;
-          color: #ffffff;
-          border-color: #ffffff;
-          box-shadow: 3px 3px 0 #0f5f4f;
-        }
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(4px); }
+        .icon-cross {
+          color: #dc2626;
+          font-weight: 900;
+          font-size: 0.85rem;
         }
         @media (max-width: 900px) {
           .metrics-container {
             grid-template-columns: 1fr 1fr;
+            gap: 20px;
           }
           .comparison-grid {
             grid-template-columns: 1fr;
@@ -485,9 +404,6 @@ export default function Home() {
         @media (max-width: 600px) {
           .metrics-container {
             grid-template-columns: 1fr;
-          }
-          .closing-card {
-            padding: 32px 20px;
           }
         }
       `}</style>
