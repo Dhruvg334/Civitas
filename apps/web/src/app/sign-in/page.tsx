@@ -2,7 +2,7 @@
 
 import { FormEvent, useState, useEffect } from "react";
 import Link from "next/link";
-import { Nav } from "@/components/site";
+import { Footer, Nav } from "@/components/site";
 import { OnboardingPanel } from "@/components/onboarding-panel";
 import { FlatIcon } from "@/components/flat-icons";
 
@@ -319,14 +319,12 @@ export default function SignIn() {
         </div>
       </main>
 
-      {/* COMPACT VIEWPORT FOOTER BAR */}
-      <footer className="auth-compact-footer">
-        <span>CIVITAS PLATFORM · EVIDENCE-BACKED CIVIC INCIDENT INTELLIGENCE</span>
-        <span>POSTGIS 3.4 · LANGGRAPH MULTI-AGENT STATE GRAPH</span>
-      </footer>
+      <Footer />
 
       {onboarding && (
         <OnboardingPanel
+          initialEmail={email}
+          initialName={name}
           onClose={() => {
             setOnboarding(false);
             setNotice("✓ Account created. Preferences saved to local session.");
@@ -336,32 +334,29 @@ export default function SignIn() {
 
       <style jsx>{`
         .auth-viewport-root {
-          height: 100vh;
-          max-height: 100vh;
+          min-height: 100vh;
           display: flex;
           flex-direction: column;
           background: #fbf9f4;
-          overflow: hidden;
         }
         .auth-viewport-main {
           flex: 1;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 12px 24px;
-          min-height: 0;
+          padding: 48px 24px;
         }
         .auth-split-container {
           width: min(100%, 1160px);
           display: grid;
           grid-template-columns: 1.15fr 0.85fr;
-          gap: 40px;
+          gap: 48px;
           align-items: center;
         }
         .civic-intel-panel {
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 18px;
         }
         .intel-header {
           display: flex;
@@ -696,37 +691,14 @@ export default function SignIn() {
           font-weight: 700;
           text-decoration: underline;
         }
-        .auth-compact-footer {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 8px 24px;
-          background: #ffffff;
-          border-top: 1px solid #172019;
-          font-size: 0.62rem;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          color: #687067;
-          flex-shrink: 0;
-        }
         @media (max-width: 960px) {
-          .auth-viewport-root {
-            height: auto;
-            max-height: none;
-            overflow: visible;
-          }
           .auth-split-container {
             grid-template-columns: 1fr;
-            padding: 24px 0;
-            gap: 28px;
+            padding: 12px 0;
+            gap: 32px;
           }
           .governance-triad-grid {
             grid-template-columns: 1fr;
-          }
-          .auth-compact-footer {
-            flex-direction: column;
-            gap: 4px;
-            text-align: center;
           }
         }
       `}</style>

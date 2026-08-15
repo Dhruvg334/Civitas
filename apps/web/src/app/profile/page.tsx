@@ -120,6 +120,7 @@ export default function Profile() {
     setUser(selected);
     try {
       localStorage.setItem("civitas_current_user", JSON.stringify(selected));
+      window.dispatchEvent(new Event("storage"));
     } catch {
       // ignore
     }
@@ -130,6 +131,7 @@ export default function Profile() {
   const handleSignOut = () => {
     try {
       localStorage.removeItem("civitas_current_user");
+      window.dispatchEvent(new Event("storage"));
     } catch {
       // ignore
     }

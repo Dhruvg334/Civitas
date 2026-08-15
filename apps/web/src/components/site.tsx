@@ -48,30 +48,35 @@ export function Nav({ docs = false }: { docs?: boolean } = {}) {
       try {
         const stored = localStorage.getItem("civitas_current_user");
         if (stored) {
-          setCurrentUser(JSON.parse(stored));
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.role && parsed.role !== "guest") {
+            setCurrentUser(parsed);
+          } else {
+            setCurrentUser(null);
+          }
+        } else {
+          setCurrentUser(null);
         }
       } catch {
-        // ignore
+        setCurrentUser(null);
       }
     };
-    const timer = setTimeout(syncUser, 0);
+    syncUser();
     window.addEventListener("storage", syncUser);
     return () => {
-      clearTimeout(timer);
       window.removeEventListener("storage", syncUser);
     };
   }, []);
 
   const isLinkActive = (href: string) => {
     if (href === "/") return pathname === "/";
-    if (href === "/profile") return pathname.startsWith("/profile") || pathname.startsWith("/sign-in");
+    if (href === "/profile") return pathname.startsWith("/profile");
     if (href === "/workspace") return pathname.startsWith("/workspace") || pathname.startsWith("/incidents");
     return pathname.startsWith(href);
   };
 
   const isAboutActive = pathname.startsWith("/about");
   const isReportActive = pathname.startsWith("/report");
-  const isAuthActive = pathname.startsWith("/sign-in") || pathname.startsWith("/profile");
 
   return (
     <>
@@ -104,10 +109,10 @@ export function Nav({ docs = false }: { docs?: boolean } = {}) {
             </Link>
 
             {/* SIGN IN / PROFILE BUTTON AT FAR RIGHT */}
-            {currentUser ? (
+            {currentUser && currentUser.role !== "guest" ? (
               <Link
                 href="/profile"
-                className={`nav-user-pill ${isAuthActive ? "active" : ""}`}
+                className={`nav-user-pill ${pathname.startsWith("/profile") ? "active" : ""}`}
                 title={`Signed in as ${currentUser.name}`}
               >
                 <span className="user-avatar-dot">
@@ -118,7 +123,7 @@ export function Nav({ docs = false }: { docs?: boolean } = {}) {
             ) : (
               <Link
                 href="/sign-in"
-                className={`outline small sign-in-btn ${isAuthActive ? "active" : ""}`}
+                className={`outline small sign-in-btn ${pathname.startsWith("/sign-in") ? "active" : ""}`}
               >
                 Sign In
               </Link>
