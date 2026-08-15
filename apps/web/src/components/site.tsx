@@ -109,7 +109,7 @@ export function Nav({ docs = false }: { docs?: boolean } = {}) {
             </Link>
 
             {/* SIGN IN / PROFILE BUTTON AT FAR RIGHT */}
-            {currentUser && currentUser.role !== "guest" ? (
+            {currentUser && currentUser.role !== "guest" && !pathname.startsWith("/sign-in") ? (
               <Link
                 href="/profile"
                 className={`nav-user-pill ${pathname.startsWith("/profile") ? "active" : ""}`}
