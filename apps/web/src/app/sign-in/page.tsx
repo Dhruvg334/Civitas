@@ -22,15 +22,15 @@ const TELEMETRY_FEED: LiveMetricNode[] = [
     tag: "POSTGIS 3.4 GEOPROCESSOR",
     title: "School Safety Buffer Triggered (14m)",
     description: "Geotag within DAV Public School corridor deterministically raised priority to P1 Critical.",
-    time: "Just now",
+    time: "Illustrative Trace",
     statusColor: "#0f5f4f",
   },
   {
     id: "N2",
     tag: "ZERO-SHOT CLIP VISION",
-    title: "Defect Verification: 98.4% Match",
+    title: "Defect Verification: High Confidence",
     description: "Asphalt pooling and surface fissure confirmed without hallucinated claims.",
-    time: "14s ago",
+    time: "Illustrative Trace",
     statusColor: "#e84d7a",
   },
   {
@@ -38,7 +38,7 @@ const TELEMETRY_FEED: LiveMetricNode[] = [
     tag: "LANGGRAPH AGENT GRAPH",
     title: "Policy Grounded: PLAY-WATER-01",
     description: "Retrieved municipal playbook for Ward 12 distribution repair.",
-    time: "42s ago",
+    time: "Illustrative Trace",
     statusColor: "#0f5f4f",
   },
   {
@@ -46,7 +46,7 @@ const TELEMETRY_FEED: LiveMetricNode[] = [
     tag: "SUPERVISOR GATEWAY",
     title: "Work Order Authorized: WO-2026-0881",
     description: "Certified municipal supervisor signed off on ductile sleeve dispatch.",
-    time: "1m ago",
+    time: "Illustrative Trace",
     statusColor: "#172019",
   },
 ];
@@ -81,26 +81,33 @@ export default function SignIn() {
         setShowOnboarding(true);
       } else {
         const userName = name || (email ? email.split("@")[0] : "Resident");
-        const userData = {
-          name: userName,
-          email: email || "dhruvg.030304@gmail.com",
-          role: "resident" as const,
-          roleTitle: "Registered Citizen · Ward 12",
-          ward: "Ward 12 · DAV Public School Zone",
-          avatarInitials: userName.slice(0, 2).toUpperCase(),
+        const role = email.includes("supervisor") || email.includes("reviewer") ? "reviewer" : "citizen";
+        const session = {
+          accessToken: btoa(JSON.stringify({ sub: email || "citizen-1", role, iat: Date.now() })),
+          user: {
+            id: email || "usr-citizen-01",
+            email: email || "resident@civic.local",
+            name: userName,
+            role,
+            roleTitle: role === "reviewer" ? "Municipal Reviewer · Ward 12" : "Registered Citizen · Ward 12",
+            ward: "Ward 12 · DAV Public School Zone",
+            avatarInitials: userName.slice(0, 2).toUpperCase(),
+          },
         };
         try {
-          localStorage.setItem("civitas_current_user", JSON.stringify(userData));
+          localStorage.setItem("civitas_session", JSON.stringify(session));
+          localStorage.setItem("civitas_current_user", JSON.stringify(session.user));
           window.dispatchEvent(new Event("storage"));
+          window.dispatchEvent(new Event("civitas_auth_changed"));
         } catch {
           // ignore
         }
         setNotice(`✓ Welcome back, ${userName}! Signed in successfully.`);
         setTimeout(() => {
-          router.push("/workspace");
-        }, 800);
+          router.push(role === "reviewer" ? "/workspace" : "/profile");
+        }, 600);
       }
-    }, 500);
+    }, 400);
   };
 
   const activeNode = TELEMETRY_FEED[activeFeedIndex];

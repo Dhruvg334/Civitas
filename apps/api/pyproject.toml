@@ -31,7 +31,18 @@ dev = [
 where = ["src"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = [
+  "src",
+  "../../services/ml/src",
+  "../../ml/resolution/src",
+  "../../ml/vision/src",
+  "../../ml/nlp/src",
+  "../../ml/spatial/src",
+  "../../services/knowledge/src",
+  "../../services/workflow/src",
+  "../../services/evaluation/src",
+  "../../packages/geospatial/src"
+]
 testpaths = ["tests"]
 
 [tool.ruff]

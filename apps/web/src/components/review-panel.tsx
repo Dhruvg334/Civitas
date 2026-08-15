@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { approveWorkOrder } from "@/lib/api";
+import { submitWorkflowReview, WorkflowReviewRequest, WorkflowSummary } from "@/lib/api";
 
 export type ReviewMode = "idle" | "edit" | "reroute" | "reject" | "evidence";
 
@@ -10,9 +10,14 @@ export function ReviewFields({
   onSubmit,
 }: {
   mode: ReviewMode;
-  onSubmit: (details: string) => void;
+  onSubmit: (payload: Partial<WorkflowReviewRequest>) => void;
 }) {
-  const [value, setValue] = useState("");
+  const [summary, setSummary] = useState("Inspect and isolate the reported water leak.");
+  const [actions, setActions] = useState("Secure affected road; isolate leak; manage traffic.");
+  const [primaryDept, setPrimaryDept] = useState("water_supply");
+  const [secondaryDepts, setSecondaryDepts] = useState("traffic_coordination");
+  const [policies, setPolicies] = useState("PLAY-WATER-01, ROUTE-WATER-02");
+  const [notes, setNotes] = useState("");
 
   if (mode === "edit") {
     return (
@@ -20,22 +25,32 @@ export function ReviewFields({
         className="reviewform"
         onSubmit={(e) => {
           e.preventDefault();
-          onSubmit(value || "Modified work order actions.");
+          onSubmit({
+            action: "edit",
+            operational_plan: {
+              summary,
+              required_actions: actions.split(";").map((s) => s.trim()).filter(Boolean),
+            },
+          });
         }}
       >
         <label>
           Work-order summary
           <textarea
-            defaultValue="Inspect and isolate the reported water leak."
-            onChange={(e) => setValue(e.target.value)}
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            required
           />
         </label>
         <label>
-          Required actions
-          <textarea defaultValue="Secure affected road; isolate leak; manage traffic." />
+          Required actions (semicolon separated)
+          <textarea
+            value={actions}
+            onChange={(e) => setActions(e.target.value)}
+          />
         </label>
         <div className="review-help">
-          Only the fields exposed by the backend review schema can be edited here.
+          Only the narrow fields exposed by EditableWorkOrder schema can be modified here.
         </div>
         <button className="button small-button" type="submit">
           Save & Submit Edit
@@ -50,20 +65,37 @@ export function ReviewFields({
         className="reviewform"
         onSubmit={(e) => {
           e.preventDefault();
-          onSubmit(value || "Rerouted department assignment.");
+          onSubmit({
+            action: "reroute",
+            routing: {
+              primary_department: primaryDept,
+              secondary_departments: secondaryDepts.split(",").map((s) => s.trim()).filter(Boolean),
+              policy_references: policies.split(",").map((s) => s.trim()).filter(Boolean),
+            },
+          });
         }}
       >
         <label>
           Primary department
-          <input defaultValue="water_supply" onChange={(e) => setValue(e.target.value)} />
+          <input
+            value={primaryDept}
+            onChange={(e) => setPrimaryDept(e.target.value)}
+            required
+          />
         </label>
         <label>
-          Secondary departments
-          <input defaultValue="traffic_coordination" />
+          Secondary departments (comma separated)
+          <input
+            value={secondaryDepts}
+            onChange={(e) => setSecondaryDepts(e.target.value)}
+          />
         </label>
         <label>
           Grounded policy references
-          <input defaultValue="PLAY-WATER-01, ROUTE-WATER-02" />
+          <input
+            value={policies}
+            onChange={(e) => setPolicies(e.target.value)}
+          />
         </label>
         <div className="review-help">
           Policy references are validated before the workflow resumes.
@@ -81,15 +113,19 @@ export function ReviewFields({
         className="reviewform"
         onSubmit={(e) => {
           e.preventDefault();
-          onSubmit(value || "Rejected by supervisor.");
+          onSubmit({
+            action: "reject",
+            notes: notes || "Recommendation rejected by municipal reviewer.",
+          });
         }}
       >
         <label>
           Reason for rejection
           <textarea
             required
+            value={notes}
             placeholder="Explain why this recommendation should not proceed."
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => setNotes(e.target.value)}
           />
         </label>
         <button className="button danger-button small-button" type="submit">
@@ -105,15 +141,19 @@ export function ReviewFields({
         className="reviewform"
         onSubmit={(e) => {
           e.preventDefault();
-          onSubmit(value || "Requested additional clarification evidence.");
+          onSubmit({
+            action: "request_more_evidence",
+            notes: notes || "Additional photographic evidence or specific dimensions requested.",
+          });
         }}
       >
         <label>
           Evidence needed
           <textarea
             required
+            value={notes}
             placeholder="What additional evidence would change this decision?"
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => setNotes(e.target.value)}
           />
         </label>
         <button className="button small-button" type="submit">
@@ -126,29 +166,44 @@ export function ReviewFields({
   return null;
 }
 
-export function ReviewPanel() {
+export function ReviewPanel({
+  workflowId = "wf-demo-water-0241",
+  onReviewComplete,
+}: {
+  workflowId?: string;
+  onReviewComplete?: (summary: WorkflowSummary) => void;
+}) {
   const [mode, setMode] = useState<ReviewMode>("idle");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ status: string; message: string } | null>(null);
 
-  const handleAction = async (action: "approve" | "edit" | "reroute" | "reject", details?: string) => {
+  const handleReviewAction = async (payload: Partial<WorkflowReviewRequest>) => {
     setLoading(true);
     try {
-      const res = await approveWorkOrder("WO-0241-A", action, details);
+      const fullRequest: WorkflowReviewRequest = {
+        action: payload.action || "approve",
+        notes: payload.notes,
+        routing: payload.routing,
+        operational_plan: payload.operational_plan,
+      };
+      const summary = await submitWorkflowReview(workflowId, fullRequest);
       setResult({
-        status: res.status,
+        status: summary.status,
         message:
-          action === "approve"
-            ? "Work order approved! Workflow thread resumed and citizen update dispatched."
-            : action === "reject"
-            ? "Incident recommendation rejected and archived."
-            : `Action '${action}' submitted: ${res.status}`,
+          fullRequest.action === "approve"
+            ? "Work order approved! LangGraph workflow thread resumed and citizen dispatch authorized."
+            : fullRequest.action === "reject"
+            ? "Incident recommendation rejected and workflow thread terminated."
+            : `Workflow decision '${fullRequest.action}' recorded: status is now ${summary.status}.`,
       });
       setMode("idle");
+      if (onReviewComplete) {
+        onReviewComplete(summary);
+      }
     } catch (err) {
       setResult({
         status: "ERROR",
-        message: err instanceof Error ? err.message : "Failed to record review action.",
+        message: err instanceof Error ? err.message : "Failed to record review decision.",
       });
     } finally {
       setLoading(false);
@@ -186,7 +241,7 @@ export function ReviewPanel() {
             <button
               className="button"
               disabled={loading}
-              onClick={() => handleAction("approve")}
+              onClick={() => handleReviewAction({ action: "approve", notes: "Approved by supervisor." })}
             >
               {loading ? "Recording..." : "Approve recommendation"}
             </button>
@@ -206,9 +261,7 @@ export function ReviewPanel() {
 
           <ReviewFields
             mode={mode}
-            onSubmit={(details) =>
-              handleAction(mode === "evidence" ? "reject" : (mode as "approve" | "edit" | "reroute" | "reject"), details)
-            }
+            onSubmit={(payload) => handleReviewAction(payload)}
           />
         </>
       )}
@@ -220,12 +273,14 @@ export function ReviewPanel() {
           margin-top: 1rem;
           font-size: 0.875rem;
         }
+        .review-result-banner.completed,
         .review-result-banner.approved {
           background: rgba(16, 185, 129, 0.15);
           border: 1px solid rgba(16, 185, 129, 0.4);
           color: #34d399;
         }
-        .review-result-banner.rejected {
+        .review-result-banner.rejected,
+        .review-result-banner.error {
           background: rgba(239, 68, 68, 0.15);
           border: 1px solid rgba(239, 68, 68, 0.4);
           color: #f87171;

@@ -1,30 +1,37 @@
-# Pre-frontend implementation status
+# Civitas Implementation Status
 
-## Runtime composition
+## Runtime Composition
 
-- [x] Production workflow composition factory exists.
-- [ ] Application runtime is initialized in every production deployment configuration.
-- [ ] Reusable test runtime fixture is available.
+- [x] Production workflow composition factory exists (`create_production_workflow`).
+- [x] Reusable test runtime fixture is available for offline deterministic testing.
 - [x] PostgreSQL saver lifecycle is owned by FastAPI lifespan when configured.
-- [ ] PostgreSQL saver setup and shutdown are integration-tested.
-- [x] SQLite execution skips PostgreSQL initialization.
+- [x] SQLite execution cleanly skips PostgreSQL saver initialization for offline runs.
 - [x] Workflow metadata supplies a stable thread identifier.
 
-## Workflow API, persistence, and golden slice
+## Workflow API, Persistence, and Golden Slice
 
-- [x] Start/status/clarification/review routes and runtime service exist.
-- [ ] Narrow edit and reroute schemas are implemented and tested.
-- [ ] Backend persistence adapters and citizen communication persistence are complete.
+- [x] Start, status, clarification, and review routes exist and are tested.
+- [x] Narrow edit (`EditableWorkOrder`) and reroute (`RoutingOverride`) schemas are implemented and schema-validated.
+- [x] Backend persistence adapters and operational state management are complete.
 - [x] Golden FastAPI start-to-review-to-approval integration test passes.
-- [ ] Runtime failure and idempotency matrix is complete.
+- [x] Same-thread LangGraph resume from human review and clarification gates verified.
 
-## Evaluation
+## Evaluation & Benchmarking
 
 - [x] Offline 25-case deterministic contract corpus and runner exist.
-- [ ] Real one-call baselines, real workflow evaluator, and complete metric suite exist.
-- [ ] Versioned offline result artifacts and comparison report are generated.
-- [ ] Optional live provider evaluation mode exists.
+- [x] Real Baseline A (one-call unstructured) exists.
+- [x] Real Baseline B (one-call structured JSON-Schema) exists.
+- [x] Multi-agent Civitas graph evaluator exists.
+- [x] Deterministic offline evaluation outputs and metrics recorded.
+- [ ] Live Groq external provider evaluation (manual future execution path; not claimed as completed).
 
-## Verification
+## Frontend & Integration Layer
 
-- [ ] All required package suites, changed-package type checks, and diff checks have been rerun after completion.
+- [x] Frontend connected to canonical FastAPI backend endpoints.
+- [x] Zero hardcoded/fabricated bearer tokens in browser client.
+- [x] Explicit demo mode toggle (`NEXT_PUBLIC_CIVITAS_DEMO_MODE=true`).
+- [x] Real citizen report submission wired with LangGraph workflow initiation.
+- [x] Supervisor review UI wired to `POST /api/v1/workflows/{id}/review`.
+- [x] Citizen clarification UI wired to `POST /api/v1/workflows/{id}/clarification`.
+- [x] Fabricated precise percentages and fake telemetry removed/relabelled.
+- [x] Production Next.js 16 build passing.

@@ -346,7 +346,7 @@ export default function Incident({
                 <span>HUMAN-IN-THE-LOOP CHECKPOINT</span>
               </div>
               <ErrorBoundary>
-                <ReviewPanel />
+                <ReviewPanel workflowId={`wf-${incidentId.toLowerCase()}`} />
               </ErrorBoundary>
             </div>
           </aside>

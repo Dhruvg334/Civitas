@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Footer, Nav, SectionLabel, Status } from "@/components/site";
 import { MiniMap } from "@/components/civic-visuals";
 import { FlatIcon } from "@/components/flat-icons";
-import { fetchIncidents } from "@/lib/api";
+import { fetchIncidents, isDemoMode, DEMO_SEEDED_INCIDENTS } from "@/lib/api";
 
 interface IncidentItem {
   id: string;
@@ -21,73 +21,20 @@ interface IncidentItem {
   department: string;
 }
 
-const INITIAL_INCIDENTS: IncidentItem[] = [
-  {
-    id: "INC-0241",
-    title: "School Crossing Water Main Leakage",
-    category: "Water Supply & Drainage",
-    priority: "P1",
-    status: "WAITING_FOR_REVIEW",
-    tone: "warn",
-    reportsCount: 3,
-    ward: "Ward 12 · Unit 8",
-    landmark: "14m from DAV Public School Gate",
-    time: "12m ago",
-    department: "Water Supply & Drainage",
-  },
-  {
-    id: "INC-0240",
-    title: "Fallen Banyan Tree Branch Blocking Road",
-    category: "Parks & Urban Forestry",
-    priority: "P2",
-    status: "ASSIGNED",
-    tone: "neutral",
-    reportsCount: 2,
-    ward: "Ward 12 · Park Road",
-    landmark: "Opposite Community Garden",
-    time: "48m ago",
-    department: "Parks & Forestry",
-  },
-  {
-    id: "INC-0238",
-    title: "Streetlight Cluster Power Failure",
-    category: "Electrical & Public Lighting",
-    priority: "P3",
-    status: "WAITING_FOR_CLARIFICATION",
-    tone: "danger",
-    reportsCount: 1,
-    ward: "Ward 12 · East Gate",
-    landmark: "Commercial Junction Poles #104-106",
-    time: "2h ago",
-    department: "Electrical Works",
-  },
-  {
-    id: "INC-0235",
-    title: "Severe Asphalt Pothole on Bus Route",
-    category: "Road Infrastructure",
-    priority: "P1",
-    status: "RESOLVED",
-    tone: "good",
-    reportsCount: 4,
-    ward: "Ward 12 · Hospital Flyover",
-    landmark: "Near City Hospital Exit",
-    time: "4h ago",
-    department: "Road Maintenance",
-  },
-];
-
 export default function Workspace() {
-  const [incidents, setIncidents] = useState<IncidentItem[]>(INITIAL_INCIDENTS);
+  const [incidents, setIncidents] = useState<IncidentItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedIncidentId, setSelectedIncidentId] = useState<string>("INC-0241");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeFilter, setActiveFilter] = useState<string>("ALL");
 
   useEffect(() => {
     let isMounted = true;
-    fetchIncidents().then((liveRecords) => {
-      if (!isMounted || !liveRecords || !liveRecords.length) return;
-      setIncidents(
-        liveRecords.map((r) => {
+    fetchIncidents()
+      .then((liveRecords) => {
+        if (!isMounted) return;
+        const mapped = liveRecords.map((r) => {
           const prioMap: Record<string, "P1" | "P2" | "P3"> = {
             High: "P1",
             Critical: "P1",
@@ -116,15 +63,107 @@ export default function Workspace() {
             time: "Live Sync",
             department: r.primaryDepartment || "Municipal Dispatch",
           };
-        })
-      );
-    }).catch(() => {
-      // Fallback preserved
-    });
+        });
+        setIncidents(mapped);
+        if (mapped.length > 0) {
+          setSelectedIncidentId(mapped[0].id);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        if (isDemoMode()) {
+          const demoMapped: IncidentItem[] = DEMO_SEEDED_INCIDENTS.map((r) => ({
+            id: r.id,
+            title: r.title,
+            category: r.category,
+            priority: "P1",
+            status: r.status,
+            tone: "warn",
+            reportsCount: r.reportsCount,
+            ward: "Ward 12 · Bhubaneswar",
+            landmark: r.location.landmark,
+            time: "Demo Fixture",
+            department: r.primaryDepartment,
+          }));
+          setIncidents(demoMapped);
+          setSelectedIncidentId("INC-0241");
+        } else {
+          setError(err instanceof Error ? err.message : "Failed to retrieve live incidents from backend API.");
+        }
+        setLoading(false);
+      });
+
     return () => {
       isMounted = false;
     };
   }, []);
+
+  const handleRetry = () => {
+    setLoading(true);
+    setError(null);
+    fetchIncidents()
+      .then((liveRecords) => {
+        const mapped = liveRecords.map((r) => {
+          const prioMap: Record<string, "P1" | "P2" | "P3"> = {
+            High: "P1",
+            Critical: "P1",
+            P1: "P1",
+            Medium: "P2",
+            P2: "P2",
+            Low: "P3",
+            P3: "P3",
+          };
+          const priority = prioMap[r.priority] || "P2";
+          let tone: "neutral" | "good" | "warn" | "danger" = "neutral";
+          if (r.status === "WAITING_FOR_REVIEW") tone = "warn";
+          else if (r.status === "RESOLVED") tone = "good";
+          else if (r.status === "WAITING_FOR_CLARIFICATION") tone = "danger";
+
+          return {
+            id: r.id,
+            title: r.title,
+            category: r.category,
+            priority,
+            status: r.status,
+            tone,
+            reportsCount: r.reportsCount || 1,
+            ward: "Ward 12 · Bhubaneswar",
+            landmark: r.location?.landmark || "Ward 12 Area",
+            time: "Live Sync",
+            department: r.primaryDepartment || "Municipal Dispatch",
+          };
+        });
+        setIncidents(mapped);
+        if (mapped.length > 0) {
+          setSelectedIncidentId(mapped[0].id);
+        }
+      })
+      .catch((err) => {
+        if (isDemoMode()) {
+          const demoMapped: IncidentItem[] = DEMO_SEEDED_INCIDENTS.map((r) => ({
+            id: r.id,
+            title: r.title,
+            category: r.category,
+            priority: "P1",
+            status: r.status,
+            tone: "warn",
+            reportsCount: r.reportsCount,
+            ward: "Ward 12 · Bhubaneswar",
+            landmark: r.location.landmark,
+            time: "Demo Fixture",
+            department: r.primaryDepartment,
+          }));
+          setIncidents(demoMapped);
+          setSelectedIncidentId("INC-0241");
+        } else {
+          setError(err instanceof Error ? err.message : "Failed to retrieve live incidents from backend API.");
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   const filteredIncidents = incidents.filter((item) => {
     const matchesSearch =
@@ -163,7 +202,7 @@ export default function Workspace() {
             <div className="ops-stats-strip">
               <div className="stat-pill">
                 <span>ACTIVE QUEUE</span>
-                <b>{INITIAL_INCIDENTS.length} Incidents</b>
+                <b>{incidents.length} Incidents</b>
               </div>
               <div className="stat-pill">
                 <span>GIS SYNC</span>
@@ -171,7 +210,7 @@ export default function Workspace() {
               </div>
               <div className="stat-pill">
                 <span>SUPERVISOR GATES</span>
-                <b className="p1-alert">1 Pending</b>
+                <b className="p1-alert">{incidents.filter((i) => i.status === "WAITING_FOR_REVIEW").length || 1} Pending</b>
               </div>
             </div>
           </div>
@@ -202,7 +241,7 @@ export default function Workspace() {
 
               <div className="filter-pills-row">
                 {[
-                  { id: "ALL", label: `All (${INITIAL_INCIDENTS.length})` },
+                  { id: "ALL", label: `All (${incidents.length})` },
                   { id: "P1", label: "P1 Critical" },
                   { id: "P2", label: "P2 Medium" },
                   { id: "P3", label: "P3 Low" },
@@ -222,7 +261,23 @@ export default function Workspace() {
 
             {/* INCIDENT LIST */}
             <div className="incident-cards-scrollable" role="list">
-              {filteredIncidents.map((incident) => {
+              {loading && (
+                <div className="empty-queue-message">
+                  <span>Synchronizing live incidents from PostGIS operations queue...</span>
+                </div>
+              )}
+
+              {error && !loading && (
+                <div className="queue-error-box" role="alert" style={{ padding: "16px", border: "1px solid #f87171", borderRadius: "8px", background: "rgba(239, 68, 68, 0.08)", margin: "8px 0" }}>
+                  <b style={{ color: "#b91c1c", display: "block", marginBottom: "4px" }}>API Connection Error</b>
+                  <p style={{ color: "#555e54", margin: "0 0 12px", fontSize: "0.88rem" }}>{error}</p>
+                  <button className="button small-button" onClick={handleRetry}>
+                    Retry Connection
+                  </button>
+                </div>
+              )}
+
+              {!loading && !error && filteredIncidents.map((incident) => {
                 const isSelected = incident.id === selectedIncidentId;
 
                 return (
@@ -268,7 +323,7 @@ export default function Workspace() {
                 );
               })}
 
-              {filteredIncidents.length === 0 && (
+              {!loading && !error && filteredIncidents.length === 0 && (
                 <div className="empty-queue-message">
                   <span>No incidents match the selected filter query.</span>
                 </div>

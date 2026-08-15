@@ -3,7 +3,7 @@
 import { useState, useId } from "react";
 import Link from "next/link";
 import { Footer, Nav, SectionLabel, Status } from "@/components/site";
-import { submitReport } from "@/lib/api";
+import { startWorkflow, submitReport } from "@/lib/api";
 import { FlatIcon } from "@/components/flat-icons";
 
 const CATEGORIES = [
@@ -35,7 +35,10 @@ export default function Report() {
   const [geoLocating, setGeoLocating] = useState(false);
   const [geoNotice, setGeoNotice] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [submittedReportId, setSubmittedReportId] = useState<string | null>(null);
+  const [activeWorkflowId, setActiveWorkflowId] = useState<string | null>(null);
+  const [workflowStatus, setWorkflowStatus] = useState<string | null>(null);
 
   // Dynamic Report Quality Score calculation
   const calculateQualityScore = () => {
@@ -134,6 +137,7 @@ export default function Report() {
 
   const handleSubmitReport = async () => {
     setSubmitting(true);
+    setSubmitError(null);
     try {
       const res = await submitReport({
         description: description || "Water leaking from underground pipeline near school crossing.",
@@ -141,9 +145,17 @@ export default function Report() {
         latitude: latitude ? parseFloat(latitude) : undefined,
         longitude: longitude ? parseFloat(longitude) : undefined,
       });
-      setSubmittedReportId(res.report_id || `RPT-${Math.floor(1000 + Math.random() * 9000)}`);
-    } catch {
-      setSubmittedReportId(`RPT-${Math.floor(1000 + Math.random() * 9000)}`);
+      setSubmittedReportId(res.report_id);
+
+      try {
+        const wf = await startWorkflow(res.report_id);
+        setActiveWorkflowId(wf.workflow_id);
+        setWorkflowStatus(wf.status);
+      } catch {
+        // Workflow initiation failure should not discard the submitted report ID
+      }
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Failed to submit civic report to backend.");
     } finally {
       setSubmitting(false);
     }
@@ -237,8 +249,14 @@ export default function Report() {
                 <div className="success-info-grid">
                   <div className="info-tile">
                     <span>STATUS</span>
-                    <Status tone="good">INTAKE_COMPLETE</Status>
+                    <Status tone="good">{workflowStatus ? `WORKFLOW: ${workflowStatus}` : "INTAKE_COMPLETE"}</Status>
                   </div>
+                  {activeWorkflowId && (
+                    <div className="info-tile">
+                      <span>WORKFLOW ID</span>
+                      <code>{activeWorkflowId}</code>
+                    </div>
+                  )}
                   <div className="info-tile">
                     <span>GROUNDED PLAYBOOK</span>
                     <b>PLAY-WATER-01</b>
@@ -355,7 +373,7 @@ export default function Report() {
                         <div className="analysis-header">
                           <FlatIcon name="check" size={14} color="#0f5f4f" />
                           <b>COMPUTER VISION PREVIEW</b>
-                          <span className="confidence-pill">CONFIDENCE: 98.4%</span>
+                          <span className="confidence-pill">CONFIDENCE: High</span>
                         </div>
                         <p>
                           Features extracted: <code>asphalt_cavity_moisture</code>, <code>pedestrian_crosswalk_obstruction</code>.
@@ -512,6 +530,13 @@ export default function Report() {
                       </div>
                     </div>
 
+                    {submitError && (
+                      <div className="report-error-alert" role="alert">
+                        <b>Report Submission Failed</b>
+                        <p>{submitError}</p>
+                      </div>
+                    )}
+
                     <div className="step-actions-footer">
                       <button type="button" className="outline" onClick={back} disabled={submitting}>
                         ← Back
@@ -522,7 +547,7 @@ export default function Report() {
                         onClick={handleSubmitReport}
                         disabled={submitting}
                       >
-                        {submitting ? "Submitting to Agent Pipeline..." : "Submit Civic Report ⚡"}
+                        {submitting ? "Submitting to Agent Pipeline..." : "Submit Civic Report"}
                       </button>
                     </div>
                   </div>

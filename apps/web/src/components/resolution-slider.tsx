@@ -55,7 +55,7 @@ export function ResolutionSlider({
         <div className="verifier-title-col">
           <div className="verifier-kicker-row">
             <span className="verifier-kicker">AUTOMATED RESOLUTION CLASSIFIER</span>
-            <span className="confidence-pill">CLIP CV CONFIDENCE: 98.4%</span>
+            <span className="confidence-pill">ZERO-SHOT VISION: HIGH CONFIDENCE</span>
           </div>
           <h3 className="verifier-title">Before vs After Field Repair Verification</h3>
         </div>

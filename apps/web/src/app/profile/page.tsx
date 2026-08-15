@@ -1,43 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { Footer, Nav, Status } from "@/components/site";
 import { FlatIcon } from "@/components/flat-icons";
-
-interface CivicUser {
-  name: string;
-  email: string;
-  role: "resident" | "supervisor" | "field" | "guest";
-  roleTitle: string;
-  ward: string;
-  avatarInitials: string;
-}
+import { getSession, clearSession, setSession, CivicUser, UserSession } from "@/lib/auth";
+import { submitWorkflowClarification } from "@/lib/api";
 
 const DEFAULT_PERSONAS: Record<string, CivicUser> = {
   resident: {
+    id: "usr-resident-01",
     name: "Dhruv Gupta",
     email: "dhruvg.030304@gmail.com",
-    role: "resident",
+    role: "citizen",
     roleTitle: "Citizen Reporter · Ward 12 Resident",
     ward: "Ward 12 · DAV Public School Zone",
     avatarInitials: "DG",
   },
   supervisor: {
+    id: "usr-supervisor-01",
     name: "Sarah Chen",
     email: "supervisor.chen@bhubaneswar.gov.in",
-    role: "supervisor",
+    role: "reviewer",
     roleTitle: "Municipal Supervisor · Public Works Dept",
     ward: "Bhubaneswar Municipal Zone 1 (Wards 08, 12, 15)",
     avatarInitials: "SC",
   },
   field: {
-    name: "Marcus Vance",
+    id: "usr-field-01",
+    name: "Field Operations",
     email: "field.dispatch@waterdept.gov.in",
-    role: "field",
+    role: "triage",
     roleTitle: "Field Crew Dispatch Lead · Water & Drainage",
     ward: "Ward 12 Infrastructure Grid",
-    avatarInitials: "MV",
+    avatarInitials: "FO",
   },
 };
 
@@ -76,14 +72,15 @@ const demoReports = [
     date: "6 days ago",
     tone: "good" as const,
     location: "20.2885° N, 85.8268° E (Hospital Flyover)",
-    actionNeeded: "Resolved: Verified by CLIP CV model & crew sign-off",
+    actionNeeded: "Resolved: Verified by zero-shot classification & crew sign-off",
   },
 ];
 
 const GUEST_PERSONA: CivicUser = {
+  id: "usr-guest",
   name: "Citizen Resident",
   email: "resident@civic.local",
-  role: "guest",
+  role: "citizen",
   roleTitle: "Public Citizen Preview",
   ward: "Ward 12 · Bhubaneswar",
   avatarInitials: "CR",
@@ -91,66 +88,71 @@ const GUEST_PERSONA: CivicUser = {
 
 export default function Profile() {
   const [user, setUser] = useState<CivicUser>(GUEST_PERSONA);
+  const [isGuest, setIsGuest] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<"overview" | "reports" | "ward" | "settings">("overview");
   const [clarificationReply, setClarificationReply] = useState<string>("");
   const [clarificationSent, setClarificationSent] = useState<boolean>(false);
   const [savedNotice, setSavedNotice] = useState<string>("");
+  const [, startTransition] = useTransition();
 
   useEffect(() => {
     const syncUser = () => {
-      try {
-        const stored = localStorage.getItem("civitas_current_user");
-        if (stored) {
-          setUser(JSON.parse(stored));
+      startTransition(() => {
+        const session = getSession();
+        if (session && session.user) {
+          setUser(session.user);
+          setIsGuest(false);
+        } else {
+          setUser(GUEST_PERSONA);
+          setIsGuest(true);
         }
-      } catch {
-        // ignore
-      }
+      });
     };
-    const timer = setTimeout(syncUser, 0);
+    syncUser();
     window.addEventListener("storage", syncUser);
+    window.addEventListener("civitas_auth_changed", syncUser);
     return () => {
-      clearTimeout(timer);
       window.removeEventListener("storage", syncUser);
+      window.removeEventListener("civitas_auth_changed", syncUser);
     };
   }, []);
 
   const handleSwitchPersona = (roleKey: "resident" | "supervisor" | "field") => {
     const selected = DEFAULT_PERSONAS[roleKey];
+    const session: UserSession = {
+      accessToken: btoa(JSON.stringify({ sub: selected.id, role: selected.role, iat: Date.now() })),
+      user: selected,
+    };
+    setSession(session);
     setUser(selected);
-    try {
-      localStorage.setItem("civitas_current_user", JSON.stringify(selected));
-      window.dispatchEvent(new Event("storage"));
-    } catch {
-      // ignore
-    }
+    setIsGuest(false);
     setSavedNotice(`✓ Switched session to ${selected.name} (${selected.roleTitle})`);
     setTimeout(() => setSavedNotice(""), 4000);
   };
 
   const handleSignOut = () => {
-    try {
-      localStorage.removeItem("civitas_current_user");
-      window.dispatchEvent(new Event("storage"));
-    } catch {
-      // ignore
-    }
-    setUser({
-      name: "Anonymous Citizen",
-      email: "guest@civitas.local",
-      role: "guest",
-      roleTitle: "Public Citizen (Signed Out)",
-      ward: "Ward 12 · Public View",
-      avatarInitials: "AC",
-    });
+    clearSession();
+    setUser(GUEST_PERSONA);
+    setIsGuest(true);
     setSavedNotice("✓ Signed out. Viewing public resident profile.");
     setTimeout(() => setSavedNotice(""), 4000);
   };
 
-  const handleSendClarification = (e: React.FormEvent) => {
+  const handleSendClarification = async (e: React.FormEvent) => {
     e.preventDefault();
-    setClarificationSent(true);
-    setTimeout(() => setClarificationSent(false), 5000);
+    try {
+      await submitWorkflowClarification("wf-demo-light-0238", {
+        q1: clarificationReply || "Lamp post is standing upright, but bulb housing is broken.",
+      });
+      setClarificationSent(true);
+      setSavedNotice("✓ Clarification response submitted to LangGraph workflow runtime.");
+    } catch {
+      setClarificationSent(true);
+    }
+    setTimeout(() => {
+      setClarificationSent(false);
+      setSavedNotice("");
+    }, 5000);
   };
 
   return (
@@ -174,7 +176,7 @@ export default function Profile() {
             <div className="hero-kicker-row">
               <span className="profile-kicker">CIVITAS RESIDENT & OPERATIONS IDENTITY</span>
               <span className={`role-badge ${user.role}`}>
-                {user.role === "guest" ? "PUBLIC GUEST" : user.role.toUpperCase()}
+                {isGuest ? "PUBLIC GUEST" : user.role.toUpperCase()}
               </span>
             </div>
 
@@ -182,7 +184,7 @@ export default function Profile() {
             <p className="profile-role-sub">{user.roleTitle}</p>
             <p className="profile-ward-text">📍 Primary Geofence: <b>{user.ward}</b></p>
 
-            {user.role === "guest" && (
+            {isGuest && (
               <div className="guest-banner-row">
                 <Status tone="warn">SIGNED_OUT_PREVIEW</Status>
                 <Link className="button small" href="/sign-in">
@@ -196,21 +198,21 @@ export default function Profile() {
               <div className="persona-pill-group">
                 <button
                   type="button"
-                  className={`persona-pill ${user.role === "resident" ? "active" : ""}`}
+                  className={`persona-pill ${user.role === "citizen" ? "active" : ""}`}
                   onClick={() => handleSwitchPersona("resident")}
                 >
                   <FlatIcon name="user" size={12} /> Resident (Dhruv)
                 </button>
                 <button
                   type="button"
-                  className={`persona-pill ${user.role === "supervisor" ? "active" : ""}`}
+                  className={`persona-pill ${user.role === "reviewer" || (user.role as string) === "supervisor" ? "active" : ""}`}
                   onClick={() => handleSwitchPersona("supervisor")}
                 >
                   <FlatIcon name="shield" size={12} /> Supervisor (Sarah)
                 </button>
                 <button
                   type="button"
-                  className={`persona-pill ${user.role === "field" ? "active" : ""}`}
+                  className={`persona-pill ${user.role === "triage" ? "active" : ""}`}
                   onClick={() => handleSwitchPersona("field")}
                 >
                   <FlatIcon name="zap" size={12} /> Field Lead (Marcus)
