@@ -36,7 +36,6 @@ import re
 from typing import Final, NamedTuple
 from urllib.parse import unquote, urlparse
 
-
 # Canonical range (matches GeoPoint in civitas_geo and Pydantic Field bounds).
 MIN_LAT: Final = -90.0
 MAX_LAT: Final = 90.0

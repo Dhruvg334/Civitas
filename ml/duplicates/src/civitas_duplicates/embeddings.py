@@ -12,7 +12,8 @@ from __future__ import annotations
 import math
 import re
 from collections import Counter
-from typing import Any, Callable, Protocol
+from collections.abc import Callable
+from typing import Any, Protocol
 
 from pydantic import BaseModel, Field
 
@@ -158,7 +159,9 @@ class ClassicalImageEmbedder:
 
     def __init__(self) -> None:
         try:
-            from civitas_vision.features import FEATURE_NAMES  # type: ignore[import-not-found]
+            from civitas_vision.features import (
+                FEATURE_NAMES,  # type: ignore[import-not-found]
+            )
 
             self._feature_names: tuple[str, ...] = tuple(FEATURE_NAMES)
         except ImportError:  # pragma: no cover - guarded fallback
@@ -174,8 +177,9 @@ class ClassicalImageEmbedder:
         features_basis: list[str] = []
         feat: dict[str, float] = {}
         try:
-            from civitas_vision.features import extract_features  # type: ignore[import-not-found]
-
+            from civitas_vision.features import (
+                extract_features,  # type: ignore[import-not-found]
+            )
             from PIL import Image as PILImage
 
             feat = extract_features(PILImage.fromarray((arr * 255).astype("uint8"), mode="RGB"))
@@ -201,8 +205,9 @@ class ClassicalImageEmbedder:
         )
 
     def embed(self, image_bytes: bytes) -> list[float]:  # protocol compat
-        from PIL import Image as PILImage
         import io
+
+        from PIL import Image as PILImage
 
         return self.embed_image(PILImage.open(io.BytesIO(image_bytes))).vector
 

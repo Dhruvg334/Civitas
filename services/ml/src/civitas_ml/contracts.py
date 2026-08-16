@@ -25,7 +25,6 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-
 # ---------------------------------------------------------------------------
 # Error / trace envelope (mirrors schemas/json/common-error.schema.json)
 # ---------------------------------------------------------------------------

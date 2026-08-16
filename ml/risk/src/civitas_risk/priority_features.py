@@ -29,7 +29,8 @@ never guessed.
 from __future__ import annotations
 
 import math
-from datetime import datetime, time as dt_time
+from datetime import datetime
+from datetime import time as dt_time
 
 from pydantic import BaseModel, Field
 

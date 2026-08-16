@@ -10,12 +10,12 @@ behaviour, mirroring the demo scenario values where they apply.
 
 from datetime import datetime, timedelta, timezone
 
+from civitas_duplicates import ClassicalImageEmbedder, ReportLike
+from civitas_geo.landmarks import LandmarkIndex
 from civitas_ml import (
     analyze_report,
     verify_resolution,
 )
-from civitas_duplicates import ClassicalImageEmbedder, ReportLike
-from civitas_geo.landmarks import LandmarkIndex
 from civitas_vision.benchmark import gaussian_blur, make_image
 
 T0 = datetime(2026, 3, 1, 10, 30, tzinfo=timezone.utc)

@@ -1,4 +1,6 @@
-import json, urllib.request, urllib.parse
+import json
+import urllib.parse
+import urllib.request
 
 TITLES = [
     # videos picked for the civic test set

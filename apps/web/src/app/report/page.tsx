@@ -547,24 +547,30 @@ export default function Report() {
 
                       <div className="coord-inputs-row">
                         <div className="coord-field">
-                          <label>Latitude (WGS84)</label>
+                          <label>Latitude (WGS84) *</label>
                           <input
                             type="number"
                             step="any"
+                            min="-90"
+                            max="90"
+                            required
                             value={latitude}
                             onChange={(e) => setLatitude(e.target.value)}
-                            placeholder="20.29614"
+                            placeholder="e.g. 20.29614"
                             className="text-input"
                           />
                         </div>
                         <div className="coord-field">
-                          <label>Longitude (WGS84)</label>
+                          <label>Longitude (WGS84) *</label>
                           <input
                             type="number"
                             step="any"
+                            min="-180"
+                            max="180"
+                            required
                             value={longitude}
                             onChange={(e) => setLongitude(e.target.value)}
-                            placeholder="85.82451"
+                            placeholder="e.g. 85.82451"
                             className="text-input"
                           />
                         </div>

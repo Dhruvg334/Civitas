@@ -17,7 +17,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "geospatial" / "src"))
 
-from civitas_geo.landmarks import DEMO_LANDMARKS  # noqa: E402
+from civitas_geo.landmarks import DEMO_LANDMARKS
 
 OUT_DIR = REPO / "datasets" / "generated"
 MANIFEST_DIR = REPO / "datasets" / "manifests"

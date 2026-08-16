@@ -77,7 +77,7 @@ class RealBackendAdapter(BackendAdapter):
         try:
             with self._client as client:
                 response = client.get(path)
-        except Exception as exc:  # noqa: BLE001 - network/timeout -> structured error
+        except Exception as exc:
             raise BackendAdapterError(
                 f"backend unreachable at {self.base_url}{path}: {exc}",
                 details={"path": path},
@@ -89,7 +89,7 @@ class RealBackendAdapter(BackendAdapter):
             )
         try:
             payload = response.json()
-        except Exception as exc:  # noqa: BLE001 - non-JSON body
+        except Exception as exc:
             raise MalformedResponseError(
                 f"backend returned non-JSON body for {path}", details={"path": path}
             ) from exc
@@ -115,7 +115,7 @@ class RealBackendAdapter(BackendAdapter):
         try:
             with self._client as client:
                 response = client.post(path, json=body)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             raise BackendAdapterError(
                 f"backend unreachable at {self.base_url}{path}: {exc}", details={"path": path}
             ) from exc
@@ -126,7 +126,7 @@ class RealBackendAdapter(BackendAdapter):
             )
         try:
             payload = response.json()
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             raise MalformedResponseError(f"backend returned non-JSON body for {path}", details={"path": path}) from exc
         if not isinstance(payload, dict):
             raise MalformedResponseError(f"backend returned a non-object payload for {path}", details={"path": path})
@@ -142,7 +142,7 @@ class RealBackendAdapter(BackendAdapter):
         payload = self._post_json(_ENDPOINT_NEARBY, request.model_dump(mode="json"))
         try:
             return NearbyCandidatesResponse.model_validate(payload)
-        except Exception as exc:  # noqa: BLE001 - validation failure -> structured error
+        except Exception as exc:
             raise MalformedResponseError(
                 f"nearby-candidates response does not match the contract: {exc}",
                 details={"path": _ENDPOINT_NEARBY},
@@ -152,7 +152,7 @@ class RealBackendAdapter(BackendAdapter):
         payload = self._get_json(_ENDPOINT_LANDMARKS)
         try:
             return LandmarkSet.model_validate(payload)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             raise MalformedResponseError(
                 f"landmarks response does not match the contract: {exc}",
                 details={"path": _ENDPOINT_LANDMARKS},
@@ -162,7 +162,7 @@ class RealBackendAdapter(BackendAdapter):
         try:
             with self._client as client:
                 response = client.get(_ENDPOINT_MEDIA.format(reference=reference))
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             raise BackendAdapterError(
                 f"backend media fetch failed for {reference}: {exc}", details={"media_reference": reference}
             ) from exc
@@ -177,7 +177,7 @@ class RealBackendAdapter(BackendAdapter):
         payload = self._get_json(_ENDPOINT_MEDIA_METADATA.format(reference=reference))
         try:
             return MediaReference.model_validate(payload)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             raise MalformedResponseError(
                 f"media metadata response does not match the contract: {exc}",
                 details={"media_reference": reference},

@@ -20,11 +20,10 @@ def live() -> dict[str, str]:
 def ready() -> dict[str, object]:
     settings=get_settings()
     try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT 1")
-                cur.fetchone()
-    except Exception as exc:  # noqa: BLE001
+        with get_connection() as conn, conn.cursor() as cur:
+            cur.execute("SELECT 1")
+            cur.fetchone()
+    except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail={"service": "civitas-api", "status": "not_ready", "database": "unavailable", "reason": str(exc)},

@@ -42,8 +42,8 @@ from torchvision import models, transforms
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "ml" / "vision" / "src"))
 
-from civitas_vision.benchmark import make_image  # noqa: E402
-from civitas_vision.contracts import CIVITAS_CATEGORIES  # noqa: E402
+from civitas_vision.benchmark import make_image
+from civitas_vision.contracts import CIVITAS_CATEGORIES
 
 TRAIN_SEED = 11
 TRAIN_PER_CLASS = 48

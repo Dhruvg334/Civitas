@@ -24,7 +24,7 @@ export interface CivicUser {
 }
 
 export interface UserSession {
-  accessToken: string;
+  accessToken?: string;
   user: CivicUser;
   expiresAt?: string;
 }
@@ -101,7 +101,7 @@ export async function signInWithPassword(email: string, password: string): Promi
   const supabase = getSupabaseClient();
   if (!supabase) {
     if (process.env.NEXT_PUBLIC_CIVITAS_DEMO_MODE === "true") {
-      // Demo-only transient preview session
+      // Demo-only presentation preview session (zero fake tokens)
       const demoUser: CivicUser = {
         id: "demo-citizen-01",
         email: email || "demo.resident@civitas.local",
@@ -112,7 +112,6 @@ export async function signInWithPassword(email: string, password: string): Promi
         avatarInitials: "DR",
       };
       setMemorySession({
-        accessToken: "demo-mode-token",
         user: demoUser,
       });
       return demoUser;

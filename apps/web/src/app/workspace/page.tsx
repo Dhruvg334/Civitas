@@ -58,8 +58,8 @@ export default function Workspace() {
             status: r.status,
             tone,
             reportsCount: r.reportsCount || 1,
-            ward: "Ward 12 · Bhubaneswar",
-            landmark: r.location?.landmark || "Ward 12 Area",
+            ward: r.location?.landmark ? `Municipal Zone (${r.location.landmark})` : "Municipal Operations Zone",
+            landmark: r.location?.landmark || "Location unavailable",
             time: "Live Sync",
             department: r.primaryDepartment || "Municipal Dispatch",
           };

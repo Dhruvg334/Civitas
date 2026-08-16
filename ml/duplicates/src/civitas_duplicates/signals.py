@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
-from civitas_duplicates.embeddings import TextEmbedder, cosine_similarity
-from civitas_duplicates.landmark_features import landmark_similarity, landmarks_for_point
 from civitas_geo.landmarks import LandmarkIndex
 from civitas_geo.models import GeoPoint
+
+from civitas_duplicates.embeddings import TextEmbedder, cosine_similarity
+from civitas_duplicates.landmark_features import (
+    landmark_similarity,
+    landmarks_for_point,
+)
 
 
 def text_similarity(

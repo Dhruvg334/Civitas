@@ -16,7 +16,6 @@ from __future__ import annotations
 
 from fastapi import HTTPException, status
 
-
 # Incident lifecycle edges (ref/04 §3 + state machine).
 INCIDENT_TRANSITIONS: dict[str, set[str]] = {
     "submitted": {"awaiting_clarification", "under_analysis", "clustered", "awaiting_review", "approved"},

@@ -22,12 +22,12 @@ __all__ = [
     "CATEGORY_HAZARD_MARKERS",
     "COVERAGE_GROWTH_CONFLICT_RATIO",
     "DISPLAY_LABELS",
+    "STANDING_WATER_EVIDENCE_MIN",
     "Outcome",
     "ResolutionEvidence",
     "ResolutionModel",
     "ResolutionReason",
     "ResolutionVerdict",
-    "STANDING_WATER_EVIDENCE_MIN",
     "Stage",
     "outcome_label",
 ]

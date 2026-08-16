@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from civitas_risk.contracts import RiskContext, SeverityResult, SeverityLevel
+from civitas_risk.contracts import RiskContext, SeverityLevel, SeverityResult
 from civitas_risk.features import FEATURE_KEYS, assemble_feature_vector
 from civitas_risk.ml_models import LogisticCalibrator
 
@@ -122,7 +122,7 @@ class SeverityAssessor:
         )
 
     @classmethod
-    def from_artifact(cls, path: str | Path, ml_blend_weight: float = 0.35) -> "SeverityAssessor":
+    def from_artifact(cls, path: str | Path, ml_blend_weight: float = 0.35) -> SeverityAssessor:
         """Load a fitted coefficient artifact (see train_severity.py)."""
         artifact = Path(path)
         data = json.loads(artifact.read_text(encoding="utf-8"))

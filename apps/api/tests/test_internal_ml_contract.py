@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from civitas_api.core.config import Settings
-from civitas_api.main import app
 from fastapi.testclient import TestClient
+
+from civitas_api.core.config import Settings
 
 
 def test_analyze_report_internal_route(client: TestClient, auth_header: dict[str, str]) -> None:
@@ -92,7 +92,7 @@ def test_ready_checks_database(client):
 def test_production_requires_auth_and_internal_secrets():
     try:
         Settings(environment="production", supabase_jwt_secret="", civitas_internal_api_key="")
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         message = str(exc)
         assert "SUPABASE_JWT_SECRET" in message or "CIVITAS_INTERNAL_API_KEY" in message
     else:

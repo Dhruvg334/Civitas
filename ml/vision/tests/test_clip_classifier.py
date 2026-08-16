@@ -18,7 +18,6 @@ the best subcategory similarity above `SUBCATEGORY_EMISSION_FLOOR`.
 """
 
 import pytest
-
 from civitas_vision.clip_classifier import (
     CATEGORY_LABELS,
     CATEGORY_PROMPTS,
@@ -171,9 +170,8 @@ class TestRealModel:
     def test_real_model_integration_or_skip(self):
         pytest.importorskip("torch")
         pytest.importorskip("transformers")
-        from PIL import Image
-
         from civitas_vision.clip_classifier import CLIPZeroShotClassifier
+        from PIL import Image
 
         classifier = CLIPZeroShotClassifier.load()
         if classifier is None:

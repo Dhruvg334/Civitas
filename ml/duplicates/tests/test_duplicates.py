@@ -3,12 +3,15 @@
 from datetime import datetime, timedelta, timezone
 
 import pytest
-
 from civitas_duplicates.contracts import PairFeatures, ReportLike
 from civitas_duplicates.detector import DuplicateDetector
 from civitas_duplicates.embeddings import HashNgramEmbedder, cosine_similarity
 from civitas_duplicates.geo_features import gps_similarity, within_duplicate_radius_m
-from civitas_duplicates.similarity import ScoringConfig, composite_score, decide_duplicate
+from civitas_duplicates.similarity import (
+    ScoringConfig,
+    composite_score,
+    decide_duplicate,
+)
 from civitas_duplicates.time_features import time_similarity, within_burst_window_hours
 
 T0 = datetime(2026, 3, 1, 10, 0, tzinfo=timezone.utc)

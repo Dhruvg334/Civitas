@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { AboutMenu } from "@/components/about-menu";
 import { CookieControls } from "@/components/cookie-controls";
 import { FlatIcon } from "@/components/flat-icons";
+import { CivicUser, getSession, onAuthStateChange } from "@/lib/auth";
 
 const productLinks: Array<[string, string]> = [
   ["Workspace", "/workspace"],
@@ -42,40 +43,14 @@ function Wordmark() {
 
 export function Nav({ docs = false }: { docs?: boolean } = {}) {
   const pathname = usePathname() || "";
-  const [currentUser, setCurrentUser] = useState<{ name: string; role: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<CivicUser | null>(() => getSession()?.user || null);
 
   useEffect(() => {
-    const syncUser = () => {
-      try {
-        const stored = localStorage.getItem("civitas_current_user");
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          // Only show user avatar if explicitly logged in and NOT Marcus Vance or guest
-          if (
-            parsed &&
-            parsed.name &&
-            parsed.role !== "guest" &&
-            parsed.isLoggedIn === true &&
-            !parsed.name.includes("Marcus")
-          ) {
-            setCurrentUser(parsed);
-          } else {
-            setCurrentUser(null);
-            if (parsed && (parsed.name?.includes("Marcus") || parsed.role === "guest" || !parsed.isLoggedIn)) {
-              localStorage.removeItem("civitas_current_user");
-            }
-          }
-        } else {
-          setCurrentUser(null);
-        }
-      } catch {
-        setCurrentUser(null);
-      }
-    };
-    syncUser();
-    window.addEventListener("storage", syncUser);
+    const unsubscribe = onAuthStateChange((user) => {
+      setCurrentUser(user);
+    });
     return () => {
-      window.removeEventListener("storage", syncUser);
+      unsubscribe();
     };
   }, []);
 
@@ -120,7 +95,7 @@ export function Nav({ docs = false }: { docs?: boolean } = {}) {
             </Link>
 
             {/* SIGN IN / PROFILE BUTTON AT FAR RIGHT */}
-            {currentUser && currentUser.role !== "guest" && !pathname.startsWith("/sign-in") ? (
+            {currentUser && !pathname.startsWith("/sign-in") ? (
               <Link
                 href="/profile"
                 className={`nav-user-pill ${pathname.startsWith("/profile") ? "active" : ""}`}

@@ -21,9 +21,8 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
-
 from civitas_vision.contracts import VisualClassificationResult
+from pydantic import BaseModel, Field
 
 WATER_FLOW_MARKERS = ("water flowing across road", "active water flow")
 STANDING_WATER_MARKER = "standing water"
@@ -52,7 +51,7 @@ class ResolutionEvidence(BaseModel):
         source: str,
         result: VisualClassificationResult,
         water_coverage: float = 0.0,
-    ) -> "ResolutionEvidence":
+    ) -> ResolutionEvidence:
         """Map a visual-pipeline result onto typed evidence for this stage."""
         active = int(any(m in result.observable_evidence for m in WATER_FLOW_MARKERS))
         return cls(
@@ -76,7 +75,7 @@ class ResolutionEvidence(BaseModel):
         primary_category: str | None = None,
         observable_evidence: list[str] | tuple[str, ...] = (),
         water_coverage: float = 0.0,
-    ) -> "ResolutionEvidence":
+    ) -> ResolutionEvidence:
         """Build evidence directly from the CV evidence strings."""
         active = int(any(m in " ".join(observable_evidence).lower() for m in WATER_FLOW_MARKERS))
         return cls(

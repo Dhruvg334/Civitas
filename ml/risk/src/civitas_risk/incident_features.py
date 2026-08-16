@@ -20,9 +20,8 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
-
 from civitas_geo.models import ExposureContext
+from pydantic import BaseModel, Field
 
 TrafficExposure = Literal["low", "moderate", "high"]
 
@@ -51,7 +50,7 @@ class IncidentVisualEvidence(BaseModel):
         primary_category: str | None,
         observed_evidence: list[str],
         water_coverage: float = 0.0,
-    ) -> "IncidentVisualEvidence":
+    ) -> IncidentVisualEvidence:
         """Derive the typed visual features from the CV evidence strings."""
         active = int(
             any(marker in " ".join(observed_evidence).lower() for marker in WATER_FLOW_EVIDENCE_MARKERS)

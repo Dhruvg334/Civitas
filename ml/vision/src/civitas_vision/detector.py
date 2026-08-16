@@ -28,7 +28,11 @@ from pathlib import Path
 from PIL import Image
 
 from civitas_vision import evidence as evidence_rules
-from civitas_vision.classifier import KNNClassifier, merge_media_probs, secondary_categories
+from civitas_vision.classifier import (
+    KNNClassifier,
+    merge_media_probs,
+    secondary_categories,
+)
 from civitas_vision.clip_classifier import CLIPZeroShotClassifier
 from civitas_vision.contracts import (
     ClassificationProbs,
@@ -36,8 +40,8 @@ from civitas_vision.contracts import (
     VisualClassificationResult,
 )
 from civitas_vision.descriptions import build_precise_description
-from civitas_vision.frames import frames_from_path, select_key_frames
 from civitas_vision.features import extract_features
+from civitas_vision.frames import frames_from_path, select_key_frames
 from civitas_vision.nn_classifier import NNClassifier
 from civitas_vision.quality import assess_quality
 

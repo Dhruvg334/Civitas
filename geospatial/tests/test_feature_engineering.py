@@ -3,7 +3,6 @@
 from datetime import datetime, timedelta, timezone
 
 import pytest
-
 from civitas_geo.feature_engineering import (
     CivicIncidentContext,
     GeospatialFeatureEngine,

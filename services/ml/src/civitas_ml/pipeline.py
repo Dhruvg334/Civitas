@@ -22,10 +22,8 @@ Boundaries honoured here:
 from __future__ import annotations
 
 import uuid
-from typing import Literal
 from datetime import datetime, timezone
-
-from PIL import Image
+from typing import Literal
 
 from civitas_duplicates import ClassicalImageEmbedder, ReportLike
 from civitas_geo.landmarks import LandmarkIndex
@@ -38,6 +36,7 @@ from civitas_resolution import (
     outcome_label,
 )
 from civitas_vision.detector import VisualIntelligencePipeline
+from PIL import Image
 
 from civitas_ml.adapters.base import BackendAdapter
 from civitas_ml.analyze import (

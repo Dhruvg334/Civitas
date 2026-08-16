@@ -15,7 +15,7 @@ configuration, not model inference: any consumer can read `description` and
 
 from __future__ import annotations
 
-from civitas_geo.models import OperationalBoundary, GeoPoint
+from civitas_geo.models import GeoPoint, OperationalBoundary
 
 DEFAULT_BOUNDARY: OperationalBoundary = OperationalBoundary(
     name="civitas-demo-city",

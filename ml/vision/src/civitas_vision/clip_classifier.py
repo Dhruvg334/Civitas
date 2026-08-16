@@ -273,8 +273,8 @@ _PROMPT_INDEX: dict[str, int] = {
 
 def _torch():
     """Lazy torch/transformers import (optional dependency guard)."""
-    import torch  # noqa: PLC0415
-    import transformers  # noqa: PLC0415
+    import torch
+    import transformers
 
     return torch, transformers
 
@@ -394,12 +394,12 @@ class CLIPZeroShotClassifier:
         self._subcat_text_features = self._encode_subcategory_text()
 
     @classmethod
-    def load(cls) -> "CLIPZeroShotClassifier | None":
+    def load(cls) -> CLIPZeroShotClassifier | None:
         """Load the HF CLIP checkpoint; None when optional deps or the
         model are unavailable (the pipeline falls back to k-NN)."""
         try:
             torch, transformers = _torch()
-            from transformers import CLIPModel, CLIPProcessor  # noqa: PLC0415
+            from transformers import CLIPModel, CLIPProcessor
         except Exception as exc:  # noqa: BLE001 - dependency missing -> fallback path
             _logger.warning("CLIP classifier unavailable (%s); falling back to k-NN", exc)
             return None
@@ -553,12 +553,12 @@ def real_media_classifier() -> CLIPZeroShotClassifier | None:
 __all__ = [
     "CATEGORY_LABELS",
     "CATEGORY_PROMPTS",
-    "CLIPZeroShotClassifier",
     "MODEL_ID",
     "MODEL_VERSION",
     "OOD_REFERENCE_SIMILARITY",
-    "SUBCATEGORY_PROMPTS",
     "SUBCATEGORY_EMISSION_FLOOR",
+    "SUBCATEGORY_PROMPTS",
+    "CLIPZeroShotClassifier",
     "calibrate",
     "category_prompt_scores",
     "cavity_dark_share",

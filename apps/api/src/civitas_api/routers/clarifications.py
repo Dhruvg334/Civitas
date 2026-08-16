@@ -12,7 +12,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from civitas_api.core.auth import Principal, Role, require_role
-from civitas_api.core.envelope import error_envelope, success_envelope
+from civitas_api.core.envelope import success_envelope
 from civitas_api.operations import clarifications as cla_ops
 
 router = APIRouter(prefix="/api/v1/reports", tags=["clarifications"])

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import math
 import random
-from typing import Sequence
+from collections.abc import Sequence
 
 from civitas_risk.features import FEATURE_KEYS
 
@@ -62,7 +62,7 @@ class LogisticCalibrator:
             out.append(_sigmoid(z))
         return out
 
-    def fit(self, X: Sequence[Sequence[float]], y: Sequence[float]) -> "LogisticCalibrator":
+    def fit(self, X: Sequence[Sequence[float]], y: Sequence[float]) -> LogisticCalibrator:
         """Batch gradient descent; y targets in [0,1] (regression objective)."""
         rows = [self._features(x) for x in X]
         targets = [max(0.0, min(1.0, float(t))) for t in y]

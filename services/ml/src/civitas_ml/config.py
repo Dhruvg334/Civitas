@@ -40,7 +40,7 @@ class BackendSettings:
     extra_headers: dict[str, str] = field(default_factory=dict)
 
     @staticmethod
-    def from_env() -> "BackendSettings":
+    def from_env() -> BackendSettings:
         mode = os.environ.get("CIVITAS_BACKEND_MODE", MODE_MOCK).strip().lower()
         if mode not in (MODE_MOCK, MODE_REAL):
             raise MLServiceError(
@@ -82,7 +82,7 @@ class BackendSettings:
         return self.base_url
 
 
-def get_backend(settings: BackendSettings | None = None) -> "BackendAdapter":
+def get_backend(settings: BackendSettings | None = None) -> BackendAdapter:
     """Build the backend adapter selected by configuration.
 
     Defaults to the deterministic mock adapter so local execution and the

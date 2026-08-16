@@ -3,7 +3,6 @@
 from datetime import datetime, timedelta, timezone
 
 import pytest
-
 from civitas_duplicates.benchmark import make_synthetic_pairs, run_pair_evaluation
 from civitas_duplicates.contracts import PairFeatures
 from civitas_duplicates.embeddings import (
@@ -61,7 +60,7 @@ class TestClassicalImageEmbedder:
         emb = embedder.embed_image(_solid_image())
         assert isinstance(emb, ImageEmbedding)
         try:
-            from civitas_vision.features import FEATURE_NAMES  # noqa: F401
+            from civitas_vision.features import FEATURE_NAMES
 
             expected = len(FEATURE_NAMES) + embedder.HUE_BINS + embedder.SAT_BINS
         except ImportError:

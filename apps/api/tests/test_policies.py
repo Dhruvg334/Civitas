@@ -5,8 +5,6 @@ from __future__ import annotations
 import jwt as pyjwt
 from fastapi.testclient import TestClient
 
-from civitas_api.main import app
-
 
 def _triage_token() -> str:
     return pyjwt.encode(

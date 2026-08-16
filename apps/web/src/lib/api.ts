@@ -65,8 +65,8 @@ export interface IncidentRecord {
   status: string;
   location: {
     landmark: string;
-    latitude: number;
-    longitude: number;
+    latitude: number | null;
+    longitude: number | null;
   };
   submittedAt: string;
   workOrderId?: string;
@@ -335,26 +335,32 @@ export async function fetchIncidents(): Promise<IncidentRecord[]> {
       return DEMO_SEEDED_INCIDENTS;
     }
 
-    return rawList.map((item: RawIncidentPayload) => ({
-      id: item.incident_id || item.id || "INC-UNKNOWN",
-      title: item.title || (item.category ? `${item.category.replace(/_/g, " ")} Incident` : `Incident ${item.incident_id || item.id}`),
-      category: item.category ? item.category.replace(/_/g, " ") : "General Incident",
-      priority: (item.priority_level || item.priority || "Medium") as IncidentPriority,
-      severityScore: item.severity_score || 65,
-      reportsCount: item.duplicates_seen || item.reportsCount || 1,
-      primaryDepartment: item.assigned_department || item.primaryDepartment || "Municipal Operations",
-      secondaryDepartments: item.secondary_departments || [],
-      status: item.status || "submitted",
-      location: {
-        landmark: item.landmark || (item.latitude && item.longitude ? `Ward 12 (${Number(item.latitude).toFixed(4)}° N, ${Number(item.longitude).toFixed(4)}° E)` : "Bhubaneswar Ward 12"),
-        latitude: Number(item.latitude) || 20.2961,
-        longitude: Number(item.longitude) || 85.8245,
-      },
-      submittedAt: item.reported_at || item.submittedAt || new Date().toISOString(),
-      workOrderId: item.assigned_work_order_id || item.workOrderId,
-      workOrderSummary: item.work_order_summary || item.workOrderSummary,
-      workflowId: item.workflow_id,
-    }));
+    return rawList.map((item: RawIncidentPayload) => {
+      const lat = item.latitude !== undefined && item.latitude !== null && !isNaN(Number(item.latitude)) ? Number(item.latitude) : null;
+      const lng = item.longitude !== undefined && item.longitude !== null && !isNaN(Number(item.longitude)) ? Number(item.longitude) : null;
+      const landmark = item.landmark || (lat !== null && lng !== null ? `Coordinates (${lat.toFixed(4)}°, ${lng.toFixed(4)}°)` : "Location unavailable");
+
+      return {
+        id: item.incident_id || item.id || "INC-UNKNOWN",
+        title: item.title || (item.category ? `${item.category.replace(/_/g, " ")} Incident` : `Incident ${item.incident_id || item.id}`),
+        category: item.category ? item.category.replace(/_/g, " ") : "General Incident",
+        priority: (item.priority_level || item.priority || "Medium") as IncidentPriority,
+        severityScore: item.severity_score || 65,
+        reportsCount: item.duplicates_seen || item.reportsCount || 1,
+        primaryDepartment: item.assigned_department || item.primaryDepartment || "Municipal Operations",
+        secondaryDepartments: item.secondary_departments || [],
+        status: item.status || "submitted",
+        location: {
+          landmark,
+          latitude: lat,
+          longitude: lng,
+        },
+        submittedAt: item.reported_at || item.submittedAt || new Date().toISOString(),
+        workOrderId: item.assigned_work_order_id || item.workOrderId,
+        workOrderSummary: item.work_order_summary || item.workOrderSummary,
+        workflowId: item.workflow_id,
+      };
+    });
   } catch (err) {
     if (isDemoMode()) {
       return DEMO_SEEDED_INCIDENTS;
@@ -378,6 +384,10 @@ export async function fetchIncidentDetail(id: string): Promise<IncidentRecord> {
     const envelope = (await res.json()) as CivitasEnvelope<RawIncidentDetailPayload>;
     const data = unwrapEnvelope(envelope);
 
+    const lat = data.latitude !== undefined && data.latitude !== null && !isNaN(Number(data.latitude)) ? Number(data.latitude) : null;
+    const lng = data.longitude !== undefined && data.longitude !== null && !isNaN(Number(data.longitude)) ? Number(data.longitude) : null;
+    const landmark = data.landmark || (lat !== null && lng !== null ? `Coordinates (${lat.toFixed(4)}°, ${lng.toFixed(4)}°)` : "Location unavailable");
+
     return {
       id: data.incident_id || data.id || id,
       title: data.title || (data.category ? `${data.category.replace(/_/g, " ")} Incident` : `Incident ${id}`),
@@ -389,9 +399,9 @@ export async function fetchIncidentDetail(id: string): Promise<IncidentRecord> {
       secondaryDepartments: data.secondary_departments || [],
       status: data.status || "submitted",
       location: {
-        landmark: data.landmark || (data.latitude && data.longitude ? `Ward 12 (${Number(data.latitude).toFixed(4)}° N, ${Number(data.longitude).toFixed(4)}° E)` : "Ward 12 Georeferenced"),
-        latitude: Number(data.latitude) || 20.2961,
-        longitude: Number(data.longitude) || 85.8245,
+        landmark,
+        latitude: lat,
+        longitude: lng,
       },
       submittedAt: data.reported_at || data.submittedAt || new Date().toISOString(),
       workOrderId: data.assigned_work_order_id || (data.work_orders?.[0]?.work_order_id),
@@ -417,6 +427,19 @@ export async function submitReport(payload: {
   latitude?: number;
   longitude?: number;
 }): Promise<{ report_id: string; status: string; description: string }> {
+  if (
+    payload.latitude === undefined ||
+    payload.latitude === null ||
+    payload.longitude === undefined ||
+    payload.longitude === null ||
+    isNaN(payload.latitude) ||
+    isNaN(payload.longitude)
+  ) {
+    if (!isDemoMode()) {
+      throw new ApiError("Valid latitude and longitude coordinates are required to submit a report.", 400);
+    }
+  }
+
   try {
     const headers = await getAuthHeadersAsync();
     const res = await fetch(`${getApiBaseUrl()}/reports`, {
@@ -428,8 +451,8 @@ export async function submitReport(payload: {
       body: JSON.stringify({
         description: payload.description,
         location: {
-          latitude: payload.latitude !== undefined ? payload.latitude : 20.29614,
-          longitude: payload.longitude !== undefined ? payload.longitude : 85.82451,
+          latitude: payload.latitude !== undefined && !isNaN(payload.latitude) ? payload.latitude : 20.29614,
+          longitude: payload.longitude !== undefined && !isNaN(payload.longitude) ? payload.longitude : 85.82451,
         },
         citizen_selected_category: payload.category || null,
       }),
@@ -453,7 +476,7 @@ export async function submitReport(payload: {
         description: payload.description,
       };
     }
-    throw err instanceof ApiError ? err : new ApiError(err instanceof Error ? err.message : "Unable to submit report to backend", 500);
+    throw err instanceof ApiError ? err : new ApiError(err instanceof Error ? err.message : "Failed to submit report", 500);
   }
 }
 

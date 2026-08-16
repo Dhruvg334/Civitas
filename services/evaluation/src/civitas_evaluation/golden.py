@@ -18,8 +18,8 @@ from __future__ import annotations
 import json
 from datetime import datetime
 
-from civitas_duplicates.embeddings import HashNgramEmbedder
 from civitas_duplicates.contracts import ReportLike
+from civitas_duplicates.embeddings import HashNgramEmbedder
 from civitas_geo.models import ExposureContext
 from civitas_ml.analyze import analyze_report
 from civitas_resolution.evidence import ResolutionEvidence

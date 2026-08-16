@@ -239,7 +239,7 @@ def _decode_video_bytes(
     )
 
 
-def resolve_video(reference: MediaReference, backend: "BackendAdapter | None" = None) -> ResolvedVideo:
+def resolve_video(reference: MediaReference, backend: BackendAdapter | None = None) -> ResolvedVideo:
     """Resolve one video reference to decoded frames + metadata, or a structured error."""
     if reference.local_path:
         return _load_local_video(reference.local_path, reference)
@@ -271,7 +271,7 @@ def resolve_video(reference: MediaReference, backend: "BackendAdapter | None" = 
     return _decode_video_bytes(data, reference, "backend", reference.mime_type)
 
 
-def resolve_media(reference: MediaReference, backend: "BackendAdapter | None" = None) -> ResolvedMedia:
+def resolve_media(reference: MediaReference, backend: BackendAdapter | None = None) -> ResolvedMedia:
     """Resolve one media reference to a decoded image or a structured error."""
     if reference.kind == "video":
         return ResolvedMedia(
@@ -321,12 +321,12 @@ def resolve_media(reference: MediaReference, backend: "BackendAdapter | None" = 
 
 
 __all__ = [
+    "MAX_VIDEO_FRAMES",
+    "SUPPORTED_IMAGE_MIME",
+    "SUPPORTED_VIDEO_MIME",
     "ResolvedMedia",
     "ResolvedVideo",
     "VideoDecodeError",
     "resolve_media",
     "resolve_video",
-    "SUPPORTED_IMAGE_MIME",
-    "SUPPORTED_VIDEO_MIME",
-    "MAX_VIDEO_FRAMES",
 ]

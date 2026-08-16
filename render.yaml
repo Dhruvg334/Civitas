@@ -13,8 +13,12 @@ services:
       - key: API_HOST
         value: 0.0.0.0
       - key: CORS_ORIGINS
-        value: "*"
+        value: https://civitas-web.vercel.app
       - key: DATABASE_URL
+        sync: false
+      - key: CIVITAS_WORKFLOW_CHECKPOINT_DATABASE_URL
+        sync: false
+      - key: CIVITAS_POSTGIS_DSN
         sync: false
       - key: SUPABASE_URL
         sync: false
@@ -22,9 +26,13 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
       - key: GROQ_API_KEY
         sync: false
       - key: CIVITAS_INTERNAL_API_KEY
         generateValue: true
-      - key: SUPABASE_JWT_SECRET
-        sync: false
+      - key: CIVITAS_LLM_PRIMARY_MODEL
+        value: llama-3.3-70b-versatile
+      - key: CIVITAS_LLM_FAST_MODEL
+        value: llama-3.1-8b-instant

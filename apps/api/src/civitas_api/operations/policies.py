@@ -15,14 +15,14 @@ Empty filters return everything (TRIAGE role).
 from __future__ import annotations
 
 import uuid as _uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from civitas_api.core.database import get_connection
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _gen_id(prefix: str) -> str:
@@ -76,26 +76,23 @@ def list_policies(
         params["kind"] = kind
     sql += " ORDER BY code ASC LIMIT %(limit)s"
 
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(sql, params)
-            rows = list(cur.fetchall())
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(sql, params)
+        rows = list(cur.fetchall())
     return [_row_to_dict(r) for r in rows]
 
 
 def get_policy_by_code(code: str) -> dict[str, Any] | None:
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT * FROM policies WHERE code = %(c)s", {"c": code})
-            row = cur.fetchone()
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute("SELECT * FROM policies WHERE code = %(c)s", {"c": code})
+        row = cur.fetchone()
     return _row_to_dict(row) if row else None
 
 
 def get_policy(policy_id: str) -> dict[str, Any] | None:
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT * FROM policies WHERE policy_id = %(id)s", {"id": policy_id})
-            row = cur.fetchone()
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute("SELECT * FROM policies WHERE policy_id = %(id)s", {"id": policy_id})
+        row = cur.fetchone()
     return _row_to_dict(row) if row else None
 
 
@@ -115,51 +112,50 @@ def upsert_policy(
     from civitas_api.operations import reports as reports_ops
 
     now = _now()
-    with get_connection() as conn:
-        with conn.cursor() as cur:
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT policy_id FROM policies WHERE code = %(c)s",
+            {"c": code},
+        )
+        row = cur.fetchone()
+        if row is not None:
+            pid = row["policy_id"]
             cur.execute(
-                "SELECT policy_id FROM policies WHERE code = %(c)s",
-                {"c": code},
+                "UPDATE policies SET kind = %(k)s, title = %(t)s, body = %(b)s, "
+                "categories = %(cat)s, departments = %(dept)s, "
+                "severity_factors = %(sf)s, priority_factors = %(pf)s, "
+                "required_actions = %(ra)s, suggested_resources = %(sr)s "
+                "WHERE policy_id = %(id)s",
+                {
+                    "k": kind, "t": title, "b": body,
+                    "cat": reports_ops.to_json(categories),
+                    "dept": reports_ops.to_json(departments),
+                    "sf": reports_ops.to_json(severity_factors),
+                    "pf": reports_ops.to_json(priority_factors),
+                    "ra": reports_ops.to_json(required_actions),
+                    "sr": reports_ops.to_json(suggested_resources),
+                    "id": pid,
+                },
             )
-            row = cur.fetchone()
-            if row is not None:
-                pid = row["policy_id"]
-                cur.execute(
-                    "UPDATE policies SET kind = %(k)s, title = %(t)s, body = %(b)s, "
-                    "categories = %(cat)s, departments = %(dept)s, "
-                    "severity_factors = %(sf)s, priority_factors = %(pf)s, "
-                    "required_actions = %(ra)s, suggested_resources = %(sr)s "
-                    "WHERE policy_id = %(id)s",
-                    {
-                        "k": kind, "t": title, "b": body,
-                        "cat": reports_ops.to_json(categories),
-                        "dept": reports_ops.to_json(departments),
-                        "sf": reports_ops.to_json(severity_factors),
-                        "pf": reports_ops.to_json(priority_factors),
-                        "ra": reports_ops.to_json(required_actions),
-                        "sr": reports_ops.to_json(suggested_resources),
-                        "id": pid,
-                    },
-                )
-            else:
-                pid = _gen_id("pol")
-                cur.execute(
-                    "INSERT INTO policies "
-                    "(policy_id, code, kind, title, body, categories, departments, "
-                    "severity_factors, priority_factors, required_actions, "
-                    "suggested_resources, created_at) "
-                    "VALUES (%(id)s, %(c)s, %(k)s, %(t)s, %(b)s, %(cat)s, %(dept)s, "
-                    "%(sf)s, %(pf)s, %(ra)s, %(sr)s, %(now)s)",
-                    {
-                        "id": pid, "c": code, "k": kind, "t": title, "b": body,
-                        "cat": reports_ops.to_json(categories),
-                        "dept": reports_ops.to_json(departments),
-                        "sf": reports_ops.to_json(severity_factors),
-                        "pf": reports_ops.to_json(priority_factors),
-                        "ra": reports_ops.to_json(required_actions),
-                        "sr": reports_ops.to_json(suggested_resources),
-                        "now": now,
-                    },
-                )
-            conn.commit()
+        else:
+            pid = _gen_id("pol")
+            cur.execute(
+                "INSERT INTO policies "
+                "(policy_id, code, kind, title, body, categories, departments, "
+                "severity_factors, priority_factors, required_actions, "
+                "suggested_resources, created_at) "
+                "VALUES (%(id)s, %(c)s, %(k)s, %(t)s, %(b)s, %(cat)s, %(dept)s, "
+                "%(sf)s, %(pf)s, %(ra)s, %(sr)s, %(now)s)",
+                {
+                    "id": pid, "c": code, "k": kind, "t": title, "b": body,
+                    "cat": reports_ops.to_json(categories),
+                    "dept": reports_ops.to_json(departments),
+                    "sf": reports_ops.to_json(severity_factors),
+                    "pf": reports_ops.to_json(priority_factors),
+                    "ra": reports_ops.to_json(required_actions),
+                    "sr": reports_ops.to_json(suggested_resources),
+                    "now": now,
+                },
+            )
+        conn.commit()
     return get_policy(pid) or {}

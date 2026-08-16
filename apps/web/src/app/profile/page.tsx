@@ -141,7 +141,6 @@ export default function Profile() {
     if (!demoModeActive) return;
     const selected = DEFAULT_PERSONAS[roleKey];
     const session: UserSession = {
-      accessToken: "demo-preview-token",
       user: selected,
     };
     setSession(session);
@@ -163,9 +162,11 @@ export default function Profile() {
     e.preventDefault();
     setClarificationError(null);
     try {
-      await submitWorkflowClarification("wf-demo-light-0238", {
-        q1: clarificationReply || "Lamp post is standing upright, but bulb housing is broken.",
-      });
+      if (demoModeActive) {
+        await submitWorkflowClarification("wf-demo-light-0238", {
+          q1: clarificationReply || "Lamp post is standing upright, but bulb housing is broken.",
+        });
+      }
       setClarificationSent(true);
       setSavedNotice("✓ Clarification response submitted to LangGraph workflow runtime.");
       setTimeout(() => {
@@ -205,7 +206,7 @@ export default function Profile() {
 
             <h1 className="profile-name-heading">{user.name}</h1>
             <p className="profile-role-sub">{user.roleTitle}</p>
-            <p className="profile-ward-text">📍 Primary Geofence: <b>{user.ward}</b></p>
+            <p className="profile-ward-text">📍 Primary Geofence: <b>{user.ward || "Municipal Operations Grid"}</b></p>
 
             {isGuest && (
               <div className="guest-banner-row">
@@ -270,26 +271,53 @@ export default function Profile() {
 
         {/* STATS TILES */}
         <section className="profile-stats-ribbon">
-          <div className="stat-tile">
-            <span className="stat-label">REPORTS TRACKED</span>
-            <b className="stat-num">03 Verified</b>
-            <small>Active in PostGIS Ward 12</small>
-          </div>
-          <div className="stat-tile">
-            <span className="stat-label">ACTION REQUIRED</span>
-            <b className="stat-num alert-num">01 Clarification</b>
-            <small>Response needed on REPORT-097</small>
-          </div>
-          <div className="stat-tile">
-            <span className="stat-label">DISPATCHED CREWS</span>
-            <b className="stat-num">02 Work Orders</b>
-            <small>Public Works & Water Dept</small>
-          </div>
-          <div className="stat-tile">
-            <span className="stat-label">RESOLUTION AUDIT</span>
-            <b className="stat-num good-num">100% Verified</b>
-            <small>CLIP CV before/after image match</small>
-          </div>
+          {demoModeActive ? (
+            <>
+              <div className="stat-tile">
+                <span className="stat-label">REPORTS TRACKED (DEMO)</span>
+                <b className="stat-num">03 Verified</b>
+                <small>Active in PostGIS Ward 12</small>
+              </div>
+              <div className="stat-tile">
+                <span className="stat-label">ACTION REQUIRED (DEMO)</span>
+                <b className="stat-num alert-num">01 Clarification</b>
+                <small>Response needed on REPORT-097</small>
+              </div>
+              <div className="stat-tile">
+                <span className="stat-label">DISPATCHED CREWS (DEMO)</span>
+                <b className="stat-num">02 Work Orders</b>
+                <small>Public Works & Water Dept</small>
+              </div>
+              <div className="stat-tile">
+                <span className="stat-label">RESOLUTION AUDIT (DEMO)</span>
+                <b className="stat-num good-num">Verified</b>
+                <small>CLIP CV before/after image match</small>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="stat-tile">
+                <span className="stat-label">ACCOUNT STATUS</span>
+                <b className="stat-num good-num">{isGuest ? "Guest Preview" : "Authenticated"}</b>
+                <small>{isGuest ? "Sign in to track reports" : "Session Verified"}</small>
+              </div>
+              <div className="stat-tile">
+                <span className="stat-label">OPEN REPORTS</span>
+                <b className="stat-num">0 Active</b>
+                <small>No open incidents pending</small>
+              </div>
+              <div className="stat-tile">
+                <span className="stat-label">CLARIFICATIONS</span>
+                <b className="stat-num">0 Pending</b>
+                <small>All inquiries resolved</small>
+              </div>
+              <div className="stat-tile">
+                <span className="stat-label">INTELLIGENCE RUNTIME</span>
+                <b className="stat-num good-num">Connected</b>
+                <small>LangGraph & PostGIS Ready</small>
+              </div>
+            </>
+          )}
         </section>
 
         {/* TAB SWITCHER */}
@@ -306,7 +334,7 @@ export default function Profile() {
             onClick={() => setActiveTab("reports")}
           >
             <FlatIcon name="doc" size={14} />
-            <span>Submitted Reports & Timeline ({demoReports.length})</span>
+            <span>Submitted Reports {demoModeActive ? `(${demoReports.length} Demo)` : "(0)"}</span>
           </button>
           <button
             className={`tab-nav-btn ${activeTab === "ward" ? "active" : ""}`}
@@ -329,80 +357,93 @@ export default function Profile() {
           {/* TAB 1: OVERVIEW */}
           {activeTab === "overview" && (
             <div className="overview-tab-content">
-              {/* CLARIFICATION URGENT CARD */}
-              <div className="clarification-callout-card">
-                <div className="callout-header">
-                  <div className="callout-title-row">
-                    <FlatIcon name="alert" size={18} color="#b45309" />
-                    <b>Pending Field Question for REPORT-097 (East Gate Streetlight)</b>
+              {/* CLARIFICATION CARD (DEMO OR ACTIVE) */}
+              {demoModeActive ? (
+                <div className="clarification-callout-card">
+                  <div className="callout-header">
+                    <div className="callout-title-row">
+                      <FlatIcon name="alert" size={18} color="#b45309" />
+                      <b>Pending Field Question for REPORT-097 (Demo Scenario · East Gate Streetlight)</b>
+                    </div>
+                    <Status tone="warn">WAITING_FOR_CLARIFICATION</Status>
                   </div>
-                  <Status tone="warn">WAITING_FOR_CLARIFICATION</Status>
+                  <p className="callout-body">
+                    Municipal electrical team asks: <i>&quot;Is the luminaire lamp post visibly tilted, or is the bulb intact with no power?&quot;</i>
+                  </p>
+
+                  {clarificationSent ? (
+                    <div className="clarification-success">
+                      ✓ Thank you! Your response was attached to REPORT-097 and routed to Electrical Dispatch.
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSendClarification} className="clarification-form">
+                      {clarificationError && (
+                        <div className="clarification-error-box" role="alert" style={{ background: "#fee2e2", border: "1px solid #f87171", padding: "8px 12px", borderRadius: "6px", color: "#991b1b", marginBottom: "8px", fontSize: "0.875rem" }}>
+                          ⚠️ {clarificationError}
+                        </div>
+                      )}
+                      <input
+                        type="text"
+                        placeholder="e.g. The pole is straight, but all 3 lights in the cluster are completely dark."
+                        value={clarificationReply}
+                        onChange={(e) => setClarificationReply(e.target.value)}
+                        required
+                        className="clarification-input"
+                      />
+                      <button type="submit" className="button small">
+                        {clarificationError ? "Retry Sending Reply →" : "Send Reply to Field Crew →"}
+                      </button>
+                    </form>
+                  )}
                 </div>
-                <p className="callout-body">
-                  Municipal electrical team asks: <i>&quot;Is the luminaire lamp post visibly tilted, or is the bulb intact with no power?&quot;</i>
-                </p>
+              ) : null}
 
-                {clarificationSent ? (
-                  <div className="clarification-success">
-                    ✓ Thank you! Your response was attached to REPORT-097 and routed to Electrical Dispatch.
-                  </div>
-                ) : (
-                  <form onSubmit={handleSendClarification} className="clarification-form">
-                    {clarificationError && (
-                      <div className="clarification-error-box" role="alert" style={{ background: "#fee2e2", border: "1px solid #f87171", padding: "8px 12px", borderRadius: "6px", color: "#991b1b", marginBottom: "8px", fontSize: "0.875rem" }}>
-                        ⚠️ {clarificationError}
-                      </div>
-                    )}
-                    <input
-                      type="text"
-                      placeholder="e.g. The pole is straight, but all 3 lights in the cluster are completely dark."
-                      value={clarificationReply}
-                      onChange={(e) => setClarificationReply(e.target.value)}
-                      required
-                      className="clarification-input"
-                    />
-                    <button type="submit" className="button small">
-                      {clarificationError ? "Retry Sending Reply →" : "Send Reply to Field Crew →"}
-                    </button>
-                  </form>
-                )}
-              </div>
-
-              {/* RECENT REPORTS PREVIEW */}
+              {/* RECENT REPORTS SECTION */}
               <div className="recent-reports-header">
-                <h3>Active Ward 12 Civic Reports</h3>
+                <h3>{demoModeActive ? "Active Ward 12 Civic Reports (Demo Showcase)" : "Your Active Civic Reports"}</h3>
                 <Link href="/workspace" className="workspace-link">
                   Open in Workspace Command Center →
                 </Link>
               </div>
 
-              <div className="reports-dossier-list">
-                {demoReports.map((rpt) => (
-                  <article key={rpt.id} className="report-row-card">
-                    <div className="rpt-id-col">
-                      <span className="rpt-id-tag">{rpt.id}</span>
-                      <small className="linked-inc">Grouped in {rpt.incidentId}</small>
-                    </div>
+              {demoModeActive ? (
+                <div className="reports-dossier-list">
+                  {demoReports.map((rpt) => (
+                    <article key={rpt.id} className="report-row-card">
+                      <div className="rpt-id-col">
+                        <span className="rpt-id-tag">{rpt.id}</span>
+                        <small className="linked-inc">Grouped in {rpt.incidentId}</small>
+                      </div>
 
-                    <div className="rpt-info-col">
-                      <b className="rpt-title">{rpt.title}</b>
-                      <p className="rpt-loc">📍 {rpt.location}</p>
-                      <small className="rpt-action">{rpt.actionNeeded}</small>
-                    </div>
+                      <div className="rpt-info-col">
+                        <b className="rpt-title">{rpt.title}</b>
+                        <p className="rpt-loc">📍 {rpt.location}</p>
+                        <small className="rpt-action">{rpt.actionNeeded}</small>
+                      </div>
 
-                    <div className="rpt-status-col">
-                      <Status tone={rpt.tone}>{rpt.status}</Status>
-                      <span className="rpt-date">{rpt.date}</span>
-                    </div>
+                      <div className="rpt-status-col">
+                        <Status tone={rpt.tone}>{rpt.status}</Status>
+                        <span className="rpt-date">{rpt.date}</span>
+                      </div>
 
-                    <div className="rpt-action-col">
-                      <Link href={`/incidents/${rpt.incidentId}`} className="outline small">
-                        Inspect Dossier
-                      </Link>
-                    </div>
-                  </article>
-                ))}
-              </div>
+                      <div className="rpt-action-col">
+                        <Link href={`/incidents/${rpt.incidentId}`} className="outline small">
+                          Inspect Dossier
+                        </Link>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-reports-panel" style={{ border: "1px solid #172019", background: "#fbf9f4", padding: "32px", borderRadius: "6px", textAlign: "center" }}>
+                  <p style={{ margin: "0 0 16px", color: "#555e54", fontSize: "0.95rem" }}>
+                    No citizen reports filed under this account yet. Reports you submit will appear here with live LangGraph execution traces and status tracking.
+                  </p>
+                  <Link href="/report" className="button large">
+                    Submit New Civic Report →
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 
@@ -410,35 +451,46 @@ export default function Profile() {
           {activeTab === "reports" && (
             <div className="reports-timeline-content">
               <div className="timeline-header">
-                <h2>All Submitted Reports & Verification Trace</h2>
+                <h2>{demoModeActive ? "Submitted Reports & Verification Trace (Demo Data)" : "Submitted Reports & Audit History"}</h2>
                 <p>Track full auditability: model outputs never overwrite citizen evidence.</p>
               </div>
 
-              <div className="timeline-list">
-                {demoReports.map((rpt, idx) => (
-                  <div key={rpt.id} className="timeline-item">
-                    <div className="timeline-marker">
-                      <span>0{idx + 1}</span>
-                    </div>
-                    <div className="timeline-card">
-                      <div className="timeline-card-top">
-                        <div>
-                          <span className="timeline-ref">{rpt.id} · {rpt.priority}</span>
-                          <h3>{rpt.title}</h3>
+              {demoModeActive ? (
+                <div className="timeline-list">
+                  {demoReports.map((rpt, idx) => (
+                    <div key={rpt.id} className="timeline-item">
+                      <div className="timeline-marker">
+                        <span>0{idx + 1}</span>
+                      </div>
+                      <div className="timeline-card">
+                        <div className="timeline-card-top">
+                          <div>
+                            <span className="timeline-ref">{rpt.id} · {rpt.priority}</span>
+                            <h3>{rpt.title}</h3>
+                          </div>
+                          <Status tone={rpt.tone}>{rpt.status}</Status>
                         </div>
-                        <Status tone={rpt.tone}>{rpt.status}</Status>
-                      </div>
-                      <p className="timeline-meta">📍 Coordinates: {rpt.location}</p>
-                      <p className="timeline-detail">{rpt.actionNeeded}</p>
-                      <div className="timeline-actions">
-                        <Link href={`/incidents/${rpt.incidentId}`} className="button small">
-                          Open Incident Dossier →
-                        </Link>
+                        <p className="timeline-meta">📍 Coordinates: {rpt.location}</p>
+                        <p className="timeline-detail">{rpt.actionNeeded}</p>
+                        <div className="timeline-actions">
+                          <Link href={`/incidents/${rpt.incidentId}`} className="button small">
+                            Open Incident Dossier →
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-timeline-box" style={{ border: "1px solid #172019", background: "#fbf9f4", padding: "36px", borderRadius: "6px", textAlign: "center" }}>
+                  <p style={{ margin: "0 0 16px", color: "#555e54" }}>
+                    You have not submitted any reports yet. Once submitted, each report receives a persistent PostGIS spatial reference and LangGraph audit trace.
+                  </p>
+                  <Link href="/report" className="button large">
+                    Report an Issue →
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 

@@ -20,8 +20,9 @@ from __future__ import annotations
 
 import math
 from collections import Counter
+from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
-from typing import Any, Mapping, Protocol, Sequence
+from typing import Any, Protocol
 
 from civitas_geo.boundary import DEFAULT_BOUNDARY
 from civitas_geo.candidates import RowExecutor

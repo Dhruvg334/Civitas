@@ -125,6 +125,7 @@ def test_scores_stay_in_range() -> None:
 
 def test_real_backend_adapter_posts_canonical_candidate_contract() -> None:
     import json
+
     import httpx
     from civitas_ml.adapters.real_http import RealBackendAdapter
 

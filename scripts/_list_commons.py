@@ -1,4 +1,6 @@
-﻿import json, glob, os
+﻿import glob
+import json
+import os
 
 for f in sorted(glob.glob(r"C:\Users\NITUAG~1\AppData\Local\Temp\opencode\commons\*.json")):
     d = json.load(open(f, encoding="utf-8-sig"))

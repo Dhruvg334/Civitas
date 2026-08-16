@@ -4,6 +4,8 @@
 
 ### Turning every civic report into clear, accountable action.
 
+**Live Application**: [https://civitas-web.vercel.app](https://civitas-web.vercel.app) · **API**: FastAPI & PostGIS on Render
+
 A multimodal civic incident intelligence platform that transforms fragmented public reports into verified incidents, explainable priorities, correctly routed work orders, and accountable resolution.
 
 </div>
@@ -485,6 +487,14 @@ The structured workflow can be compared against:
 3. and the complete Civitas workflow using specialized models, retrieval, validation, critique, and human review.
 
 The goal is not to produce perfect-looking numbers. The goal is to produce reproducible results, expose failure cases, and show where decomposition and verification improve reliability.
+
+### Evaluation Distinction: Offline vs. Live Inference
+
+| Evaluation Layer | Scope & Method | Live API Key Required? | Current Verified Status |
+| :--- | :--- | :--- | :--- |
+| **Offline Deterministic Architecture Evaluation** | 394+ unit, contract, and Golden E2E integration tests validating schema parsing, PostGIS spatial queries, CLIP feature extraction, risk scoring, duplicate clustering, policy retrieval, and LangGraph workflow interrupts. | **No** (runs offline with mock adapters & frozen datasets) | **394+ tests passing** |
+| **Live Groq Model Evaluation** | Real-time structured output generation against Groq-hosted `llama-3.3-70b-versatile` and `llama-3.1-8b-instant` models. | **Yes** (`GROQ_API_KEY`) | Verified via `scripts/smoke_groq.py` in live deployments. |
+
 
 ---
 

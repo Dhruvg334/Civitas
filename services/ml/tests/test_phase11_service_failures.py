@@ -15,12 +15,15 @@ import datetime
 
 import numpy as np
 import pytest
-from PIL import Image
-
 from civitas_ml.adapters.mock import MockBackendAdapter
-from civitas_ml.analyze import analyze_report, collect_vision_uncertainty, build_vision_section
+from civitas_ml.analyze import (
+    analyze_report,
+    build_vision_section,
+    collect_vision_uncertainty,
+)
 from civitas_ml.contracts import NearbyCandidatesRequest, VisionSection
 from civitas_ml.errors import MalformedResponseError
+from PIL import Image
 
 
 def _candidate_request(report_id: str = "CL-018") -> NearbyCandidatesRequest:

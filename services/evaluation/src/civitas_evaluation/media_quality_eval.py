@@ -14,12 +14,11 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from PIL import Image
-
+from civitas_ml.analyze import LOW_VISION_CONFIDENCE
 from civitas_ml.contracts import MediaReference, ReportInput
 from civitas_ml.pipeline import run_report
 from civitas_vision.detector import VisualIntelligencePipeline
-from civitas_ml.analyze import LOW_VISION_CONFIDENCE
+from PIL import Image
 
 from civitas_evaluation import datasets
 from civitas_evaluation.contracts import ComponentMetrics

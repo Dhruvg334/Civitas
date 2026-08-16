@@ -6,12 +6,8 @@
 
 from __future__ import annotations
 
-import base64
-
 import jwt as pyjwt
 from fastapi.testclient import TestClient
-
-from civitas_api.main import app
 
 
 def _sup_token() -> str:

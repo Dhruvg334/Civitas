@@ -4,8 +4,7 @@ cluster IDs, incident density and the labelled evaluation harness."""
 from datetime import datetime, timedelta, timezone
 
 import pytest
-
-from civitas_duplicates import DuplicateDetector  # noqa: F401  (engine smoke)
+from civitas_duplicates import DuplicateDetector
 from civitas_duplicates.contracts import PairFeatures, ReportLike
 from civitas_duplicates.detector import DENSITY_CELL_SIZE_M
 from civitas_duplicates.evaluation import (
@@ -14,12 +13,12 @@ from civitas_duplicates.evaluation import (
     evaluate_engine,
     gps_margin_check,
 )
-from civitas_duplicates.similarity import decide_duplicate, duplicate_reasons
 from civitas_duplicates.signals import (
     RELATED_CATEGORIES,
     category_agreement,
     category_relation,
 )
+from civitas_duplicates.similarity import decide_duplicate, duplicate_reasons
 
 T0 = datetime(2026, 3, 1, 10, 0, tzinfo=timezone.utc)
 

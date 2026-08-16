@@ -79,6 +79,7 @@ def run_all() -> int:
     datasets.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
     from civitas_duplicates.contracts import DuplicateResult  # noqa: F401
+
     from civitas_evaluation import (
         clustering_eval,
         duplicate_eval,

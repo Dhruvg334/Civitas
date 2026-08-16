@@ -5,7 +5,13 @@ use CIVITAS_DEMO_MEDIA_BASE_URL + remote_key. Every download is SHA-256
 verified before replacement.
 """
 from __future__ import annotations
-import argparse, hashlib, json, os, sys, urllib.request
+
+import argparse
+import hashlib
+import json
+import os
+import sys
+import urllib.request
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]

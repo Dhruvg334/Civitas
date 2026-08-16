@@ -1,6 +1,6 @@
 """Civitas severity and priority assessment."""
 
-from civitas_risk.assessor import RiskAssessor, RiskAssessment
+from civitas_risk.assessor import RiskAssessment, RiskAssessor
 from civitas_risk.contracts import PriorityResult, RiskContext, SeverityResult
 from civitas_risk.features import FEATURE_KEYS, assemble_feature_vector
 from civitas_risk.incident_features import (
@@ -33,35 +33,35 @@ from civitas_risk.severity_model import (
 )
 
 __all__ = [
-    "RiskAssessor",
-    "RiskAssessment",
-    "PriorityResult",
-    "RiskContext",
-    "SeverityResult",
     "FEATURE_KEYS",
-    "assemble_feature_vector",
-    "LogisticCalibrator",
-    "PriorityAssessor",
-    "PriorityConfig",
-    "tier_for",
-    "SeverityAssessor",
-    "rule_severity",
-    "severity_level",
     "ConsolidatedIncident",
     "IncidentFeatures",
     "IncidentVisualEvidence",
-    "build_incident_features",
+    "LogisticCalibrator",
+    "PriorityAssessment",
+    "PriorityAssessor",
+    "PriorityConfig",
     "PriorityContext",
     "PriorityFeatures",
-    "build_priority_features",
-    "category_urgency_signal",
-    "time_sensitivity_signal",
-    "PriorityAssessment",
     "PriorityModel",
     "PriorityReason",
-    "priority_level_for",
+    "PriorityResult",
+    "RiskAssessment",
+    "RiskAssessor",
+    "RiskContext",
     "SeverityAssessment",
+    "SeverityAssessor",
     "SeverityContribution",
     "SeverityModel",
+    "SeverityResult",
+    "assemble_feature_vector",
+    "build_incident_features",
+    "build_priority_features",
+    "category_urgency_signal",
+    "priority_level_for",
+    "rule_severity",
+    "severity_level",
     "severity_level_for",
+    "tier_for",
+    "time_sensitivity_signal",
 ]

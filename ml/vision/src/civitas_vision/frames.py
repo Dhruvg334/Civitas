@@ -26,7 +26,7 @@ rejected.
 from __future__ import annotations
 
 import math
-from typing import Iterable, Iterator
+from collections.abc import Iterable, Iterator
 
 from PIL import Image
 

@@ -13,7 +13,7 @@ the ML models never depend on how the backend is implemented.
 
 from civitas_ml.adapters import BackendAdapter, MockBackendAdapter, RealBackendAdapter
 from civitas_ml.analyze import analyze_report
-from civitas_ml.config import BackendSettings, MODE_MOCK, MODE_REAL, get_backend
+from civitas_ml.config import MODE_MOCK, MODE_REAL, BackendSettings, get_backend
 from civitas_ml.contracts import (
     CandidateReport,
     ClusterSection,
@@ -37,19 +37,21 @@ from civitas_ml.contracts import (
     SeveritySection,
     VisionSection,
 )
-from civitas_ml.errors import BackendAdapterError, MalformedResponseError, MLServiceError
+from civitas_ml.errors import (
+    BackendAdapterError,
+    MalformedResponseError,
+    MLServiceError,
+)
 from civitas_ml.media import ResolvedMedia, resolve_media
 from civitas_ml.pipeline import run_report, run_resolution
 from civitas_ml.verify import verify_resolution
 
 __all__ = [
-    "BackendAdapter",
-    "MockBackendAdapter",
-    "RealBackendAdapter",
-    "BackendSettings",
     "MODE_MOCK",
     "MODE_REAL",
-    "get_backend",
+    "BackendAdapter",
+    "BackendAdapterError",
+    "BackendSettings",
     "CandidateReport",
     "ClusterSection",
     "DuplicateCandidate",
@@ -60,24 +62,26 @@ __all__ = [
     "GeospatialSection",
     "LandmarkInfo",
     "LandmarkSet",
+    "MLServiceError",
+    "MalformedResponseError",
     "MediaReference",
+    "MockBackendAdapter",
     "ModelReference",
     "NearbyCandidatesRequest",
     "NearbyCandidatesResponse",
     "PrioritySection",
+    "RealBackendAdapter",
     "ReportAnalysis",
     "ReportInput",
     "ResolutionInput",
     "ResolutionVerification",
+    "ResolvedMedia",
     "SeveritySection",
     "VisionSection",
-    "ResolvedMedia",
-    "resolve_media",
-    "BackendAdapterError",
-    "MalformedResponseError",
-    "MLServiceError",
     "analyze_report",
-    "verify_resolution",
+    "get_backend",
+    "resolve_media",
     "run_report",
     "run_resolution",
+    "verify_resolution",
 ]

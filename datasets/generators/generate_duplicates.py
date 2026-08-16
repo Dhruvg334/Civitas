@@ -25,8 +25,8 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "ml" / "duplicates" / "src"))
 sys.path.insert(0, str(REPO / "geospatial" / "src"))
 
-from civitas_duplicates import DuplicateDetector, ReportLike  # noqa: E402
-from civitas_geo import distance as geo  # noqa: E402
+from civitas_duplicates import DuplicateDetector, ReportLike
+from civitas_geo import distance as geo
 
 OUT_DIR = REPO / "datasets" / "generated"
 MANIFEST_DIR = REPO / "datasets" / "manifests"

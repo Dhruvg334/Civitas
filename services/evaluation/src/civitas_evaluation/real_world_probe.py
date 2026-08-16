@@ -33,8 +33,8 @@ for pkg in ("vision", "duplicates", "risk", "resolution"):
     sys.path.insert(0, str(REPO_ROOT / "ml" / pkg / "src"))
 sys.path.insert(0, str(REPO_ROOT / "geospatial" / "src"))
 
-from civitas_ml.analyze import analyze_report  # noqa: E402
-from civitas_ml.vision_model import build_vision_pipeline  # noqa: E402
+from civitas_ml.analyze import analyze_report
+from civitas_ml.vision_model import build_vision_pipeline
 
 # Real-world probe policy: real citizen media is classified by the
 # zero-shot CLIP classifier (vision-clip-v2) when it is available —

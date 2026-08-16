@@ -23,7 +23,6 @@ from fastapi.testclient import TestClient
 
 from civitas_api.main import app
 
-
 # ---------------------------------------------------------------------------
 # Canonical pin coordinates: Delhi. Used in every example below.
 # Camera-center coordinates are deliberately different (Mumbai) for the

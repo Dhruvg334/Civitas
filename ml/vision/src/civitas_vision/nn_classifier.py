@@ -43,8 +43,8 @@ _TEMPERATURE = 2.0
 
 def _torch():
     """Lazy torch/torchvision import (optional dependency guard)."""
-    import torch  # noqa: PLC0415
-    import torchvision  # noqa: PLC0415
+    import torch
+    import torchvision
 
     return torch, torchvision
 
@@ -82,7 +82,7 @@ class NNClassifier:
         self._device = next(model.parameters()).device
 
     @classmethod
-    def load(cls, weights_dir: Path | None = None) -> "NNClassifier | None":
+    def load(cls, weights_dir: Path | None = None) -> NNClassifier | None:
         """Load the checkpoint; None when missing (pipeline falls back)."""
         weights_dir = Path(weights_dir) if weights_dir else default_weights_dir()
         ckpt = _checkpoint_path(weights_dir)

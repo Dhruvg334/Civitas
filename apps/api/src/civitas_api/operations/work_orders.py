@@ -16,7 +16,7 @@ Application-level invariants enforced here:
 from __future__ import annotations
 
 import uuid as _uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from civitas_api.core.database import get_connection
@@ -28,7 +28,7 @@ from civitas_api.operations.state_machine import (
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _gen_id(prefix: str) -> str:
@@ -56,25 +56,23 @@ def _coerce_row(row: Any) -> dict[str, Any]:
 
 
 def get_work_order(work_order_id: str) -> dict[str, Any] | None:
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT * FROM work_orders WHERE work_order_id = %(id)s",
-                {"id": work_order_id},
-            )
-            row = cur.fetchone()
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT * FROM work_orders WHERE work_order_id = %(id)s",
+            {"id": work_order_id},
+        )
+        row = cur.fetchone()
     return _coerce_row(row) if row else None
 
 
 def list_work_orders_for_incident(incident_id: str) -> list[dict[str, Any]]:
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT * FROM work_orders WHERE incident_id = %(i)s "
-                "ORDER BY created_at ASC",
-                {"i": incident_id},
-            )
-            rows = list(cur.fetchall())
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT * FROM work_orders WHERE incident_id = %(i)s "
+            "ORDER BY created_at ASC",
+            {"i": incident_id},
+        )
+        rows = list(cur.fetchall())
     return [_coerce_row(r) for r in rows]
 
 
@@ -96,7 +94,7 @@ def create_work_order(
     unless it is already past that point in its lifecycle."""
     target = reports_ops.get_incident(incident_id)
     if target is None:
-        from fastapi import HTTPException, status
+        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="incident not found")
 
     incident_status = target.get("status") or "submitted"
@@ -108,58 +106,57 @@ def create_work_order(
     trace_id = _gen_id("trc")
     now = _now()
 
-    with get_connection() as conn:
-        with conn.cursor() as cur:
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "INSERT INTO work_orders "
+            "(work_order_id, incident_id, summary, required_actions, "
+            "suggested_resources, safety_notes, estimated_window_min_hours, "
+            "estimated_window_max_hours, non_binding, status, "
+            "primary_department, secondary_departments, escalation_required, "
+            "policy_references, created_at, created_by) "
+            "VALUES (%(id)s, %(i)s, %(s)s, %(ra)s, %(sr)s, %(sn)s, "
+            "%(min)s, %(max)s, true, 'awaiting_review', "
+            "%(pd)s, %(sd)s, %(esc)s, %(pr)s, %(now)s, %(by)s)",
+            {
+                "id": work_order_id,
+                "i": incident_id,
+                "s": summary,
+                "ra": reports_ops.to_json(required_actions),
+                "sr": reports_ops.to_json(suggested_resources),
+                "sn": reports_ops.to_json(safety_notes),
+                "min": estimated_window_min_hours,
+                "max": estimated_window_max_hours,
+                "pd": primary_department,
+                "sd": reports_ops.to_json(secondary_departments),
+                "esc": escalation_required,
+                "pr": reports_ops.to_json(policy_references),
+                "now": now,
+                "by": created_by,
+            },
+        )
+        # Side-effect: advance incident + record trace.
+        if incident_status in {"submitted", "under_analysis", "clustered"}:
             cur.execute(
-                "INSERT INTO work_orders "
-                "(work_order_id, incident_id, summary, required_actions, "
-                "suggested_resources, safety_notes, estimated_window_min_hours, "
-                "estimated_window_max_hours, non_binding, status, "
-                "primary_department, secondary_departments, escalation_required, "
-                "policy_references, created_at, created_by) "
-                "VALUES (%(id)s, %(i)s, %(s)s, %(ra)s, %(sr)s, %(sn)s, "
-                "%(min)s, %(max)s, true, 'awaiting_review', "
-                "%(pd)s, %(sd)s, %(esc)s, %(pr)s, %(now)s, %(by)s)",
-                {
-                    "id": work_order_id,
-                    "i": incident_id,
-                    "s": summary,
-                    "ra": reports_ops.to_json(required_actions),
-                    "sr": reports_ops.to_json(suggested_resources),
-                    "sn": reports_ops.to_json(safety_notes),
-                    "min": estimated_window_min_hours,
-                    "max": estimated_window_max_hours,
-                    "pd": primary_department,
-                    "sd": reports_ops.to_json(secondary_departments),
-                    "esc": escalation_required,
-                    "pr": reports_ops.to_json(policy_references),
-                    "now": now,
-                    "by": created_by,
-                },
+                "UPDATE incidents SET status = 'awaiting_review', "
+                "status_updated_at = %(now)s, assigned_department = %(pd)s "
+                "WHERE incident_id = %(i)s",
+                {"now": now, "pd": primary_department, "i": incident_id},
             )
-            # Side-effect: advance incident + record trace.
-            if incident_status in {"submitted", "under_analysis", "clustered"}:
-                cur.execute(
-                    "UPDATE incidents SET status = 'awaiting_review', "
-                    "status_updated_at = %(now)s, assigned_department = %(pd)s "
-                    "WHERE incident_id = %(i)s",
-                    {"now": now, "pd": primary_department, "i": incident_id},
-                )
-            cur.execute(
-                "INSERT INTO agent_traces "
-                "(trace_id, incident_id, node, input, output, "
-                "validation_outcome, created_at) "
-                "VALUES (%(t)s, %(i)s, 'work_order_create', %(input)s, %(output)s, "
-                "'ok', %(now)s)",
-                {
-                    "t": trace_id,
-                    "i": incident_id,
-                    "input": reports_ops.to_json({"incident_id": incident_id}),
-                    "output": reports_ops.to_json({"work_order_id": work_order_id}),
-                    "now": now,
-                },
-            )
-            conn.commit()
+        cur.execute(
+            "INSERT INTO agent_traces "
+            "(trace_id, incident_id, node, input, output, "
+            "validation_outcome, created_at) "
+            "VALUES (%(t)s, %(i)s, 'work_order_create', %(input)s, %(output)s, "
+            "'ok', %(now)s)",
+            {
+                "t": trace_id,
+                "i": incident_id,
+                "input": reports_ops.to_json({"incident_id": incident_id}),
+                "output": reports_ops.to_json({"work_order_id": work_order_id}),
+                "now": now,
+            },
+        )
+        conn.commit()
 
     return get_work_order(work_order_id) or {}
 
@@ -180,7 +177,7 @@ def update_work_order(
     status transitions go through /approve (or the resolutions module)."""
     wo = get_work_order(work_order_id)
     if wo is None:
-        from fastapi import HTTPException, status
+        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="work_order not found")
 
     sets: list[str] = []
@@ -217,10 +214,9 @@ def update_work_order(
         return wo
 
     sql = f"UPDATE work_orders SET {', '.join(sets)} WHERE work_order_id = %(id)s"
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(sql, params)
-            conn.commit()
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(sql, params)
+        conn.commit()
     return get_work_order(work_order_id) or {}
 
 
@@ -232,7 +228,7 @@ def approve_work_order(work_order_id: str, reviewer_id: str) -> dict[str, Any]:
     assumes auto-assignment on approval for the MVP)."""
     wo = get_work_order(work_order_id)
     if wo is None:
-        from fastapi import HTTPException, status
+        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="work_order not found")
 
     current = wo["status"]
@@ -241,7 +237,7 @@ def approve_work_order(work_order_id: str, reviewer_id: str) -> dict[str, Any]:
     incident_id = wo["incident_id"]
     incident = reports_ops.get_incident(incident_id)
     if incident is None:
-        from fastapi import HTTPException, status
+        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="incident not found")
 
     incident_status = incident.get("status") or "submitted"
@@ -252,34 +248,33 @@ def approve_work_order(work_order_id: str, reviewer_id: str) -> dict[str, Any]:
     assert_incident_transition("approved", "assigned")
 
     now = _now()
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "UPDATE work_orders SET status = 'approved', "
-                "reviewed_by = %(rb)s, reviewed_at = %(now)s "
-                "WHERE work_order_id = %(id)s",
-                {"rb": reviewer_id, "now": now, "id": work_order_id},
-            )
-            cur.execute(
-                "UPDATE incidents SET status = 'assigned', "
-                "status_updated_at = %(now)s, assigned_work_order_id = %(id)s "
-                "WHERE incident_id = %(i)s",
-                {"now": now, "id": work_order_id, "i": incident_id},
-            )
-            cur.execute(
-                "INSERT INTO agent_traces (trace_id, incident_id, node, "
-                "input, output, validation_outcome, created_at) "
-                "VALUES (%(t)s, %(i)s, 'work_order_approve', "
-                "%(input)s, %(output)s, 'ok', %(now)s)",
-                {
-                    "t": _gen_id("trc"),
-                    "i": incident_id,
-                    "input": reports_ops.to_json({"work_order_id": work_order_id}),
-                    "output": reports_ops.to_json({"status": "approved"}),
-                    "now": now,
-                },
-            )
-            conn.commit()
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "UPDATE work_orders SET status = 'approved', "
+            "reviewed_by = %(rb)s, reviewed_at = %(now)s "
+            "WHERE work_order_id = %(id)s",
+            {"rb": reviewer_id, "now": now, "id": work_order_id},
+        )
+        cur.execute(
+            "UPDATE incidents SET status = 'assigned', "
+            "status_updated_at = %(now)s, assigned_work_order_id = %(id)s "
+            "WHERE incident_id = %(i)s",
+            {"now": now, "id": work_order_id, "i": incident_id},
+        )
+        cur.execute(
+            "INSERT INTO agent_traces (trace_id, incident_id, node, "
+            "input, output, validation_outcome, created_at) "
+            "VALUES (%(t)s, %(i)s, 'work_order_approve', "
+            "%(input)s, %(output)s, 'ok', %(now)s)",
+            {
+                "t": _gen_id("trc"),
+                "i": incident_id,
+                "input": reports_ops.to_json({"work_order_id": work_order_id}),
+                "output": reports_ops.to_json({"status": "approved"}),
+                "now": now,
+            },
+        )
+        conn.commit()
     return get_work_order(work_order_id) or {}
 
 
@@ -312,30 +307,29 @@ def reject_work_order(work_order_id: str, reviewer_id: str) -> dict[str, Any]:
     assert_incident_transition(incident_status, "rejected")
 
     now = _now()
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "UPDATE work_orders SET reviewed_by = %(rb)s, reviewed_at = %(now)s "
-                "WHERE work_order_id = %(id)s",
-                {"rb": reviewer_id, "now": now, "id": work_order_id},
-            )
-            cur.execute(
-                "UPDATE incidents SET status = 'rejected', "
-                "status_updated_at = %(now)s WHERE incident_id = %(i)s",
-                {"now": now, "i": incident_id},
-            )
-            cur.execute(
-                "INSERT INTO agent_traces (trace_id, incident_id, node, "
-                "input, output, validation_outcome, created_at) "
-                "VALUES (%(t)s, %(i)s, 'work_order_reject', "
-                "%(input)s, %(output)s, 'ok', %(now)s)",
-                {
-                    "t": _gen_id("trc"),
-                    "i": incident_id,
-                    "input": reports_ops.to_json({"work_order_id": work_order_id}),
-                    "output": reports_ops.to_json({"status": "rejected"}),
-                    "now": now,
-                },
-            )
-            conn.commit()
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "UPDATE work_orders SET reviewed_by = %(rb)s, reviewed_at = %(now)s "
+            "WHERE work_order_id = %(id)s",
+            {"rb": reviewer_id, "now": now, "id": work_order_id},
+        )
+        cur.execute(
+            "UPDATE incidents SET status = 'rejected', "
+            "status_updated_at = %(now)s WHERE incident_id = %(i)s",
+            {"now": now, "i": incident_id},
+        )
+        cur.execute(
+            "INSERT INTO agent_traces (trace_id, incident_id, node, "
+            "input, output, validation_outcome, created_at) "
+            "VALUES (%(t)s, %(i)s, 'work_order_reject', "
+            "%(input)s, %(output)s, 'ok', %(now)s)",
+            {
+                "t": _gen_id("trc"),
+                "i": incident_id,
+                "input": reports_ops.to_json({"work_order_id": work_order_id}),
+                "output": reports_ops.to_json({"status": "rejected"}),
+                "now": now,
+            },
+        )
+        conn.commit()
     return get_work_order(work_order_id) or {}

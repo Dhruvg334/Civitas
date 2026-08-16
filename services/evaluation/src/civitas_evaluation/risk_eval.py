@@ -29,12 +29,17 @@ from typing import Any
 
 from civitas_risk.incident_features import IncidentFeatures
 from civitas_risk.priority_features import PriorityContext, build_priority_features
-from civitas_risk.priority_model import PriorityModel, REASON_FACTORS
-from civitas_risk.severity_model import SeverityModel, SeverityAssessment
+from civitas_risk.priority_model import REASON_FACTORS, PriorityModel
+from civitas_risk.severity_model import SeverityAssessment, SeverityModel
 
 from civitas_evaluation import datasets
 from civitas_evaluation.contracts import ComponentMetrics
-from civitas_evaluation.metrics import accuracy, cohen_kappa, per_class_metrics, confusion_matrix
+from civitas_evaluation.metrics import (
+    accuracy,
+    cohen_kappa,
+    confusion_matrix,
+    per_class_metrics,
+)
 
 COMPONENT_SEVERITY = "severity-model"
 COMPONENT_PRIORITY = "priority-model"
@@ -181,7 +186,10 @@ def _priority_case(
     row: dict[str, Any], case_id: str
 ) -> tuple[PriorityContext, dict[str, float], set[str]]:
     from civitas_geo.models import ExposureContext
-    from civitas_risk.incident_features import ConsolidatedIncident, IncidentVisualEvidence
+    from civitas_risk.incident_features import (
+        ConsolidatedIncident,
+        IncidentVisualEvidence,
+    )
 
     incident = row["incident"]  # type: ignore[arg-type]
     ctx = row["context"]  # type: ignore[arg-type]

@@ -24,10 +24,14 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "ml" / "risk" / "src"))
 sys.path.insert(0, str(REPO / "geospatial" / "src"))
 
-from civitas_geo.models import ExposureContext  # noqa: E402
-from civitas_risk.contracts import RiskContext  # noqa: E402
-from civitas_risk.features import FEATURE_KEYS, assemble_feature_vector, normalize_category  # noqa: E402
-from civitas_risk.severity import rule_severity, severity_level  # noqa: E402
+from civitas_geo.models import ExposureContext
+from civitas_risk.contracts import RiskContext
+from civitas_risk.features import (
+    FEATURE_KEYS,
+    assemble_feature_vector,
+    normalize_category,
+)
+from civitas_risk.severity import rule_severity, severity_level
 
 OUT_DIR = REPO / "datasets" / "generated"
 MANIFEST_DIR = REPO / "datasets" / "manifests"

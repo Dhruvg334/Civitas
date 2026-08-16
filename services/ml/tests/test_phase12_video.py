@@ -21,14 +21,18 @@ from pathlib import Path
 
 import pytest
 
-cv2 = pytest.importorskip("cv2")  # noqa: E402 - guarded optional dependency
+cv2 = pytest.importorskip("cv2")
 
-from civitas_ml.adapters.mock import MockBackendAdapter  # noqa: E402
-from civitas_ml.analyze import analyze_report  # noqa: E402
-from civitas_ml.contracts import MediaReference, ReportInput, ResolutionInput  # noqa: E402
-from civitas_ml.media import ResolvedVideo, resolve_video  # noqa: E402
-from civitas_ml.pipeline import run_report, run_resolution  # noqa: E402
-from civitas_vision.benchmark import make_scene  # noqa: E402
+from civitas_ml.adapters.mock import MockBackendAdapter
+from civitas_ml.analyze import analyze_report
+from civitas_ml.contracts import (
+    MediaReference,
+    ReportInput,
+    ResolutionInput,
+)
+from civitas_ml.media import ResolvedVideo, resolve_video
+from civitas_ml.pipeline import run_report, run_resolution
+from civitas_vision.benchmark import make_scene
 
 
 def _write_video(tmp_path: Path, category: str = "water_leakage", variant: str = "flow") -> Path:

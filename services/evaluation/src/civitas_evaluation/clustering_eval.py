@@ -14,9 +14,9 @@ import json
 from datetime import datetime
 from typing import Any
 
+from civitas_duplicates.contracts import ReportLike
 from civitas_duplicates.detector import DuplicateDetector
 from civitas_duplicates.embeddings import HashNgramEmbedder
-from civitas_duplicates.contracts import ReportLike
 
 from civitas_evaluation import datasets
 from civitas_evaluation.contracts import ComponentMetrics

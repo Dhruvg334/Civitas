@@ -11,12 +11,17 @@ module default — is the classifier that actually runs.
 from __future__ import annotations
 
 import pytest
-
 from civitas_ml.analyze import analyze_report
 from civitas_ml.contracts import MediaReference, ReportInput, ResolutionInput
 from civitas_ml.pipeline import run_report, run_resolution
 from civitas_ml.verify import verify_resolution
-from civitas_ml.vision_model import CID, KID, MODEL_CLIP, MODEL_KNN, build_vision_pipeline
+from civitas_ml.vision_model import (
+    CID,
+    KID,
+    MODEL_CLIP,
+    MODEL_KNN,
+    build_vision_pipeline,
+)
 from civitas_vision.benchmark import make_image
 from civitas_vision.contracts import CIVITAS_CATEGORIES, ClassificationProbs
 from civitas_vision.detector import VisualIntelligencePipeline

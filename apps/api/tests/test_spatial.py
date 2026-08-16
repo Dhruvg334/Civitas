@@ -11,8 +11,6 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from civitas_api.main import app
-
 
 def _seed_incidents(client: TestClient, payloads: list[dict], auth_header: dict[str, str]) -> list[str]:
     ids: list[str] = []

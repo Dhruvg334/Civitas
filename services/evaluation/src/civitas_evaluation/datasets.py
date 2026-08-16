@@ -27,9 +27,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from PIL import Image
-
-from civitas_vision.benchmark import gaussian_blur, make_image, SIZE
+from civitas_risk import priority_features as _prio_feat
 
 # Documented rule/weight mirrors used ONLY to author the risk labels. The
 # evaluation package must not silently copy the models' internals, so these
@@ -37,8 +35,9 @@ from civitas_vision.benchmark import gaussian_blur, make_image, SIZE
 # models ship, the drift-asserts below fail loudly and the labels must be
 # re-derived consciously (circularity is disclosed in risk_eval.py notes).
 from civitas_risk import severity_model as _sev
-from civitas_risk import priority_features as _prio_feat
 from civitas_risk.priority_model import PriorityModel as _PriorityModel
+from civitas_vision.benchmark import SIZE, gaussian_blur, make_image
+from PIL import Image
 
 assert _sev.RULE_POINTS == {
     "active_water_flow": 12,
@@ -147,7 +146,7 @@ MEDIA_QUALITY_CASES = [
 def _ambiguous_blend() -> Image.Image:
     water = np.asarray(make_image("water_leakage", 7101, "flow")).astype(np.float64)
     pothole = np.asarray(make_image("pothole_road_damage", 7300)).astype(np.float64)
-    return Image.fromarray(((water * 0.5 + pothole * 0.5).astype(np.uint8)))
+    return Image.fromarray((water * 0.5 + pothole * 0.5).astype(np.uint8))
 
 
 def _report(
@@ -658,9 +657,9 @@ def generate_test_set() -> dict[str, object]:
                 img = img.resize((32, 32), Image.Resampling.BILINEAR)
             img.save(media_dir / f"{case_id}.png")
         elif kind == "near-black":
-            Image.fromarray((np.full((SIZE, SIZE, 3), 3, dtype=np.uint8))).save(media_dir / f"{case_id}.png")
+            Image.fromarray(np.full((SIZE, SIZE, 3), 3, dtype=np.uint8)).save(media_dir / f"{case_id}.png")
         elif kind == "over-exposed":
-            Image.fromarray((np.full((SIZE, SIZE, 3), 252, dtype=np.uint8))).save(media_dir / f"{case_id}.png")
+            Image.fromarray(np.full((SIZE, SIZE, 3), 252, dtype=np.uint8)).save(media_dir / f"{case_id}.png")
         elif kind == "ambiguous":
             _ambiguous_blend().save(media_dir / f"{case_id}.png")
         elif kind == "unsupported":

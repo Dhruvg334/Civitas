@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for Civitas API & ML Engine (FastAPI + Python 3.12)
+# Production Dockerfile for Civitas API & ML Engine (FastAPI + Python 3.12)
 FROM python:3.12-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
@@ -14,29 +14,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy local source code and python modules
+# Copy local source code and python packages
 COPY . .
 
-# Install dependencies and local workspace packages
-RUN pip install --no-cache-dir \
-    fastapi \
-    uvicorn[standard] \
-    pydantic \
-    pydantic-settings \
-    psycopg[binary] \
-    python-dotenv \
-    pyjwt \
-    httpx \
-    pillow \
-    numpy \
-    langgraph \
-    langgraph-checkpoint-postgres
-
-ENV PYTHONPATH="apps/api/src:services/workflow/src:services/knowledge/src:services/evaluation/src:services/ml/src:services/operations/src:services/policies/src:services/storage/src:ml/vision/src:ml/clustering/src:ml/routing/src:ml/resolution/src:ml/duplicates/src:ml/risk/src:geospatial/src:schemas/src"
+# Install workspace packages in dependency order with constrained NumPy and production extras
+RUN python -m pip install --upgrade pip setuptools wheel && \
+    python -m pip install "numpy>=1.26,<2.0" && \
+    python -m pip install ./geospatial && \
+    python -m pip install "./ml/vision[video]" && \
+    python -m pip install "./ml/duplicates[geo,vision]" && \
+    python -m pip install "./ml/risk[geo,duplicates]" && \
+    python -m pip install "./ml/resolution[vision]" && \
+    python -m pip install ./services/knowledge && \
+    python -m pip install "./services/ml[full,video,http]" && \
+    python -m pip install "./services/workflow[postgres]" && \
+    python -m pip install ./services/evaluation && \
+    python -m pip install ./apps/api
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8000/ready || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:8000/live || exit 1
 
-CMD ["sh", "-c", "uvicorn civitas_api.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "uvicorn civitas_api.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]

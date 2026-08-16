@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import sqlite3
 from contextlib import contextmanager
-from typing import Any
+from typing import Any, Self
 
 from civitas_api.core.config import get_settings
 
@@ -32,13 +32,13 @@ class _SQLiteCursor:
         self._cur = cur
         self._description = None
 
-    def __enter__(self) -> "_SQLiteCursor":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:
         try:
             self._cur.close()
-        except Exception:
+        except Exception:  # noqa: S110, BLE001
             pass
 
     def execute(self, sql: str, params: dict | None = None) -> None:
@@ -46,8 +46,8 @@ class _SQLiteCursor:
         # same SQL works on both engines. Also strip ::type casts (PostGIS
         # uses these; SQLite does not parse them). When params is a dict
         # we extract values in placeholder order so positional binding works.
-        import re
         import datetime as _dt
+        import re
 
         def _coerce(v: Any) -> Any:
             if isinstance(v, (_dt.datetime, _dt.date)):
@@ -84,7 +84,7 @@ class _SQLiteConnection:
     def __init__(self, conn: sqlite3.Connection) -> None:
         self._conn = conn
 
-    def __enter__(self) -> "_SQLiteConnection":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:
@@ -137,7 +137,7 @@ def get_connection():
         finally:
             conn.close()
         return
-    if url.startswith("postgresql://") or url.startswith("postgres://"):
+    if url.startswith(("postgresql://", "postgres://")):
         import psycopg
         from psycopg.rows import dict_row
 
@@ -165,21 +165,19 @@ class PostgresExecutor:
     def execute(self, sql: str, params: dict[str, object] | None = None) -> list[dict[str, Any]]:
         if self._sqlite_executor is not None:
             return self._sqlite_executor.execute(sql, params)
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(sql, params or {})
-                if cur.description is None:
-                    return []
-                return list(cur.fetchall())
+        with get_connection() as conn, conn.cursor() as cur:
+            cur.execute(sql, params or {})
+            if cur.description is None:
+                return []
+            return list(cur.fetchall())
 
     def execute_returning_id(self, sql: str, params: dict[str, object] | None = None) -> str:
         if self._sqlite_executor is not None:
             return self._sqlite_executor.execute_returning_id(sql, params)
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(sql, params or {})
-                row = cur.fetchone()
-                conn.commit()
-                if row is None or "incident_id" not in row:
-                    raise RuntimeError("INSERT did not return incident_id")
-                return str(row["incident_id"])
+        with get_connection() as conn, conn.cursor() as cur:
+            cur.execute(sql, params or {})
+            row = cur.fetchone()
+            conn.commit()
+            if row is None or "incident_id" not in row:
+                raise RuntimeError("INSERT did not return incident_id")
+            return str(row["incident_id"])

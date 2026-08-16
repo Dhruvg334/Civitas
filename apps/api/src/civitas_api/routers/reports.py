@@ -1,6 +1,5 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Annotated
-from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field

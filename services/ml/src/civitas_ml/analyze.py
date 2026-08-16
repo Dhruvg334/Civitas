@@ -21,8 +21,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal, TypeAlias
 
-from PIL import Image
-
 from civitas_duplicates import (
     ClassicalImageEmbedder,
     DuplicateDetector,
@@ -67,6 +65,7 @@ from civitas_vision.quality import (
     MIN_LUMINANCE,
     MIN_WIDTH_PX,
 )
+from PIL import Image
 
 from civitas_ml.contracts import (
     ClusterSection,
@@ -339,7 +338,7 @@ def build_cluster_section(
     positions = {r.report_id: (r.latitude, r.longitude) for r in all_reports}
     scored: list[ScoredPair] = []
     for result in pair_results:
-        next(r for r in all_reports if r.report_id == result.report_b)  # noqa: B018 - existence guard
+        next(r for r in all_reports if r.report_id == result.report_b)
         scored.append(
             ScoredPair(
                 a=result.report_a,

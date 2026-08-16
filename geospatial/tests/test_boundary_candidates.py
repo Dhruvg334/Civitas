@@ -5,7 +5,6 @@ enrichment and the location-validation pipeline gate."""
 from datetime import datetime, timedelta, timezone
 
 import pytest
-
 from civitas_geo.boundary import DEFAULT_BOUNDARY, point_in_boundary
 from civitas_geo.candidates import (
     CandidateRetriever,

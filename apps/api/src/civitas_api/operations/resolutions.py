@@ -17,7 +17,7 @@ See ref/04 §14 + ref/08 §9.
 from __future__ import annotations
 
 import uuid as _uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import HTTPException, status
@@ -28,7 +28,7 @@ from civitas_api.operations.state_machine import assert_incident_transition
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _gen_id(prefix: str) -> str:
@@ -76,58 +76,57 @@ def submit_resolution(
     resolution_id = _gen_id("rsl")
     now = _now()
 
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO resolution_submissions "
-                "(resolution_id, incident_id, classification, "
-                "resolved_evidence, remaining_evidence, uncertainties, "
-                "model_version, submitted_at, submitted_by) "
-                "VALUES (%(id)s, %(i)s, %(c)s, %(re)s, %(rr)s, %(u)s, "
-                "%(mv)s, %(now)s, %(by)s)",
-                {
-                    "id": resolution_id,
-                    "i": incident_id,
-                    "c": classification,
-                    "re": reports_ops.to_json(resolved_evidence),
-                    "rr": reports_ops.to_json(remaining_evidence),
-                    "u": reports_ops.to_json(uncertainties),
-                    "mv": model_version,
-                    "now": now,
-                    "by": submitted_by,
-                },
-            )
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "INSERT INTO resolution_submissions "
+            "(resolution_id, incident_id, classification, "
+            "resolved_evidence, remaining_evidence, uncertainties, "
+            "model_version, submitted_at, submitted_by) "
+            "VALUES (%(id)s, %(i)s, %(c)s, %(re)s, %(rr)s, %(u)s, "
+            "%(mv)s, %(now)s, %(by)s)",
+            {
+                "id": resolution_id,
+                "i": incident_id,
+                "c": classification,
+                "re": reports_ops.to_json(resolved_evidence),
+                "rr": reports_ops.to_json(remaining_evidence),
+                "u": reports_ops.to_json(uncertainties),
+                "mv": model_version,
+                "now": now,
+                "by": submitted_by,
+            },
+        )
 
-            # Advance incident.
-            if current_status == "in_progress":
-                assert_incident_transition("in_progress", "resolution_submitted")
-            assert_incident_transition("resolution_submitted", "verification_pending")
-            cur.execute(
-                "UPDATE incidents SET status = 'verification_pending', "
-                "resolution_class = %(c)s, status_updated_at = %(now)s "
-                "WHERE incident_id = %(i)s",
-                {"c": classification, "now": now, "i": incident_id},
-            )
+        # Advance incident.
+        if current_status == "in_progress":
+            assert_incident_transition("in_progress", "resolution_submitted")
+        assert_incident_transition("resolution_submitted", "verification_pending")
+        cur.execute(
+            "UPDATE incidents SET status = 'verification_pending', "
+            "resolution_class = %(c)s, status_updated_at = %(now)s "
+            "WHERE incident_id = %(i)s",
+            {"c": classification, "now": now, "i": incident_id},
+        )
 
-            cur.execute(
-                "INSERT INTO agent_traces "
-                "(trace_id, incident_id, node, model_version, "
-                "input, output, validation_outcome, created_at) "
-                "VALUES (%(t)s, %(i)s, 'resolution_submit', %(mv)s, "
-                "%(input)s, %(output)s, 'ok', %(now)s)",
-                {
-                    "t": _gen_id("trc"),
-                    "i": incident_id,
-                    "mv": model_version,
-                    "input": reports_ops.to_json({"incident_id": incident_id}),
-                    "output": reports_ops.to_json({
-                        "resolution_id": resolution_id,
-                        "classification": classification,
-                    }),
-                    "now": now,
-                },
-            )
-            conn.commit()
+        cur.execute(
+            "INSERT INTO agent_traces "
+            "(trace_id, incident_id, node, model_version, "
+            "input, output, validation_outcome, created_at) "
+            "VALUES (%(t)s, %(i)s, 'resolution_submit', %(mv)s, "
+            "%(input)s, %(output)s, 'ok', %(now)s)",
+            {
+                "t": _gen_id("trc"),
+                "i": incident_id,
+                "mv": model_version,
+                "input": reports_ops.to_json({"incident_id": incident_id}),
+                "output": reports_ops.to_json({
+                    "resolution_id": resolution_id,
+                    "classification": classification,
+                }),
+                "now": now,
+            },
+        )
+        conn.commit()
 
     return get_resolution_submission(resolution_id) or {}
 
@@ -158,41 +157,39 @@ def reviewer_resolve(
     assert_incident_transition(current_status, action)
 
     now = _now()
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "UPDATE incidents SET status = %(st)s, "
-                "status_updated_at = %(now)s "
-                "WHERE incident_id = %(i)s",
-                {"st": action, "now": now, "i": incident_id},
-            )
-            cur.execute(
-                "INSERT INTO agent_traces "
-                "(trace_id, incident_id, node, "
-                "input, output, validation_outcome, created_at) "
-                "VALUES (%(t)s, %(i)s, 'reviewer_action', "
-                "%(input)s, %(output)s, 'ok', %(now)s)",
-                {
-                    "t": _gen_id("trc"),
-                    "i": incident_id,
-                    "input": reports_ops.to_json({"incident_id": incident_id}),
-                    "output": reports_ops.to_json({"action": action}),
-                    "now": now,
-                },
-            )
-            conn.commit()
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "UPDATE incidents SET status = %(st)s, "
+            "status_updated_at = %(now)s "
+            "WHERE incident_id = %(i)s",
+            {"st": action, "now": now, "i": incident_id},
+        )
+        cur.execute(
+            "INSERT INTO agent_traces "
+            "(trace_id, incident_id, node, "
+            "input, output, validation_outcome, created_at) "
+            "VALUES (%(t)s, %(i)s, 'reviewer_action', "
+            "%(input)s, %(output)s, 'ok', %(now)s)",
+            {
+                "t": _gen_id("trc"),
+                "i": incident_id,
+                "input": reports_ops.to_json({"incident_id": incident_id}),
+                "output": reports_ops.to_json({"action": action}),
+                "now": now,
+            },
+        )
+        conn.commit()
 
     return reports_ops.get_incident(incident_id) or {}
 
 
 def get_resolution_submission(resolution_id: str) -> dict[str, Any] | None:
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT * FROM resolution_submissions WHERE resolution_id = %(id)s",
-                {"id": resolution_id},
-            )
-            row = cur.fetchone()
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT * FROM resolution_submissions WHERE resolution_id = %(id)s",
+            {"id": resolution_id},
+        )
+        row = cur.fetchone()
     if row is None:
         return None
     d = dict(row)
@@ -208,14 +205,13 @@ def get_resolution_submission(resolution_id: str) -> dict[str, Any] | None:
 
 
 def list_resolution_submissions(incident_id: str) -> list[dict[str, Any]]:
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT * FROM resolution_submissions WHERE incident_id = %(i)s "
-                "ORDER BY submitted_at DESC",
-                {"i": incident_id},
-            )
-            rows = list(cur.fetchall())
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT * FROM resolution_submissions WHERE incident_id = %(i)s "
+            "ORDER BY submitted_at DESC",
+            {"i": incident_id},
+        )
+        rows = list(cur.fetchall())
     out = []
     for r in rows:
         d = dict(r)

@@ -14,8 +14,6 @@ import uuid
 from pathlib import Path
 from typing import TypeAlias
 
-from PIL import Image
-
 from civitas_resolution import (
     COVERAGE_GROWTH_CONFLICT_RATIO,
     STANDING_WATER_EVIDENCE_MIN,
@@ -25,6 +23,7 @@ from civitas_resolution import (
 )
 from civitas_vision.detector import VisualIntelligencePipeline
 from civitas_vision.features import extract_features
+from PIL import Image
 
 from civitas_ml.contracts import FactorPoint, ModelReference, ResolutionVerification
 

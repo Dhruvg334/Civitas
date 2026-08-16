@@ -23,18 +23,18 @@ from civitas_geo.retrieval import NearbyRetriever
 from civitas_api.core.database import PostgresExecutor
 
 __all__ = [
-    "CandidateRetriever",
-    "DensityAggregator",
     "DEFAULT_BOUNDARY",
+    "CandidateRetriever",
+    "CandidateSearchSpec",
+    "DensityAggregateResult",
+    "DensityAggregator",
     "GeoPoint",
     "LandmarkDistance",
     "LandmarkIndex",
+    "NearbyIncidentsResult",
     "NearbyRetriever",
     "PostgresExecutor",
     "SpatialSearchSpec",
-    "CandidateSearchSpec",
-    "DensityAggregateResult",
-    "NearbyIncidentsResult",
 ]
 
 

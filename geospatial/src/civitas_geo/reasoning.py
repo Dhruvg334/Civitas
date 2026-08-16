@@ -8,7 +8,12 @@ and explicit inference. No signal here is presented as ground truth.
 from __future__ import annotations
 
 from civitas_geo.landmarks import LandmarkIndex
-from civitas_geo.models import ExposureContext, GeoPoint, NearbyIncidentsResult, SpatialSearchSpec
+from civitas_geo.models import (
+    ExposureContext,
+    GeoPoint,
+    NearbyIncidentsResult,
+    SpatialSearchSpec,
+)
 from civitas_geo.retrieval import NearbyRetriever
 
 JUNCTION_DENSITY_RADIUS_M = 1_000.0

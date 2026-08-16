@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from civitas_api.main import app
-
 
 def _create_report(client: TestClient, auth_header: dict[str, str]) -> str:
     r = client.post(

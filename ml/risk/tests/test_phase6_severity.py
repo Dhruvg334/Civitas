@@ -10,8 +10,6 @@ traffic, 3 reports, 1.2 h -> severity 78 HIGH.
 from datetime import datetime, timezone
 
 import pytest
-from pydantic import ValidationError
-
 from civitas_geo.models import ExposureContext
 from civitas_risk import (
     ConsolidatedIncident,
@@ -25,6 +23,7 @@ from civitas_risk import (
     priority_level_for,
 )
 from civitas_risk.severity_model import severity_level_for
+from pydantic import ValidationError
 
 DEMO_EXPOSURE = ExposureContext(
     nearest_school_m=37.0,

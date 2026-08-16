@@ -24,7 +24,7 @@ from functools import lru_cache
 import numpy as np
 from PIL import Image
 
-from civitas_vision.classifier import KNNClassifier, TRAIN_SEED
+from civitas_vision.classifier import TRAIN_SEED, KNNClassifier
 from civitas_vision.contracts import CIVITAS_CATEGORIES
 from civitas_vision.features import extract_features
 

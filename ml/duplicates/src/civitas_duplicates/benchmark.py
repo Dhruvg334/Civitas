@@ -82,7 +82,9 @@ _VISION_CATEGORY: dict[str, str] = {
 def _scene_image(category: str, seed: int) -> Any:
     """Synthetic category scene; colour-only fallback without civitas-vision."""
     try:
-        from civitas_vision.benchmark import make_image  # type: ignore[import-not-found]
+        from civitas_vision.benchmark import (
+            make_image,  # type: ignore[import-not-found]
+        )
 
         return make_image(_VISION_CATEGORY[category], seed=seed)
     except ImportError:
@@ -311,9 +313,9 @@ def run_pair_evaluation(
 
 __all__ = [
     "CATEGORIES",
+    "SYNTHETIC_DESCRIPTIONS",
     "PairEvaluation",
     "ReportScenario",
-    "SYNTHETIC_DESCRIPTIONS",
     "make_synthetic_pairs",
     "run_pair_evaluation",
 ]

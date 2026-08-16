@@ -17,7 +17,7 @@ with the existing schema.
 from __future__ import annotations
 
 import uuid as _uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
@@ -38,7 +38,7 @@ MAX_BYTES = 50 * 1024 * 1024  # 50 MB
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _gen_id(prefix: str) -> str:
@@ -49,8 +49,8 @@ def _gen_id(prefix: str) -> str:
 async def upload_media(
     report_id: str,
     principal: Annotated[Principal, Depends(require_role(Role.CITIZEN))],
-    file: UploadFile = File(...),
-    captured_at: str | None = Form(None),
+    file: Annotated[UploadFile, File()],
+    captured_at: Annotated[str | None, Form()] = None,
 ) -> dict[str, Any]:
     """Upload one media file for a report. Returns media_id + signed URL."""
     report = reports_ops.get_incident(report_id)
@@ -111,33 +111,32 @@ async def upload_media(
     parsed_captured_at: datetime | None = None
     if captured_at:
         try:
-            parsed_captured_at = datetime.fromisoformat(captured_at.replace("Z", "+00:00"))
+            parsed_captured_at = datetime.fromisoformat(captured_at)
         except ValueError:
             parsed_captured_at = None
 
     now = _now()
     try:
-        with reports_ops.get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "INSERT INTO media "
-                    "(media_id, incident_id, kind, mime_type, storage_path, "
-                    "bytes_size, captured_at, uploaded_at, uploaded_by) "
-                    "VALUES (%(id)s, %(i)s, %(k)s, %(m)s, %(p)s, %(b)s, "
-                    "%(cap)s, %(now)s, %(by)s)",
-                    {
-                        "id": media_id,
-                        "i": report_id,
-                        "k": kind,
-                        "m": mime,
-                        "p": put_path,
-                        "b": len(data),
-                        "cap": parsed_captured_at,
-                        "now": now,
-                        "by": principal.user_id,
-                    },
-                )
-                conn.commit()
+        with reports_ops.get_connection() as conn, conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO media "
+                "(media_id, incident_id, kind, mime_type, storage_path, "
+                "bytes_size, captured_at, uploaded_at, uploaded_by) "
+                "VALUES (%(id)s, %(i)s, %(k)s, %(m)s, %(p)s, %(b)s, "
+                "%(cap)s, %(now)s, %(by)s)",
+                {
+                    "id": media_id,
+                    "i": report_id,
+                    "k": kind,
+                    "m": mime,
+                    "p": put_path,
+                    "b": len(data),
+                    "cap": parsed_captured_at,
+                    "now": now,
+                    "by": principal.user_id,
+                },
+            )
+            conn.commit()
     except Exception as exc:  # noqa: BLE001
         return error_envelope(
             code="PERSISTENCE_ERROR",
@@ -147,7 +146,7 @@ async def upload_media(
 
     try:
         signed = get_storage().signed_url(storage_path, ttl_seconds=3600)
-    except Exception as exc:  # noqa: BLE001
+    except Exception:  # noqa: BLE001
         signed = put_path  # fall back to storage path
 
     return success_envelope({

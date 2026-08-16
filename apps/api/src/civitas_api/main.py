@@ -73,13 +73,3 @@ app.include_router(resolutions.router)
 app.include_router(policies.router)
 app.include_router(map_extract.router)
 app.include_router(workflows.router)
-
-
-@app.get("/ready")
-def ready() -> dict[str, str]:
-    """Liveness + DB readiness probe.
-
-    Returns 200 even if DB is unreachable so the route can be smoke-tested
-    offline; in deployment a richer check would gate on a real DB ping.
-    """
-    return {"service": settings.app_name, "status": "ready"}

@@ -18,7 +18,12 @@ from civitas_resolution.model import ResolutionModel
 
 from civitas_evaluation import datasets
 from civitas_evaluation.contracts import ComponentMetrics
-from civitas_evaluation.metrics import accuracy, cohen_kappa, confusion_matrix, per_class_metrics
+from civitas_evaluation.metrics import (
+    accuracy,
+    cohen_kappa,
+    confusion_matrix,
+    per_class_metrics,
+)
 
 COMPONENT = "resolution-verification"
 OUTCOMES = ["resolved", "partial", "unverifiable", "conflicting"]

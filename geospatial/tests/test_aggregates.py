@@ -3,7 +3,6 @@
 from datetime import datetime, timedelta, timezone
 
 import pytest
-
 from civitas_geo.aggregates import (
     DensityAggregator,
     cell_id_for,

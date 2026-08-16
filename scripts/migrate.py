@@ -10,8 +10,9 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
-from dotenv import load_dotenv
+
 import psycopg
+from dotenv import load_dotenv
 
 # Load root .env
 ROOT_DIR = Path(__file__).resolve().parent.parent

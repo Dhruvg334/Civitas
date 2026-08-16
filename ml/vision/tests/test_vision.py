@@ -11,8 +11,6 @@ from datetime import datetime, timezone
 
 import numpy as np
 import pytest
-from PIL import Image
-
 from civitas_vision import evidence as evidence_rules
 from civitas_vision.benchmark import (
     gaussian_blur,
@@ -20,12 +18,17 @@ from civitas_vision.benchmark import (
     run_evaluation,
     train_default_model,
 )
-from civitas_vision.classifier import KNNClassifier, merge_media_probs, secondary_categories
+from civitas_vision.classifier import (
+    KNNClassifier,
+    merge_media_probs,
+    secondary_categories,
+)
 from civitas_vision.contracts import CIVITAS_CATEGORIES, ClassificationProbs
 from civitas_vision.detector import VisualIntelligencePipeline
 from civitas_vision.features import FEATURE_NAMES, extract_features
 from civitas_vision.frames import select_key_frames
 from civitas_vision.quality import assess_quality, laplacian_variance
+from PIL import Image
 
 TODAY = datetime.now(timezone.utc).isoformat()
 

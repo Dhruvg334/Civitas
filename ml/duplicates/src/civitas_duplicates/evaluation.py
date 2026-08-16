@@ -353,11 +353,11 @@ def gps_margin_check(pairs: list[LabelledPair]) -> None:
 
 __all__ = [
     "CATEGORIES",
+    "TRUTH",
     "EngineEvaluation",
     "LabelledPair",
     "LabelledScenario",
     "PairRow",
-    "TRUTH",
     "build_labelled_pairs",
     "evaluate_engine",
 ]

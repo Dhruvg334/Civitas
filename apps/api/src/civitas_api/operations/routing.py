@@ -11,7 +11,7 @@ See ref/04 §11 for the routing payload contract.
 from __future__ import annotations
 
 import uuid as _uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from civitas_api.core.database import get_connection
@@ -20,7 +20,7 @@ from civitas_api.operations.state_machine import assert_incident_transition
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _gen_id(prefix: str) -> str:
@@ -40,7 +40,7 @@ def create_routing_decision(
 ) -> dict[str, Any]:
     target = reports_ops.get_incident(incident_id)
     if target is None:
-        from fastapi import HTTPException, status
+        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="incident not found")
 
     current_status = target.get("status") or "submitted"
@@ -48,86 +48,84 @@ def create_routing_decision(
     trace_id = _gen_id("trc")
     now = _now()
 
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO routing_decisions "
-                "(routing_id, incident_id, primary_department, "
-                "secondary_departments, escalation_required, policy_references, "
-                "decision_basis, review_required, workflow_version, routed_at, routed_by) "
-                "VALUES (%(id)s, %(i)s, %(pd)s, %(sd)s, %(esc)s, %(pr)s, "
-                "%(db)s, %(rr)s, %(wv)s, %(now)s, %(by)s)",
-                {
-                    "id": routing_id,
-                    "i": incident_id,
-                    "pd": primary_department,
-                    "sd": reports_ops.to_json(secondary_departments),
-                    "esc": escalation_required,
-                    "pr": reports_ops.to_json(policy_references),
-                    "db": reports_ops.to_json(decision_basis),
-                    "rr": review_required,
-                    "wv": workflow_version,
-                    "now": now,
-                    "by": routed_by,
-                },
-            )
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "INSERT INTO routing_decisions "
+            "(routing_id, incident_id, primary_department, "
+            "secondary_departments, escalation_required, policy_references, "
+            "decision_basis, review_required, workflow_version, routed_at, routed_by) "
+            "VALUES (%(id)s, %(i)s, %(pd)s, %(sd)s, %(esc)s, %(pr)s, "
+            "%(db)s, %(rr)s, %(wv)s, %(now)s, %(by)s)",
+            {
+                "id": routing_id,
+                "i": incident_id,
+                "pd": primary_department,
+                "sd": reports_ops.to_json(secondary_departments),
+                "esc": escalation_required,
+                "pr": reports_ops.to_json(policy_references),
+                "db": reports_ops.to_json(decision_basis),
+                "rr": review_required,
+                "wv": workflow_version,
+                "now": now,
+                "by": routed_by,
+            },
+        )
 
-            # Side-effects:
-            # - If we're at awaiting_review and routing does NOT require
-            #   review, advance to approved (skipping the reviewer gate).
-            # - Update assigned_department to mirror the routing choice.
-            new_status = current_status
-            if current_status == "awaiting_review" and not review_required:
-                assert_incident_transition("awaiting_review", "approved")
+        # Side-effects:
+        # - If we're at awaiting_review and routing does NOT require
+        #   review, advance to approved (skipping the reviewer gate).
+        # - Update assigned_department to mirror the routing choice.
+        new_status = current_status
+        if current_status == "awaiting_review" and not review_required:
+            assert_incident_transition("awaiting_review", "approved")
+            new_status = "approved"
+        elif current_status in {"submitted", "under_analysis", "clustered"}:
+            # Routing in early lifecycle -> move to awaiting_review
+            # (or approved if no review needed).
+            if not review_required:
+                assert_incident_transition(current_status, "approved")
                 new_status = "approved"
-            elif current_status in {"submitted", "under_analysis", "clustered"}:
-                # Routing in early lifecycle -> move to awaiting_review
-                # (or approved if no review needed).
-                if not review_required:
-                    assert_incident_transition(current_status, "approved")
-                    new_status = "approved"
-                else:
-                    assert_incident_transition(current_status, "awaiting_review")
-                    new_status = "awaiting_review"
+            else:
+                assert_incident_transition(current_status, "awaiting_review")
+                new_status = "awaiting_review"
 
-            cur.execute(
-                "UPDATE incidents SET assigned_department = %(pd)s, "
-                "status = %(st)s, status_updated_at = %(now)s "
-                "WHERE incident_id = %(i)s",
-                {"pd": primary_department, "st": new_status, "now": now, "i": incident_id},
-            )
+        cur.execute(
+            "UPDATE incidents SET assigned_department = %(pd)s, "
+            "status = %(st)s, status_updated_at = %(now)s "
+            "WHERE incident_id = %(i)s",
+            {"pd": primary_department, "st": new_status, "now": now, "i": incident_id},
+        )
 
-            cur.execute(
-                "INSERT INTO agent_traces "
-                "(trace_id, incident_id, node, model_version, "
-                "input, output, validation_outcome, created_at) "
-                "VALUES (%(t)s, %(i)s, 'route', %(wv)s, "
-                "%(input)s, %(output)s, 'ok', %(now)s)",
-                {
-                    "t": trace_id,
-                    "i": incident_id,
-                    "wv": workflow_version,
-                    "input": reports_ops.to_json({"incident_id": incident_id}),
-                    "output": reports_ops.to_json({
-                        "routing_id": routing_id,
-                        "primary_department": primary_department,
-                    }),
-                    "now": now,
-                },
-            )
-            conn.commit()
+        cur.execute(
+            "INSERT INTO agent_traces "
+            "(trace_id, incident_id, node, model_version, "
+            "input, output, validation_outcome, created_at) "
+            "VALUES (%(t)s, %(i)s, 'route', %(wv)s, "
+            "%(input)s, %(output)s, 'ok', %(now)s)",
+            {
+                "t": trace_id,
+                "i": incident_id,
+                "wv": workflow_version,
+                "input": reports_ops.to_json({"incident_id": incident_id}),
+                "output": reports_ops.to_json({
+                    "routing_id": routing_id,
+                    "primary_department": primary_department,
+                }),
+                "now": now,
+            },
+        )
+        conn.commit()
 
     return get_routing_decision(routing_id) or {}
 
 
 def get_routing_decision(routing_id: str) -> dict[str, Any] | None:
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT * FROM routing_decisions WHERE routing_id = %(id)s",
-                {"id": routing_id},
-            )
-            row = cur.fetchone()
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT * FROM routing_decisions WHERE routing_id = %(id)s",
+            {"id": routing_id},
+        )
+        row = cur.fetchone()
     if row is None:
         return None
     d = dict(row)
@@ -143,14 +141,13 @@ def get_routing_decision(routing_id: str) -> dict[str, Any] | None:
 
 
 def list_routings_for_incident(incident_id: str) -> list[dict[str, Any]]:
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT * FROM routing_decisions WHERE incident_id = %(i)s "
-                "ORDER BY routed_at DESC",
-                {"i": incident_id},
-            )
-            rows = list(cur.fetchall())
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT * FROM routing_decisions WHERE incident_id = %(i)s "
+            "ORDER BY routed_at DESC",
+            {"i": incident_id},
+        )
+        rows = list(cur.fetchall())
     out = []
     for r in rows:
         d = dict(r)

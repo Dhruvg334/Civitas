@@ -1,7 +1,6 @@
 """Tests for severity rules, priority logic, ML calibration and composition."""
 
 import pytest
-
 from civitas_geo.models import ExposureContext
 from civitas_risk.contracts import RiskContext
 from civitas_risk.ml_models import LogisticCalibrator

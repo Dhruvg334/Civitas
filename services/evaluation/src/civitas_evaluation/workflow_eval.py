@@ -7,17 +7,38 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from pydantic import BaseModel, Field
-
 from civitas_knowledge.backends import InMemoryKnowledgeBackend
 from civitas_knowledge.contracts import KnowledgeProvenance, KnowledgeRecord, PolicyType
 from civitas_knowledge.retrieval import KnowledgeService
 from civitas_workflow.agents import CivitasAgents
 from civitas_workflow.graph import WorkflowDependencies, build_workflow
-from civitas_workflow.llm import FakeLLMClient, GroqLLMClient, LLMClient, LLMMessage, ModelTier
-from civitas_workflow.tools import InMemoryMLIntelligenceTool, InMemoryPersistenceTool, InMemoryReportContextTool, InMemoryTraceTool, ServiceKnowledgeTool
-from civitas_workflow.workflow_contracts import CitizenCommunication, ClarificationPlan, CriticResult, CriticVerdict, MLIntelligence, OperationalPlan, RoutingDecision, StructuredEvidence, WorkflowContext
+from civitas_workflow.llm import (
+    FakeLLMClient,
+    GroqLLMClient,
+    LLMClient,
+    LLMMessage,
+    ModelTier,
+)
+from civitas_workflow.tools import (
+    InMemoryMLIntelligenceTool,
+    InMemoryPersistenceTool,
+    InMemoryReportContextTool,
+    InMemoryTraceTool,
+    ServiceKnowledgeTool,
+)
+from civitas_workflow.workflow_contracts import (
+    CitizenCommunication,
+    ClarificationPlan,
+    CriticResult,
+    CriticVerdict,
+    MLIntelligence,
+    OperationalPlan,
+    RoutingDecision,
+    StructuredEvidence,
+    WorkflowContext,
+)
 from langgraph.types import Command
+from pydantic import BaseModel, Field
 
 
 class EvaluationOutput(BaseModel):

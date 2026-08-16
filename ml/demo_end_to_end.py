@@ -24,7 +24,7 @@ try:  # Phase 5 reasons use the "✓" check mark; force UTF-8 on cp1252 consoles
 except Exception:  # noqa: BLE001 - stdout may not be reconfigurable everywhere
     pass
 
-from civitas_duplicates import (  # noqa: E402
+from civitas_duplicates import (
     ClassicalImageEmbedder,
     DuplicateDetector,
     HashNgramEmbedder,
@@ -33,30 +33,30 @@ from civitas_duplicates import (  # noqa: E402
     evaluate_engine,
     incident_similarity,
 )
-from civitas_duplicates.benchmark import make_synthetic_pairs  # noqa: E402
-from civitas_duplicates.evaluation import build_labelled_pairs  # noqa: E402
-from civitas_ml import analyze_report, verify_resolution  # noqa: E402
-from civitas_geo.aggregates import DensityAggregator  # noqa: E402
-from civitas_geo.candidates import CandidateRetriever  # noqa: E402
+from civitas_duplicates.benchmark import make_synthetic_pairs
+from civitas_duplicates.evaluation import build_labelled_pairs
+from civitas_geo.aggregates import DensityAggregator
+from civitas_geo.candidates import CandidateRetriever
 from civitas_geo.feature_engineering import (
     CivicIncidentContext,
     GeospatialFeatureEngine,
 )
-from civitas_geo.landmarks import LandmarkIndex  # noqa: E402
-from civitas_geo.models import (  # noqa: E402
+from civitas_geo.landmarks import LandmarkIndex
+from civitas_geo.models import (
     CandidateSearchSpec,
     GeoPoint,
     SpatialSearchSpec,
 )
-from civitas_geo.reasoning import compute_exposure  # noqa: E402
-from civitas_geo.retrieval import NearbyRetriever  # noqa: E402
-from civitas_geo.validation import gate_for_pipeline  # noqa: E402
-from civitas_resolution import (  # noqa: E402
+from civitas_geo.reasoning import compute_exposure
+from civitas_geo.retrieval import NearbyRetriever
+from civitas_geo.validation import gate_for_pipeline
+from civitas_ml import analyze_report, verify_resolution
+from civitas_resolution import (
     ResolutionEvidence,
     ResolutionModel,
     outcome_label,
 )
-from civitas_risk import (  # noqa: E402
+from civitas_risk import (
     ConsolidatedIncident,
     IncidentVisualEvidence,
     PriorityContext,
@@ -68,9 +68,9 @@ from civitas_risk import (  # noqa: E402
     build_incident_features,
     build_priority_features,
 )
-from civitas_vision.benchmark import gaussian_blur, make_image  # noqa: E402
-from civitas_vision.detector import VisualIntelligencePipeline  # noqa: E402
-from civitas_vision.features import extract_features  # noqa: E402
+from civitas_vision.benchmark import gaussian_blur, make_image
+from civitas_vision.detector import VisualIntelligencePipeline
+from civitas_vision.features import extract_features
 
 T0 = datetime(2026, 3, 1, 8, 0, tzinfo=timezone.utc)
 

@@ -1,4 +1,7 @@
-import json, urllib.request, urllib.parse, sys
+import json
+import sys
+import urllib.parse
+import urllib.request
 
 PICKS = {
     "pothole_road_damage": [

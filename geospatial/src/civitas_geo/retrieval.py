@@ -13,7 +13,12 @@ from datetime import datetime, timezone
 from typing import Any, Protocol
 
 from civitas_geo import distance as geo
-from civitas_geo.models import NearbyIncident, NearbyIncidentsResult, GeoPoint, SpatialSearchSpec
+from civitas_geo.models import (
+    GeoPoint,
+    NearbyIncident,
+    NearbyIncidentsResult,
+    SpatialSearchSpec,
+)
 from civitas_geo.queries import nearby_incidents_sql
 
 

@@ -12,7 +12,6 @@ import os
 from typing import Any
 
 
-
 class PostGISClient:
     """Thin psycopg3 wrapper exposing the RowExecutor protocol."""
 

@@ -16,7 +16,12 @@ from civitas_vision.detector import VisualIntelligencePipeline
 
 from civitas_evaluation import datasets
 from civitas_evaluation.contracts import ComponentMetrics
-from civitas_evaluation.metrics import accuracy, confusion_matrix, macro_f1, per_class_metrics
+from civitas_evaluation.metrics import (
+    accuracy,
+    confusion_matrix,
+    macro_f1,
+    per_class_metrics,
+)
 
 COMPONENT = "vision-classifier"
 

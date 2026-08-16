@@ -12,6 +12,7 @@ All wrapped in the standard success/error envelope.
 
 from __future__ import annotations
 
+from datetime import UTC
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
@@ -117,14 +118,13 @@ def incident_candidates(
 def _all_incidents_for_memory_mode() -> list[dict[str, Any]]:
     """Read all incidents (id, lat, lon, category, reported_at, duplicates_seen)
     for memory-mode candidate retrieval when PostGIS is not available."""
-    with reports_ops.get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT incident_id, category, reported_at, duplicates_seen, "
-                "latitude, longitude "
-                "FROM incidents"
-            )
-            rows = list(cur.fetchall())
+    with reports_ops.get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "SELECT incident_id, category, reported_at, duplicates_seen, "
+            "latitude, longitude "
+            "FROM incidents"
+        )
+        rows = list(cur.fetchall())
     return [dict(r) for r in rows]
 
 
@@ -139,7 +139,6 @@ def landmarks_nearby(
     """Return nearest landmarks within `radius_m` of (lat, lon)."""
     from civitas_geo import distance as geo_dist
 
-    point = GeoPoint(latitude=lat, longitude=lon)
     landmarks = get_landmark_index().landmarks
     out = []
     for lm in landmarks:
@@ -167,14 +166,11 @@ def incidents_nearby_density(
     within_hours: float | None = Query(None, gt=0, le=8_760),
 ) -> dict[str, Any]:
     """Return reports-per-cell transactional density aggregate."""
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
 
-    from civitas_geo.aggregates import DEFAULT_CELL_SIZE_M
-
-    cell_size = cell_size_m if cell_size_m else DEFAULT_CELL_SIZE_M
     since = None
     if within_hours is not None:
-        since = datetime.now(timezone.utc) - timedelta(hours=within_hours)
+        since = datetime.now(UTC) - timedelta(hours=within_hours)
     aggregator = get_density_aggregator()
     try:
         # In sqlite mode we hand records from the local DB so memory-mode

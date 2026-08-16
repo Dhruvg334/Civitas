@@ -5,8 +5,6 @@ from __future__ import annotations
 import jwt as pyjwt
 from fastapi.testclient import TestClient
 
-from civitas_api.main import app
-
 
 def _supervisor_token() -> str:
     return pyjwt.encode(
@@ -52,13 +50,12 @@ def _drive_to_in_progress(client: TestClient, rid: str, auth: dict[str, str]) ->
     # already moved it to assigned. We'll add an internal helper that drives
     # assigned -> in_progress via direct DB update.
     from civitas_api.core.database import get_connection
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "UPDATE incidents SET status='in_progress', status_updated_at=datetime('now') WHERE incident_id=%(i)s",
-                {"i": rid},
-            )
-            conn.commit()
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(
+            "UPDATE incidents SET status='in_progress', status_updated_at=datetime('now') WHERE incident_id=%(i)s",
+            {"i": rid},
+        )
+        conn.commit()
     return wid
 
 

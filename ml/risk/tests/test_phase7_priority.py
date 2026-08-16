@@ -10,8 +10,6 @@ state the product must never auto-route without human review.
 from datetime import datetime, timezone
 
 import pytest
-from pydantic import ValidationError
-
 from civitas_geo.models import ExposureContext
 from civitas_risk import (
     PriorityContext,
@@ -21,6 +19,7 @@ from civitas_risk import (
     priority_level_for,
 )
 from civitas_risk.incident_features import ConsolidatedIncident, IncidentVisualEvidence
+from pydantic import ValidationError
 
 NOON = datetime(2026, 3, 1, 12, 0, tzinfo=timezone.utc)
 

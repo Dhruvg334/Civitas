@@ -3,7 +3,6 @@
 from datetime import datetime, timezone
 
 import pytest
-
 from civitas_geo.models import GeoPoint, SpatialSearchSpec
 from civitas_geo.queries import (
     ensure_postgis_sql,
@@ -13,7 +12,6 @@ from civitas_geo.queries import (
     nearest_landmarks_sql,
     spatial_clusters_sql,
 )
-
 
 CENTER = GeoPoint(latitude=28.6139, longitude=77.2090)
 

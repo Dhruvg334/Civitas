@@ -98,7 +98,6 @@ def nearby_candidates(
     body: NearbyCandidatesRequest, _: Annotated[None, Depends(require_internal_key)]
 ) -> dict[str, Any]:
     from civitas_geo.models import CandidateSearchSpec
-    from civitas_api.core.spatial import get_candidate_retriever
 
     retriever = get_candidate_retriever()
     spec = CandidateSearchSpec(
@@ -180,7 +179,7 @@ def media_bytes(media_id: str, _: Annotated[None, Depends(require_internal_key)]
         raise HTTPException(status_code=404, detail="media not found")
     storage_path = str(row["storage_path"])
     # Local adapter stores a local://bucket/path marker; adapters consume object path.
-    if storage_path.startswith("local://") or storage_path.startswith("supabase://"):
+    if storage_path.startswith(("local://", "supabase://")):
         parts = storage_path.split("/", 3)
         object_path = parts[3] if len(parts) == 4 else storage_path
     else:

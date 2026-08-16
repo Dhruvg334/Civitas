@@ -14,8 +14,6 @@ evidence ['standing water'].
 """
 
 import pytest
-from pydantic import ValidationError
-
 from civitas_resolution import (
     ResolutionEvidence,
     ResolutionModel,
@@ -28,6 +26,7 @@ from civitas_resolution.model import (
 from civitas_vision.benchmark import gaussian_blur, make_image
 from civitas_vision.detector import VisualIntelligencePipeline
 from civitas_vision.features import extract_features
+from pydantic import ValidationError
 
 
 def evidence(

@@ -9,9 +9,8 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
-
 from civitas_geo.models import ExposureContext
+from pydantic import BaseModel, Field
 
 SeverityLevel = Literal["low", "medium", "high", "critical"]
 PriorityTier = Literal["P4", "P3", "P2", "P1"]

@@ -18,6 +18,7 @@ same incident is a physical-place-time claim, confirmed by language/pixels).
 
 from __future__ import annotations
 
+from civitas_geo.landmarks import LandmarkIndex
 
 from civitas_duplicates import geo_features, time_features
 from civitas_duplicates.cluster import ScoredPair, cluster_reports
@@ -41,8 +42,6 @@ from civitas_duplicates.similarity import (
     decide_duplicate,
     duplicate_reasons,
 )
-from civitas_geo.landmarks import LandmarkIndex
-
 
 DENSITY_CELL_SIZE_M = 200.0
 

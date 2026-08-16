@@ -17,7 +17,7 @@ import numpy as np
 from PIL import Image
 
 from civitas_vision.clip_classifier import SUBCATEGORY_EMISSION_FLOOR
-from civitas_vision.contracts import ClassificationProbs, CIVITAS_CATEGORIES
+from civitas_vision.contracts import CIVITAS_CATEGORIES, ClassificationProbs
 from civitas_vision.features import FEATURE_NAMES, extract_features
 
 TRAIN_SEED = 11

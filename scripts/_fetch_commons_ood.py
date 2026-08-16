@@ -1,4 +1,6 @@
-import json, urllib.request, urllib.parse
+import json
+import urllib.parse
+import urllib.request
 
 for query in ["mountain landscape filetype:bitmap", "cat filetype:bitmap"]:
     params = {

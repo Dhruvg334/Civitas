@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import os
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -72,7 +72,7 @@ class LocalDiskStorageAdapter(StorageAdapter):
         if not target.exists():
             return None
         st = target.stat()
-        return {"size": st.st_size, "modified": datetime.fromtimestamp(st.st_mtime, tz=timezone.utc).isoformat()}
+        return {"size": st.st_size, "modified": datetime.fromtimestamp(st.st_mtime, tz=UTC).isoformat()}
 
     def get(self, object_path: str) -> bytes:
         target = self._resolve(object_path)
