@@ -1,12 +1,16 @@
-# Civitas Production Deployment Guide
+# Production Deployment
 
-This guide walks you through deploying the **Civitas Frontend** on **Vercel** (`https://civitas-web.vercel.app`) and the **Civitas Backend API** on **Render**.
+Civitas uses a three-service production topology:
 
----
+- **Web:** Vercel — `https://civitas-web.vercel.app`
+- **API/runtime:** Render — Dockerized FastAPI service
+- **Data/auth/storage:** Supabase — PostgreSQL, PostGIS, Auth, Storage
 
-## 1. Database & Migrations Setup (Supabase / PostgreSQL + PostGIS)
+The browser communicates only with public authenticated API routes. Server-only Supabase, workflow, database, and Groq credentials remain on the API service.
 
-Before starting the API service, apply the database migrations in sequential order against your PostgreSQL database:
+## Database schema
+
+Apply the application migrations in order:
 
 ```bash
 psql "$DATABASE_URL" -f database/migrations/0001_spatial_core.sql
@@ -17,77 +21,78 @@ psql "$DATABASE_URL" -f database/migrations/0005_seed_policies.sql
 psql "$DATABASE_URL" -f database/migrations/0006_workflow_runs.sql
 ```
 
-> **Note**: LangGraph's low-level checkpoint tables (`checkpoints`, `checkpoint_blobs`, `checkpoint_writes`) are automatically initialized on startup via `create_postgres_checkpointer().setup()` using `CIVITAS_WORKFLOW_CHECKPOINT_DATABASE_URL`.
+`workflow_runs` stores application metadata only. LangGraph's PostgreSQL saver initializes and owns its checkpoint tables through `create_postgres_checkpointer().setup()` using `CIVITAS_WORKFLOW_CHECKPOINT_DATABASE_URL`.
 
----
+## Render API service
 
-## 2. Deploying Backend API to Render
+Render uses the repository `render.yaml` and `apps/api/Dockerfile`.
 
-### Option A: Via Render Blueprint (`render.yaml`) (Recommended)
-1. Log into your [Render Dashboard](https://dashboard.render.com).
-2. Click **New +** → **Blueprint**.
-3. Connect your GitHub repository: `Dhruvg334/Civitas`.
-4. Render will automatically detect `render.yaml` and configure the `civitas-api` web service.
-5. In the Environment Variables screen, provide your secrets:
-   - `DATABASE_URL`: `postgresql://postgres:<password>@<db-host>:5432/postgres`
-   - `CIVITAS_WORKFLOW_CHECKPOINT_DATABASE_URL`: `postgresql://postgres:<password>@<db-host>:5432/postgres`
-   - `CIVITAS_POSTGIS_DSN`: `postgresql://postgres:<password>@<db-host>:5432/postgres`
-   - `SUPABASE_URL`: `https://<project-ref>.supabase.co`
-   - `SUPABASE_ANON_KEY`: `<your-supabase-anon-key>`
-   - `SUPABASE_SERVICE_ROLE_KEY`: `<your-supabase-service-role-key>`
-   - `SUPABASE_JWT_SECRET`: `<your-supabase-jwt-secret>`
-   - `GROQ_API_KEY`: `<your-groq-api-key>`
-   - `CORS_ORIGINS`: `https://civitas-web.vercel.app`
-6. Click **Apply**. Render will build the Docker container using `apps/api/Dockerfile` and expose your public API at:
-   `https://civitas-api.onrender.com` (or your chosen service subdomain).
+### Required server environment
 
-### Option B: Manual Web Service
-- **Runtime**: Docker
-- **Docker Context**: `.` (root)
-- **Dockerfile Path**: `apps/api/Dockerfile`
-- **Health Check Path**: `/ready`
-- **Port**: Bound dynamically via `${PORT:-8000}`
+| Variable | Purpose |
+|---|---|
+| `CIVITAS_ENV=production` | Enables production validation and fail-closed auth configuration |
+| `DATABASE_URL` | PostgreSQL operational database |
+| `CIVITAS_POSTGIS_DSN` | PostGIS connection used by geospatial operations |
+| `CIVITAS_WORKFLOW_CHECKPOINT_DATABASE_URL` | PostgreSQL connection for LangGraph checkpoints |
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_ANON_KEY` | Supabase project public key used by server integrations where required |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only Storage/Admin access |
+| `SUPABASE_JWT_SECRET` | Backend JWT verification |
+| `CIVITAS_INTERNAL_API_KEY` | Internal ML/runtime service authentication |
+| `GROQ_API_KEY` | Production LLM provider credential |
+| `CIVITAS_LLM_PRIMARY_MODEL` | Primary reasoning model |
+| `CIVITAS_LLM_FAST_MODEL` | Lightweight structured-output model |
+| `CORS_ORIGINS=https://civitas-web.vercel.app` | Production browser origin |
 
----
+The container runs Python 3.12, installs the Civitas packages from their declared `pyproject.toml` dependency graphs, binds Uvicorn to `0.0.0.0:$PORT`, and uses one worker so application lifespan owns a single workflow/checkpointer resource set.
 
-## 3. Deploying Frontend Web App to Vercel
+### Health endpoints
 
-1. Log into your [Vercel Dashboard](https://vercel.com).
-2. Click **Add New...** → **Project**.
-3. Import the `Dhruvg334/Civitas` GitHub repository.
-4. In the Project Configuration:
-   - **Framework Preset**: `Next.js`
-   - **Root Directory**: `./`
-   - **Build Command**: `node scripts/build-web.mjs`
-   - **Output Directory**: `apps/web/.next`
-   - **Install Command**: `npm install`
-5. In **Environment Variables**, add:
-   - `NEXT_PUBLIC_API_BASE_URL`: `https://civitas-api.onrender.com/api/v1` (replace with your Render service URL)
-   - `NEXT_PUBLIC_SUPABASE_URL`: `https://<project-ref>.supabase.co`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: `<your-supabase-anon-key>`
-   - `NEXT_PUBLIC_CIVITAS_DEMO_MODE`: `false` (set `true` only for offline showcase mode)
-6. Click **Deploy**. Vercel will deploy the production web app at `https://civitas-web.vercel.app`.
+- `GET /live` — process liveness
+- `GET /ready` — database-backed readiness
 
----
+Render should use `/ready` as the health-check path.
 
-## 4. Supabase Authentication Configuration
+## Vercel web application
 
-1. In Supabase Dashboard → **Authentication** → **URL Configuration**:
-   - **Site URL**: `https://civitas-web.vercel.app`
-   - **Redirect URLs**:
-     - `https://civitas-web.vercel.app/**`
-     - `http://localhost:3000/**` (for local development)
-2. In Supabase Dashboard → **Authentication** → **Email Templates**:
-   - Ensure Reset Password and Confirmation links route to `https://civitas-web.vercel.app/reset-password`.
+The deployed web application is `https://civitas-web.vercel.app`.
 
----
+### Public browser environment
 
-## 5. Post-Deployment Verification
+| Variable | Purpose |
+|---|---|
+| `NEXT_PUBLIC_API_BASE_URL` | Render API base including `/api/v1` |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase browser-safe public key |
+| `NEXT_PUBLIC_CIVITAS_DEMO_MODE=false` | Keeps production paths on real APIs |
 
-1. **Verify Backend Health**:
-   ```bash
-   curl -i https://civitas-api.onrender.com/ready
-   # Expected: {"service":"civitas-api","status":"ready","database":"ok","environment":"production"}
-   ```
-2. **Verify Frontend**:
-   Navigate to `https://civitas-web.vercel.app/workspace` to confirm live report sync, incident triage, and PostGIS geofenced maps.
+No service-role key, JWT secret, database credential, internal API key, or Groq key belongs in Vercel `NEXT_PUBLIC_*` variables.
+
+## Supabase Auth
+
+Configure the Supabase Authentication site URL as:
+
+```text
+https://civitas-web.vercel.app
+```
+
+Redirect URLs should include the deployed origin and the local development origin when local authentication is required. The frontend authenticates through Supabase, forwards the real access-token JWT to FastAPI, and uses `/api/v1/me` as the backend-verified identity/role surface.
+
+## Production verification
+
+A production verification pass covers:
+
+1. `/live` and `/ready` on the API service;
+2. authenticated `/api/v1/me`;
+3. report creation with real coordinates;
+4. media upload and media listing;
+5. workflow start and status retrieval;
+6. clarification resume when requested;
+7. reviewer action on `WAITING_FOR_REVIEW`;
+8. same-thread completion;
+9. trace and work-order persistence;
+10. CORS from `https://civitas-web.vercel.app`;
+11. Groq structured-output smoke through the server-side provider configuration.
+
+The deployment topology keeps deterministic offline evaluation separate from live provider execution; production credentials do not affect the reproducible offline artifacts stored in the repository.

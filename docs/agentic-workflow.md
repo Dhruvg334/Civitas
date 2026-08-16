@@ -1,33 +1,99 @@
-# Agentic workflow
+# Agentic Workflow
+
+Civitas uses LangGraph to coordinate a typed, checkpointed civic decision workflow. Specialized LLM stages are combined with deterministic context loading, ML tools, policy retrieval, persistence, and human review.
 
 ## Graph
 
-`load_context -> ml_intelligence -> structure_evidence -> clarification_check -> knowledge_grounding -> routing_agent -> operational_planner -> critic -> human_review_interrupt -> citizen_communication`.
+```text
+START
+  ↓
+load_context
+  ↓
+structure_evidence
+  ↓
+clarification_check
+  ├─ waiting_for_clarification → interrupt
+  └─ continue
+  ↓
+ml_intelligence
+  ↓
+knowledge_grounding
+  ↓
+routing_agent
+  ↓
+operational_planning
+  ↓
+critic
+  ├─ revise_routing → routing_agent
+  ├─ revise_plan → operational_planning
+  ├─ human_review_required
+  └─ pass
+  ↓
+human_review → interrupt
+  ↓
+citizen_communication
+  ↓
+END
+```
 
-Clarification and human review are LangGraph interrupts with checkpoints. Critic revision edges return only to routing or planning and are bounded at two revisions. Missing municipal knowledge abstains from autonomous routing and is sent to human review without fabricating a work order.
+## Typed workflow state
 
-## Boundaries and grounding
+The graph state carries only the information required for downstream decisions: report/incident identifiers, structured evidence, clarification state, ML outputs, knowledge references, routing, operational plan, critic result, human-review result, citizen communication, warnings, errors, and workflow status.
 
-The graph depends on five typed tools: report context, ML intelligence, knowledge, persistence, and traces. The ML node consumes model outputs as facts; agents never recalculate scores. Routing, planning, and citizen safety advice must cite IDs retrieved in the current `KnowledgeResult`, which are validated before acceptance.
+Large arbitrary dictionaries are not used as the workflow contract.
 
-Trace records retain a workflow trace ID, node, timing, safe model/tool identifier, validation status, warnings, errors, and knowledge IDs. Credentials, headers, prompts, and raw report bodies are excluded.
+## Nodes
 
-## State and model routing
+### Context loader
 
-`CivitasWorkflowState` is a Pydantic, checkpointable state containing normalized report context, ML outputs, structured evidence, clarification state, retrieved knowledge, routing, operational plan, critic result, review decision, citizen communication, warnings, errors, and safe node traces. It does not contain provider secrets or arbitrary backend objects.
+Deterministically loads the stored report, media metadata, coordinates, description, selected category, incident linkage, clarification answers, and persisted analysis state.
 
-Evidence structuring, clarification, and citizen communication use the configured fast model. Routing, operational planning, and critique use the configured primary model. Their versioned prompt files live under `prompts/agents/`; all calls use the provider-neutral `LLMClient` structured-output contract.
+### Evidence structuring
 
-## Failure and resume behavior
+Combines citizen text, visual analysis, and location context into a schema that distinguishes observed evidence, reported claims, retrieved facts, inference, hazards, contradictions, and missing information.
 
-Missing reports and invalid model output fail the responsible node explicitly. ML unavailability is retained as a warning and passed through as unavailable metadata. Incomplete material evidence pauses for clarification; a resume provides an answer map. Invalid or insufficient policy evidence prevents autonomous routing. Repeated work-order creation is idempotent in the supplied persistence adapter, and critic revisions are limited to two.
+### Clarification planner
 
-## Production notes
+Requests a small number of questions only when the answer can materially change an operational decision. If clarification is required, LangGraph checkpoints the state and the API exposes `WAITING_FOR_CLARIFICATION`.
 
-The included memory checkpointer and in-memory tools are for local tests. Production must use a durable LangGraph checkpointer and authenticated HTTP adapters. A reviewer must approve, edit, reroute, reject, or request evidence; the workflow does not auto-approve high-impact decisions.
+### ML intelligence
 
-Production composition uses `create_production_workflow` with `HttpReportContextTool`, `HttpMLIntelligenceTool`, `HttpKnowledgeTool`, `HttpPersistenceTool`, and `HttpTraceTool`. It requires `CIVITAS_BACKEND_BASE_URL`, `ML_SERVICE_URL`, `CIVITAS_INTERNAL_API_KEY` where enabled, and `CIVITAS_WORKFLOW_CHECKPOINT_DATABASE_URL`. Install the workflow PostgreSQL extra, create the saver with `create_postgres_checkpointer`, and call its `setup()` during controlled service initialization. The manual command `py -3.12 scripts/smoke_groq.py` verifies Groq structured output without printing credentials.
+Consumes the unified ML result for duplicate candidates, cluster outcome, severity, priority, model metadata, basis factors, uncertainty, and warnings. It is tool-driven rather than language-model recalculation.
 
-## Limitations
+### Knowledge grounding
 
-The first vertical slice produces one report/incident recommendation. Multi-report consolidation and resolution verification remain separate future graph extensions. Existing backend policy data lacks jurisdiction metadata, so jurisdiction-specific grounding remains explicit partial support or abstention.
+Retrieves policy/playbook records with provenance and validates policy identifiers used by later agents.
+
+### Routing agent
+
+Produces primary/supporting departments, escalation requirements, policy references, rationale, uncertainty, and review requirements. Unsupported policy IDs are rejected before the routing result is accepted.
+
+### Operational planning
+
+Produces a structured work-order recommendation with actions, resources, safety notes, dependencies, supported time-range information, and explicit missing operational information.
+
+### Critic
+
+Checks evidence/inference boundaries, unsupported policy claims, routing consistency, severity/priority contradictions, duplicate implications, work-order completeness, unsupported resource/timeline claims, and review conditions. Revision loops are bounded.
+
+### Human review
+
+The graph checkpoints before operational approval. Authorized reviewers can approve, edit typed work-order fields, reroute through a narrow override contract, reject, or request more evidence. Resume occurs on the same `thread_id`.
+
+### Citizen communication
+
+Produces plain-language status communication after the workflow reaches an allowed reviewed state. It does not expose internal scores unnecessarily, hidden reasoning, or unsupported response-time promises.
+
+## LLM provider layer
+
+All language-model calls use the provider-neutral `LLMClient` interface. `GroqLLMClient` is the production provider implementation and `FakeLLMClient` supplies deterministic offline test/evaluation behavior. Structured results include model, latency, usage, trace ID, retry count, warnings, and provider metadata.
+
+## Checkpointing and idempotency
+
+Production composition uses the LangGraph PostgreSQL saver. Application workflow metadata is stored separately in `workflow_runs`; checkpoint state remains owned by LangGraph.
+
+The runtime reuses active/completed workflow records for repeated start calls and uses replay-safe persistence for traces and business outputs. Clarification and review submissions are accepted only when the workflow is in the matching interrupt state.
+
+## Operational boundaries
+
+The graph makes recommendations within the evidence and policy available to the system. Jurisdiction-specific claims are returned only when the knowledge corpus contains matching jurisdiction evidence. Multi-report evidence can be represented through the incident/cluster context while each source report remains separately traceable.

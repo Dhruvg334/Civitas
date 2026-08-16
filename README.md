@@ -4,586 +4,325 @@
 
 ### Turning every civic report into clear, accountable action.
 
-**Live Application**: [https://civitas-web.vercel.app](https://civitas-web.vercel.app) · **API**: FastAPI & PostGIS on Render
+**Live application:** [https://civitas-web.vercel.app](https://civitas-web.vercel.app)
 
-A multimodal civic incident intelligence platform that transforms fragmented public reports into verified incidents, explainable priorities, correctly routed work orders, and accountable resolution.
+Civitas is a multimodal civic incident intelligence platform that converts citizen reports into structured incidents, geospatially informed priorities, policy-grounded routing, reviewable work orders, and traceable resolution decisions.
 
 </div>
 
 ---
 
-## What is Civitas?
+## What Civitas does
 
-Civitas helps cities and public-service organizations understand and act on civic issues reported by residents.
+Civic reports arrive as incomplete, duplicated, and sometimes contradictory evidence: a photo with little context, a video filed under the wrong category, several reports describing the same incident, or a location whose operational significance is not obvious from the description alone.
 
-A citizen may upload a photograph of a pothole, a short video of a water leak, a description of an overflowing waste point, or the location of a fallen tree. In many systems, each report becomes an isolated complaint that must be manually interpreted, categorized, checked for duplication, prioritized, and routed.
+Civitas turns that input into an operational case by combining:
 
-Civitas turns that fragmented input into a structured operational case.
+- image and video understanding,
+- duplicate and cluster analysis,
+- PostGIS-based spatial context,
+- separate severity and priority assessment,
+- deterministic policy and playbook grounding,
+- LangGraph-based agent orchestration,
+- human review at high-impact decision points,
+- and before/after resolution verification.
 
-It combines:
-
-- multimodal artificial intelligence,
-- computer vision,
-- geospatial analysis,
-- duplicate detection,
-- policy-grounded agent workflows,
-- explainable risk assessment,
-- human review,
-- and before-and-after resolution verification.
-
-The goal is not to replace public officials. The goal is to give them clearer evidence, better prioritization, and a more reliable path from citizen report to field action.
+The platform is designed for two connected users: residents reporting civic issues and municipal teams responsible for reviewing, routing, acting on, and closing those incidents.
 
 ---
 
-## Why this matters
-
-Civic reporting systems commonly face five problems:
-
-1. **Incomplete reports**  
-   Citizens may submit a photo without enough context, use the wrong category, or omit details that affect safety and routing.
-
-2. **Duplicate complaints**  
-   The same pothole, leak, obstruction, or streetlight may be reported several times from different angles and locations.
-
-3. **Inconsistent prioritization**  
-   A large issue is not always the most urgent. A smaller hazard near a school, hospital, busy junction, or accessible pathway may require faster action.
-
-4. **Incorrect routing**  
-   Reports may be sent to the wrong department or require coordination between several departments.
-
-5. **Weak closure verification**  
-   An incident may be marked resolved even when the uploaded evidence shows that the issue is only partially addressed.
-
-Civitas creates an intelligence layer between public reporting and municipal operations.
-
-<div align="center">
+## From report to action
 
 ```mermaid
 flowchart LR
-    A[Citizen Report] --> B[Evidence Validation]
-    B --> C[Multimodal Understanding]
-    C --> D[Clarification]
-    D --> E[Duplicate Detection]
-    E --> F[Severity and Priority]
-    F --> G[Policy-Grounded Routing]
-    G --> H[Human Review]
-    H --> I[Work Order]
-    I --> J[Resolution Evidence]
-    J --> K[Before/After Verification]
+    A[Citizen Report] --> B[Evidence Structuring]
+    B --> C[Clarification if Needed]
+    C --> D[Vision + Duplicate Analysis]
+    D --> E[Severity + Priority]
+    E --> F[Policy Grounding]
+    F --> G[Department Routing]
+    G --> H[Operational Plan]
+    H --> I[Critic + Human Review]
+    I --> J[Work Order]
+    J --> K[Citizen Update]
+    K --> L[Resolution Verification]
 ```
 
-</div>
+Civitas keeps evidence types distinct throughout this flow:
+
+- **Observed evidence** comes from media and structured signals.
+- **Reported claims** come from the citizen and remain attributable to the report.
+- **Retrieved knowledge** comes from municipal policies and operational playbooks.
+- **Inference** is explicitly separated from evidence and policy.
+
+That separation is central to how routing, escalation, work-order generation, and review remain inspectable.
 
 ---
 
 ## Core capabilities
 
-### Multimodal incident understanding
+### Multimodal evidence understanding
 
-Civitas can process:
+Civitas processes citizen text, photographs, selected video frames, GPS coordinates, timestamps, landmarks, and clarification responses. The vision layer produces structured outputs that can be consumed by downstream duplicate, risk, and workflow components without treating free-form model text as an operational contract.
 
-- photographs,
-- selected video frames,
-- written descriptions,
-- GPS coordinates,
-- submission time,
-- landmarks,
-- and follow-up answers.
+### Duplicate and incident clustering
 
-The system separates:
+Multiple reports can describe the same real-world event. Civitas combines textual similarity, visual similarity, geospatial distance, temporal proximity, category agreement, and contextual features to determine whether reports should remain separate or contribute to a shared incident cluster.
 
-- **observable evidence** — what can be directly seen or confirmed,
-- **retrieved knowledge** — what comes from municipal policy or operational guidance,
-- **inference** — what the system believes may be true but cannot directly prove.
+### Severity and priority as separate decisions
 
-This separation reduces unsupported conclusions and makes each recommendation easier to review.
-
----
-
-### Intelligent clarification
-
-The system does not ask broad or repetitive questions.
-
-It asks only when an answer could materially affect:
-
-- incident classification,
-- duplicate detection,
-- severity,
-- response priority,
-- department routing,
-- or operational safety.
-
-For example, when a fallen tree is reported, the most useful question may be whether electrical wires are involved—not simply asking the citizen to “provide more details.”
-
----
-
-### Duplicate incident detection
-
-Civitas determines whether separate reports refer to the same real-world incident.
-
-It combines:
-
-- text semantic similarity,
-- image embedding similarity,
-- geographic distance,
-- time proximity,
-- category agreement,
-- landmark overlap,
-- and contextual features.
-
-<div align="center">
-
-```mermaid
-flowchart TB
-    R1[Report A<br/>Photo + vague text]
-    R2[Report B<br/>Close image + landmark]
-    R3[Report C<br/>Video + wrong category]
-
-    R1 --> S[Multimodal Similarity Engine]
-    R2 --> S
-    R3 --> S
-
-    S --> T[Text Similarity]
-    S --> I[Image Similarity]
-    S --> G[Geospatial Distance]
-    S --> X[Time and Context]
-
-    T --> D[Duplicate Decision]
-    I --> D
-    G --> D
-    X --> D
-
-    D --> C[One Verified Incident Cluster]
-```
-
-</div>
-
-Instead of creating several independent complaints, Civitas can create one incident cluster containing all supporting reports and evidence.
-
----
-
-### Separate severity and priority
-
-Civitas treats severity and priority as different decisions.
-
-- **Severity:** How dangerous or harmful is the incident?
-- **Priority:** How urgently should the responsible authority respond?
-
-A moderate obstruction near a hospital entrance may receive higher priority than a larger obstruction in a low-traffic area.
-
-Each score is accompanied by contributing factors, such as:
-
-- road or pedestrian exposure,
-- school or hospital proximity,
-- electrical risk,
-- public-health impact,
-- number of reports,
-- time unresolved,
-- accessibility obstruction,
-- and weather escalation.
-
----
+Severity represents the level of harm or hazard. Priority represents response urgency. A moderate issue near a school gate, hospital entrance, or busy transport corridor can require faster action than a more severe issue in a low-exposure area. Civitas keeps these signals separate and records the factors that influence each decision.
 
 ### Policy-grounded routing
 
-Civitas does not rely on a language model to invent departmental responsibility.
+Routing is constrained by retrieved municipal policy and operational playbooks rather than left to unconstrained language-model generation. The workflow can identify a primary department, supporting departments, escalation requirements, policy references, and missing knowledge that requires human judgment.
 
-Routing decisions are grounded in:
+### Agentic decision workflow
 
-- municipal policies,
-- department jurisdictions,
-- incident-category rules,
-- escalation conditions,
-- and operational playbooks.
+The LangGraph workflow coordinates specialized stages for evidence structuring, clarification, ML intelligence, knowledge retrieval, routing, operational planning, critique, human review, and citizen communication. Workflow state is typed, checkpointed, and resumed on the same thread after clarification or review interrupts.
 
-The system can identify:
+### Human review and controlled edits
 
-- a primary department,
-- supporting departments,
-- escalation requirements,
-- relevant policy references,
-- and the evidence behind the recommendation.
-
----
-
-### Structured work orders
-
-Once an incident has been reviewed, Civitas can generate an operational work order containing:
-
-- incident summary,
-- location and landmarks,
-- verified evidence,
-- required actions,
-- recommended resources,
-- safety notes,
-- responsible department,
-- supporting departments,
-- estimated resolution range,
-- and review status.
-
-The generated work order remains editable and reviewable by authorized staff.
-
----
+Authorized reviewers can approve, reject, request more evidence, edit permitted work-order fields, or override routing through narrow typed contracts. The frontend cannot inject arbitrary graph state, and backend authorization remains authoritative.
 
 ### Resolution verification
 
-When field work is completed, new evidence can be uploaded.
-
-Civitas compares the original and final evidence and classifies the outcome as:
-
-- **resolved,**
-- **partially resolved,**
-- **unverifiable,**
-- or **conflicting evidence.**
-
-Uncertain results remain open for human review rather than being automatically closed.
+New field evidence can be compared with the original report to classify an outcome as resolved, partially resolved, unverifiable, or conflicting. Ambiguous evidence remains reviewable instead of being converted into a false closure signal.
 
 ---
 
 ## Product experience
 
-Civitas is designed around two simple interfaces.
-
 ### Citizen reporting
 
-Residents can:
+Residents can submit a description, media, and location; receive targeted clarification when the workflow needs information that can materially change a decision; and follow the incident state through the same workflow identifier used by the operational system.
 
-- submit an image or short video,
-- add a short description,
-- share or select a location,
-- answer targeted clarification questions,
-- receive an acknowledgement,
-- and follow the status of the incident.
+### Municipal workspace
 
-### Operations dashboard
+The operations interface combines incident queueing, geospatial context, evidence review, severity and priority, policy-backed routing, work-order planning, workflow state, human-review actions, and safe execution traces.
 
-Authorized reviewers can:
+### Interactive workflow demonstration
 
-- view incidents on a map,
-- inspect clustered reports,
-- review visual and textual evidence,
-- compare duplicate-scoring factors,
-- inspect severity and priority explanations,
-- verify department routing,
-- approve or edit work orders,
-- review resolution evidence,
-- and inspect the full decision trace.
-
-The citizen experience remains simple. The operational interface exposes the deeper reasoning only where it is useful.
+The live application includes a seeded water-leak scenario that shows how related reports are consolidated, how school and traffic context affect urgency, how playbooks are retrieved, and how the workflow reaches human review before continuing to citizen communication.
 
 ---
 
 ## System architecture
 
-<div align="center">
-
 ```mermaid
 flowchart TB
     subgraph Experience[Product Experience]
-        W1[Citizen Reporting]
-        W2[Operations Dashboard]
-        W3[Evidence and Trace Viewer]
+        WEB[Next.js Web Application]
     end
 
-    subgraph Platform[Operational Platform]
-        A1[FastAPI]
-        A2[Incident State Machine]
-        A3[Work-Order Service]
-        A4[Policy and Playbook Service]
-        A5[Audit and Trace Service]
+    subgraph API[Operational API]
+        FAST[FastAPI]
+        AUTH[Supabase Auth / Role Gates]
+        OPS[Reports · Incidents · Media · Work Orders]
+        TRACE[Workflow + Audit Traces]
     end
 
-    subgraph Agents[Agentic Intelligence]
-        G1[Workflow Orchestrator]
-        G2[Structured Extraction]
-        G3[Clarification Planner]
-        G4[Routing and Work-Order Agents]
-        G5[Critic and Human Review]
+    subgraph Intelligence[Intelligence Layer]
+        GRAPH[LangGraph Workflow]
+        KNOW[Knowledge Grounding]
+        ML[Unified ML Pipeline]
+        GEO[PostGIS Geospatial Context]
     end
 
-    subgraph Models[ML and Geospatial Intelligence]
-        M1[Computer Vision]
-        M2[Text and Image Embeddings]
-        M3[Duplicate Detection]
-        M4[Geospatial Clustering]
-        M5[Severity and Priority Models]
-        M6[Resolution Verification]
+    subgraph Models[Model Components]
+        VISION[Vision / CLIP]
+        DUP[Duplicate Detection]
+        RISK[Severity + Priority]
+        RES[Resolution Verification]
     end
 
     subgraph Data[Data Layer]
-        D1[(PostgreSQL)]
-        D2[(PostGIS)]
-        D3[(Object Storage)]
-        D4[(Vector Index)]
+        PG[(PostgreSQL)]
+        GIS[(PostGIS)]
+        STORE[(Supabase Storage)]
+        CP[(LangGraph Checkpoints)]
     end
 
-    Experience --> Platform
-    Platform --> Agents
-    Platform --> Models
-    Agents --> Platform
-    Models --> Platform
-    Platform --> Data
+    WEB --> FAST
+    FAST --> AUTH
+    FAST --> OPS
+    FAST --> GRAPH
+    GRAPH --> KNOW
+    GRAPH --> ML
+    ML --> GEO
+    ML --> VISION
+    ML --> DUP
+    ML --> RISK
+    ML --> RES
+    OPS --> PG
+    GEO --> GIS
+    OPS --> STORE
+    GRAPH --> CP
+    GRAPH --> TRACE
 ```
 
-</div>
+### Runtime boundaries
 
----
-
-## End-to-end processing flow
-
-<div align="center">
-
-```mermaid
-sequenceDiagram
-    participant Citizen
-    participant Web as Civitas
-    participant API as Operational API
-    participant ML as Vision and ML Services
-    participant Agent as Agent Workflow
-    participant Reviewer as Authorized Reviewer
-
-    Citizen->>Web: Submit media, description and location
-    Web->>API: Create report
-    API->>ML: Validate media and extract visual evidence
-    ML-->>API: Categories, evidence, quality and uncertainty
-    API->>Agent: Process report using policies and ML tools
-    Agent-->>Web: Request targeted clarification if needed
-    Citizen->>Web: Provide answer
-    Web->>API: Store clarification
-    API->>ML: Retrieve and score duplicate candidates
-    ML-->>API: Duplicate cluster, severity and priority
-    API->>Agent: Ground routing and compose work order
-    Agent->>Reviewer: Submit recommendation
-    Reviewer-->>API: Approve, edit or reject
-    API-->>Citizen: Send acknowledgement and status
-    Reviewer->>API: Upload resolution evidence
-    API->>ML: Compare before and after evidence
-    ML-->>Agent: Return verification result
-    Agent->>Reviewer: Recommend close, partial resolution or reopen
-```
-
-</div>
-
----
-
-## Decision traceability
-
-Every important output should be traceable to its source.
-
-Civitas records:
-
-- submitted evidence,
-- extracted facts,
-- model versions,
-- similarity features,
-- policy references,
-- agent decisions,
-- confidence basis,
-- reviewer actions,
-- workflow timestamps,
-- validation errors,
-- and final resolution evidence.
-
-This makes the system inspectable instead of treating artificial intelligence as a black box.
+- `workflow_runs` stores operational workflow metadata such as workflow ID, report ID, status, interrupt type, trace ID, and timestamps.
+- LangGraph owns checkpoint state and resumes execution through a stable `thread_id`.
+- The unified ML bridge exposes structured analysis to the workflow without duplicating model logic in the agent layer.
+- Knowledge retrieval returns provenance-bearing policy references and explicit insufficiency states.
+- Browser clients use public authenticated API routes; internal service credentials stay server-side.
 
 ---
 
 ## Technical stack
 
-| Layer | Technology direction |
+| Layer | Technology |
 |---|---|
-| Web application | Next.js, React, TypeScript |
-| Backend | FastAPI, Python |
-| Database | PostgreSQL through Supabase |
-| Geospatial data | PostGIS |
-| Media storage | Supabase Storage |
+| Web | Next.js 16, React 19, TypeScript |
+| API | FastAPI, Pydantic, Python 3.12 |
+| Database | PostgreSQL / Supabase |
+| Geospatial | PostGIS |
+| Storage | Supabase Storage |
 | Agent orchestration | LangGraph |
-| Structured language reasoning | Provider-neutral clients with Groq support |
-| Text embeddings | Provider-agnostic embedding interface |
-| Image embeddings | CLIP-compatible vision embeddings |
-| Machine learning | scikit-learn and model-specific Python tooling |
-| Mapping | Leaflet or Mapbox |
-| Testing | pytest, Vitest and Playwright |
-| Deployment | Vercel, Render and Supabase |
-
-The architecture is intentionally modular. Individual model providers, storage systems, or deployment services can be replaced without redesigning the complete product.
+| LLM provider layer | Provider-neutral client with Groq support |
+| Vision | CLIP-compatible image representations and deterministic CV features |
+| Duplicate intelligence | Text, image, spatial, temporal and contextual similarity |
+| Risk | Structured severity and priority models |
+| Resolution | Before/after evidence verification |
+| Mapping | Leaflet |
+| Frontend testing | Vitest |
+| Backend testing | pytest |
+| Deployment | Vercel, Render, Supabase |
 
 ---
 
 ## Repository structure
 
 ```text
-civitas/
-├── apps/
-│   ├── web/                    # Citizen and operations interfaces
-│   └── api/                    # FastAPI application
-│
-├── services/
-│   ├── workflow/               # Agent orchestration
-│   ├── knowledge/              # Policy and playbook grounding
-│   ├── evaluation/             # Workflow benchmarks
-│   ├── ml/                     # Model inference services
-│   ├── policies/               # Municipal policy access
-│   ├── storage/                # Media handling
-│   └── operations/             # Incidents and work orders
-│
-├── ml/
-│   ├── vision/                 # Image and video analysis
-│   ├── duplicates/             # Similarity and clustering
-│   ├── risk/                   # Severity and priority models
-│   ├── resolution/             # Before-and-after verification
-│   └── training/               # Reproducible model experiments
-│
-├── database/
-│   ├── migrations/
-│   └── seed/
-│
-├── prompts/                    # Versioned production prompts
-├── schemas/                    # Shared contracts
-├── datasets/                   # Dataset manifests and labels
-├── tests/
-│   ├── workflow/
-│   ├── evaluation/
-│   ├── ml/
-│   ├── api/
-│   └── e2e/
-└── docs/
+apps/
+├── web/                     Next.js product interface
+└── api/                     FastAPI operational API
+
+services/
+├── workflow/                LangGraph orchestration and LLM provider layer
+├── knowledge/               Policy/playbook retrieval and grounding
+├── evaluation/              Baseline and workflow evaluation
+├── ml/                      Unified ML runtime interfaces
+├── operations/              Operational service boundary
+├── policies/                Policy service boundary
+└── storage/                 Storage service boundary
+
+ml/
+├── vision/                  Image/video analysis
+├── duplicates/              Similarity and clustering
+├── risk/                    Severity and priority
+├── resolution/              Resolution verification
+└── training/                Model experiments and reproducible utilities
+
+database/
+├── migrations/              Spatial, operations, policy and workflow schema
+└── seed/                    Deterministic policy and demo scenario data
+
+prompts/                     Versioned agent and baseline prompts
+schemas/                     Shared JSON contracts
+datasets/                    Evaluation and demo-data manifests
+docs/                        Architecture, API, workflow and deployment docs
 ```
 
 ---
 
-## Evaluation strategy
+## Evaluation
 
-Civitas is evaluated as a complete decision system, not only as a set of model outputs.
+Civitas evaluates both component behavior and the complete decision workflow.
 
-### Model-level evaluation
+### Component evaluation
 
-- incident classification precision, recall and F1,
-- duplicate precision, recall and F1,
-- cluster quality,
-- severity agreement,
-- priority agreement,
-- routing accuracy,
-- and resolution-verification accuracy.
+The ML layer includes reproducible checks for vision classification, duplicate decisions, clustering behavior, severity and priority logic, and resolution verification. Results are stored with dataset/version context rather than presented as isolated headline scores.
 
-### Workflow-level evaluation
+### Workflow evaluation
 
-- structured-output validity,
-- missing-information detection,
-- clarification usefulness,
-- unsupported-claim rate,
-- work-order completeness,
-- human-review acceptance,
-- end-to-end task completion,
-- latency,
-- and model cost.
+The workflow evaluator compares three executable systems on a common corpus:
 
-### Comparative evaluation
+1. a competent single-prompt baseline,
+2. a structured single-call mega-prompt baseline,
+3. the full Civitas graph using specialized agents, ML tools, knowledge retrieval, critique, and human-review semantics.
 
-The structured workflow can be compared against:
+Offline runs use deterministic LLM fixtures so contracts, graph execution, metrics, serialization, and comparison outputs remain reproducible without external credentials. The evaluation runner also supports live provider execution through the same LLM abstraction. Offline architecture results and live-provider results are kept separate by design.
 
-1. a simple single-prompt approach,
-2. a large all-in-one prompt,
-3. and the complete Civitas workflow using specialized models, retrieval, validation, critique, and human review.
+### Golden runtime slice
 
-The goal is not to produce perfect-looking numbers. The goal is to produce reproducible results, expose failure cases, and show where decomposition and verification improve reliability.
-
-### Evaluation Distinction: Offline vs. Live Inference
-
-| Evaluation Layer | Scope & Method | Live API Key Required? | Current Verified Status |
-| :--- | :--- | :--- | :--- |
-| **Offline Deterministic Architecture Evaluation** | 394+ unit, contract, and Golden E2E integration tests validating schema parsing, PostGIS spatial queries, CLIP feature extraction, risk scoring, duplicate clustering, policy retrieval, and LangGraph workflow interrupts. | **No** (runs offline with mock adapters & frozen datasets) | **394+ tests passing** |
-| **Live Groq Model Evaluation** | Real-time structured output generation against Groq-hosted `llama-3.3-70b-versatile` and `llama-3.1-8b-instant` models. | **Yes** (`GROQ_API_KEY`) | Verified via `scripts/smoke_groq.py` in live deployments. |
-
+The FastAPI golden integration test exercises the actual report context, local ML pipeline, knowledge service, LangGraph graph, routing/work-order persistence, human-review interrupt, same-thread approval resume, completion, trace persistence, and idempotent restart behavior. Only external LLM output is replaced by a deterministic test client.
 
 ---
 
-## Example scenario
+## Decision traceability
 
-Three residents report one water-leak incident near a school:
+Civitas records safe operational evidence for review and audit:
 
-- the first report contains a distant image and vague text,
-- the second includes a close image and mentions two-wheelers slipping,
-- the third is a short video but is incorrectly categorized as a pothole.
+- report and incident identifiers,
+- submitted evidence and media metadata,
+- structured evidence distinctions,
+- model/tool identifiers,
+- duplicate and risk outputs,
+- policy references,
+- routing and work-order decisions,
+- validation outcomes,
+- reviewer actions,
+- workflow status and interrupts,
+- node latency and retry metadata,
+- and resolution evidence.
 
-Civitas should:
-
-1. identify water leakage and road flooding,
-2. merge all three reports into one incident cluster,
-3. use school proximity and traffic exposure to raise priority,
-4. request only decision-relevant clarification,
-5. route the issue to the water department with traffic coordination,
-6. prepare one evidence-backed work order,
-7. update all reporters,
-8. and later verify whether the issue was fully or partially resolved.
-
----
-
-## Engineering principles
-
-- **Evidence before inference**  
-  Important conclusions must be tied to submitted evidence, structured data, retrieved policy, or an explicitly labelled inference.
-
-- **Schemas before automation**  
-  Outputs that control downstream logic must pass strict validation.
-
-- **Severity is not priority**  
-  Safety impact and response urgency are calculated and explained separately.
-
-- **Models must be inspectable**  
-  Predictions should include model version, contributing factors, uncertainty, and failure behavior.
-
-- **Human review remains available**  
-  High-impact routing, work-order, escalation, and closure decisions remain reviewable.
-
-- **Shared contracts are versioned**  
-  Breaking changes to schemas or service interfaces must be deliberate and documented.
-
-- **Metrics must be reproducible**  
-  Reported results should come from defined datasets, repeatable commands, and preserved evaluation outputs.
-
-- **Failure is a valid state**  
-  The system should abstain, retry, or escalate when evidence is insufficient instead of manufacturing certainty.
+Hidden chain-of-thought, credentials, authorization headers, and server-side secrets are not part of the trace surface.
 
 ---
 
-## Product boundaries
+## Security and control model
 
-Civitas is an operational decision-support system.
-
-It is not:
-
-- an emergency-response authority,
-- a replacement for municipal staff,
-- a legal compliance certificate,
-- a surveillance platform,
-- a predictive-policing system,
-- or a promise that every reported issue will be resolved within a generated timeframe.
-
-Resolution estimates are non-binding, and safety-critical recommendations require authorized review.
+- Supabase sessions provide browser authentication; backend authorization remains authoritative.
+- Production startup requires the configured JWT-verification secret and internal service key.
+- Internal ML/runtime routes are not exposed through browser credentials.
+- Review actions are role-gated and schema-constrained.
+- Policy-dependent decisions validate cited knowledge references.
+- Missing policy evidence produces partial support or abstention rather than invented rules.
+- Workflow business records are idempotent where duplicate execution could create operational conflicts.
+- CORS is restricted to the deployed web origin in production configuration.
 
 ---
 
-## Current development direction
+## Incident coverage
 
-The initial product focuses on five incident categories:
+The production taxonomy is defined centrally and shared across report intake, model contracts, and workflow logic. The core civic categories include road damage, water leakage/localized flooding, waste obstruction, streetlight failure, and fallen-tree/pathway obstruction, with supported extensions represented through the same typed contracts.
 
-- potholes and road damage,
-- water leakage and localized flooding,
-- garbage overflow and obstruction,
-- broken streetlights,
-- fallen trees and blocked pathways.
+---
 
-The first implementation priorities are:
+## Engineering ownership
 
-1. shared schemas and service contracts,
-2. multimodal report intake,
-3. duplicate incident intelligence,
-4. separate severity and priority assessment,
-5. policy-grounded routing,
-6. structured work orders,
-7. resolution verification,
-8. and reproducible end-to-end evaluation.
+Civitas was built as a three-person engineering system with explicit module ownership and a single integration lead.
+
+- **Dhruv Gupta — Team Lead, System Architecture & Agentic Decision Platform**  
+  Owns the end-to-end product workflow, agentic analysis and decision system, LangGraph orchestration, policy-grounded reasoning, frontend, cross-module context and contracts, final integration, deployment, and system-level validation.
+
+- **Pavit Aggarwal — Computer Vision, ML & Geospatial Intelligence**  
+  Owns computer-vision pipelines, duplicate and clustering intelligence, severity/priority model work, geospatial intelligence, resolution-verification ML, and model evaluation.
+
+- **Utkarsh — Backend, Data & Municipal Operations**  
+  Owns the FastAPI operational layer, database persistence, API contracts, incident/work-order operations, role-gated review flows, and municipal state transitions.
+
+---
+
+## Documentation
+
+- [`docs/architecture/README.md`](docs/architecture/README.md) — system boundaries and runtime architecture
+- [`docs/api/README.md`](docs/api/README.md) — API surface and operational contracts
+- [`docs/agentic-workflow.md`](docs/agentic-workflow.md) — LangGraph state, nodes, interrupts and review semantics
+- [`docs/knowledge-layer.md`](docs/knowledge-layer.md) — policy retrieval, provenance and abstention
+- [`docs/ml-methodology/README.md`](docs/ml-methodology/README.md) — ML component methodology and evaluation principles
+- [`docs/evaluation.md`](docs/evaluation.md) — baseline and workflow evaluation design
+- [`docs/runtime-integration.md`](docs/runtime-integration.md) — runtime composition, persistence and resume behavior
+- [`docs/DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md) — deployment topology and environment configuration
+
+---
+
+## Demo media
+
+Large demo images and videos remain outside Git. The repository keeps a manifest with source metadata and SHA-256 hashes, and `scripts/fetch_demo_media.py` restores versioned open-media references or externally hosted demo assets without placing binary media in source control.
 
 ---
 
@@ -591,19 +330,6 @@ The first implementation priorities are:
 
 ### Civitas
 
-**Turning every civic report into clear, accountable action.**
-
-Built around evidence, explainability, and accountable human decisions.
+**Evidence-backed civic intelligence with accountable human decisions.**
 
 </div>
-
-
-## Demo media
-
-Large demo images and videos are kept outside Git. Restore versioned open-media references and externally hosted local demo assets with:
-
-```bash
-python scripts/fetch_demo_media.py
-```
-
-Downloads are checked against the SHA-256 hashes in `datasets/demo_data/manifest.json`.

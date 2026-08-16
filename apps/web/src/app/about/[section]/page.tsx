@@ -10,15 +10,15 @@ interface Developer {
   role: string;
   techStack: string[];
   bio: string;
-  github: string;
+  github?: string;
 }
 
 const developers: Developer[] = [
   {
     name: "Dhruv Gupta",
-    role: "Product, Agentic AI & Orchestration",
-    techStack: ["LangGraph", "FastAPI", "Groq AI", "PostgreSQL", "Next.js 16"],
-    bio: "Leads product architecture, LangGraph state orchestration, municipal policy grounding, critic evaluation loops, and system verification.",
+    role: "Team Lead, System Architecture & Agentic Decision Platform",
+    techStack: ["LangGraph", "FastAPI", "Groq", "PostgreSQL", "Next.js 16"],
+    bio: "Leads Civitas end to end: product workflow, agentic analysis and decision orchestration, policy-grounded reasoning, frontend, cross-module contracts, final integration, deployment, and system validation.",
     github: "https://github.com/Dhruvg334",
   },
   {
@@ -26,14 +26,13 @@ const developers: Developer[] = [
     role: "Computer Vision, ML & Geospatial Intelligence",
     techStack: ["CLIP Zero-Shot", "PostGIS 3.4", "DBSCAN", "Python 3.12", "Scikit-Learn"],
     bio: "Engineered the multimodal vision pipeline, Before/After resolution verification model, spatial clustering algorithms, and risk calculation engines.",
-    github: "https://github.com",
+    github: "https://github.com/pavitagrawal",
   },
   {
     name: "Utkarsh",
     role: "Backend Architecture & Municipal Operations",
     techStack: ["FastAPI", "PostgreSQL", "Pydantic", "Docker", "REST API Envelopes"],
-    bio: "Constructed the high-throughput FastAPI service, persistence layer, supervisor review state machine, and citizen clarification routes.",
-    github: "https://github.com",
+    bio: "Built the FastAPI operational service, persistence layer, API contracts, municipal state transitions, work-order operations, and role-gated review flows.",
   },
 ];
 
@@ -83,14 +82,16 @@ export default function About({
                   ))}
                 </div>
 
-                <a
-                  href={dev.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="dev-github-link"
-                >
-                  View GitHub Profile ↗
-                </a>
+                {dev.github ? (
+                  <a
+                    href={dev.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="dev-github-link"
+                  >
+                    View GitHub Profile ↗
+                  </a>
+                ) : null}
               </article>
             ))}
           </section>
@@ -194,7 +195,7 @@ export default function About({
               <div className="pillar-num-badge">01</div>
               <h3>Observable Evidence (Media)</h3>
               <p>
-                Visual artifacts (geotagged images, video clips) parsed through zero-shot computer vision models. High confidence, factual, and strictly separated from subjective descriptions.
+                Visual artifacts (geotagged images, video clips) parsed through the vision pipeline and kept distinct from subjective descriptions and downstream inference.
               </p>
             </div>
 

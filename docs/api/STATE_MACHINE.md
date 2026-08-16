@@ -44,7 +44,7 @@ parent incident moves to `rejected`.
 ### `incidents.assigned_work_order_id` has no DB foreign key
 
 A single incident can have multiple work orders over its lifecycle
-(initial, follow-up drainage after golden §12 partial resolution,
+(initial, follow-up work after partial resolution,
 re-assignment after reopen). The `assigned_work_order_id` column points
 to the *currently active* WO, not a hard 1:1.
 
@@ -59,7 +59,7 @@ Violating this invariant returns 409 INVALID_STATE.
 
 `(incident_id, question_id)` is intentionally NOT a unique constraint
 in the database. The same question may be re-asked after an incident is
-reopened (ref/04 §3 lists `reopened` as a valid status).
+reopened, which is a valid incident lifecycle state.
 
 Application layer enforces "at most one OPEN clarification per
 (incident, question)" — re-asking the same unanswered question is a
@@ -74,8 +74,7 @@ The reviewer role (REVIEWER) is the gate for:
 - `POST /incidents/{id}/resolve` — final close action
 
 The reviewer is *not* required for normal citizen or triage work; it
-exists so that critical or uncertain incidents (per ref/08 §10) require
-human sign-off before high-impact action.
+exists so that critical or uncertain incidents require human sign-off before high-impact action.
 
 ## What is NOT a state
 

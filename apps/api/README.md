@@ -1,102 +1,99 @@
-# Civitas API
+# Civitas API Service
 
-FastAPI backend for the Civitas civic incident intelligence platform.
+FastAPI operational service for Civitas. The API owns authenticated report/media intake, incident state, routing/work orders, clarification, resolution, workflow runtime endpoints, safe traces, and the backend-verified user identity surface.
 
-> **Integrating?** See [`docs/api/INTEGRATION.md`](../../docs/api/INTEGRATION.md)
-> first — it has the 8-step golden-scenario recipe and the troubleshooting table.
+## Runtime
 
-## Setup
+- Python 3.12
+- FastAPI + Pydantic
+- PostgreSQL/Supabase
+- PostGIS through the geospatial package
+- Supabase Storage for production media
+- LangGraph PostgreSQL saver for workflow checkpoints
 
-```bash
-# Python 3.12
-python -m pip install -e .
-python -m pip install -e ../../geospatial  # if working from apps/api
-```
+## Configuration
 
-Required environment variables — see `.env.example`:
+Server configuration is read from environment variables. See `.env.example` and [`../../docs/DEPLOYMENT_GUIDE.md`](../../docs/DEPLOYMENT_GUIDE.md) for the production topology.
 
-| Var | Purpose |
+Key variables include:
+
+| Variable | Purpose |
 |---|---|
-| `DATABASE_URL` | Postgres connection (Supabase pooler). SQLite (`sqlite:///./test.db`) works for local dev without PostGIS. |
-| `CIVITAS_POSTGIS_DSN` | Same value as DATABASE_URL; consumed by `geospatial`. |
-| `SUPABASE_URL` | Optional. If set with `SUPABASE_SERVICE_ROLE_KEY`, media uploads go to Supabase Storage. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Storage admin. |
-| `SUPABASE_JWT_SECRET` | If empty, dev mode accepts any HS256 token without signature verification. Required in production. |
-| `SUPABASE_ANON_KEY` | Future use. |
-| `STORAGE_BUCKET` | Default `report-media`. |
-| `CIVITAS_STORAGE_ROOT` | Where local-disk adapter writes. Default `./storage`. |
-| `CIVITAS_ENV` | `development` \| `production` |
-| `LOG_LEVEL` | Python log level. |
-| `API_HOST` / `API_PORT` | `0.0.0.0` / `8000` |
+| `DATABASE_URL` | Operational PostgreSQL connection |
+| `CIVITAS_POSTGIS_DSN` | PostGIS connection used by geospatial operations |
+| `CIVITAS_WORKFLOW_CHECKPOINT_DATABASE_URL` | LangGraph checkpoint database |
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only Storage/Admin access |
+| `SUPABASE_JWT_SECRET` | Production JWT verification |
+| `CIVITAS_INTERNAL_API_KEY` | Internal ML/runtime authentication |
+| `GROQ_API_KEY` | Server-side LLM provider credential |
+| `CORS_ORIGINS` | Allowed browser origins |
+| `CIVITAS_ENV` | Runtime environment |
 
-## Running
+Production startup validates required security configuration and keeps internal/server credentials out of browser code.
+
+## Local execution
 
 ```bash
-# Local
+python -m pip install -e .
 python -m uvicorn civitas_api.main:app --reload
-
-# Production-like
-python -m uvicorn civitas_api.main:app --host 0.0.0.0 --port 8000 --workers 2
 ```
 
-OpenAPI spec is auto-served at `/openapi.json` and Swagger UI at `/docs`.
+Swagger UI is served at `/docs`; the OpenAPI document is served at `/openapi.json`.
 
-## Testing
+## Database migrations
 
-```bash
-python -m pytest -q
-```
-
-71 tests. Uses an isolated SQLite profile (per-test fresh DB) by default. To run against the real Supabase DB, set `DATABASE_URL=postgresql://…` before pytest.
-
-## Migrations
+Apply application migrations in order:
 
 ```bash
-# Schema
 psql "$DATABASE_URL" -f ../../database/migrations/0001_spatial_core.sql
 psql "$DATABASE_URL" -f ../../database/migrations/0002_incident_description.sql
 psql "$DATABASE_URL" -f ../../database/migrations/0003_incident_operations.sql
 psql "$DATABASE_URL" -f ../../database/migrations/0004_workflow_core.sql
 psql "$DATABASE_URL" -f ../../database/migrations/0005_seed_policies.sql
-
-# Demo data
-psql "$DATABASE_URL" -f ../../database/seed/0001_demo_landmarks.sql
-psql "$DATABASE_URL" -f ../../database/seed/0002_golden_scenario.sql
+psql "$DATABASE_URL" -f ../../database/migrations/0006_workflow_runs.sql
 ```
 
-## Folder layout
-
-```
-apps/api/
-├── src/civitas_api/
-│   ├── core/           # auth, config, database, envelope, spatial, storage
-│   ├── operations/     # state_machine, reports, work_orders,
-│   │                   # clarifications, routing, resolutions, policies
-│   ├── routers/        # one FastAPI router per resource
-│   └── main.py         # FastAPI app entrypoint
-└── tests/              # pytest suite (one file per resource)
-```
+Deterministic policy/demo seed data is stored under `database/seed/`. LangGraph checkpoint tables are managed independently by the PostgreSQL saver.
 
 ## Roles
 
-Five-tier hierarchy: `citizen < triage < supervisor < reviewer < admin`.
+Backend authorization follows the hierarchy:
 
-| Role | Can |
+`citizen < triage < supervisor < reviewer < admin`
+
+| Role | Operational scope |
 |---|---|
-| citizen | submit reports, attach media, answer clarifications, list own media |
-| triage | read all incidents, run assess, ask clarifications, list policies |
-| supervisor | merge, route, create/edit work orders |
-| reviewer | approve / reject / close / reopen |
-| admin | unrestricted |
+| `citizen` | report creation, media, workflow start, clarification |
+| `triage` | incident visibility, assessments, policies, workflow status |
+| `supervisor` | merge, routing, work-order creation/update |
+| `reviewer` | workflow review, work-order approval/rejection, resolution decisions |
+| `admin` | full operational scope |
 
-Every authenticated route resolves the caller via `Authorization: Bearer <jwt>`.
-In dev mode (`SUPABASE_JWT_SECRET=""`) any token is accepted as long as it
-decodes to a dict with `sub`. In production the secret is required.
+Frontend role presentation is not an authorization boundary; every protected mutation is validated again by FastAPI.
 
-`POST /api/v1/map-extract` is open (no role) — it accepts a Google Maps
-or OpenStreetMap share URL and returns `(latitude, longitude)` so a
-citizen can paste a map link instead of typing coordinates. The output
-feeds straight into `POST /api/v1/reports`. See `OPENAPI.md` for curl
-examples.
+## Package layout
 
-See `docs/api/STATE_MACHINE.md` for the state-machine details.
+```text
+apps/api/src/civitas_api/
+├── core/          auth, config, DB, envelopes, spatial/storage adapters
+├── operations/    report, incident, routing, work-order, workflow metadata logic
+├── routers/       public/internal HTTP surfaces
+├── services/      workflow runtime/composition
+└── main.py        FastAPI application and lifespan
+```
+
+## Testing
+
+```bash
+python -m pytest apps/api/tests
+```
+
+The API test profile uses SQLite where PostGIS behavior is not required and injects deterministic runtime dependencies for workflow tests. The golden integration slice exercises the real FastAPI application, local ML pipeline, knowledge service, LangGraph graph, workflow runtime, persisted routing/work-order data, human-review resume, trace persistence, and idempotency.
+
+## References
+
+- [`OPENAPI.md`](OPENAPI.md) — route inventory and request/response shapes
+- [`../../docs/api/INTEGRATION.md`](../../docs/api/INTEGRATION.md) — end-to-end runtime integration
+- [`../../docs/api/STATE_MACHINE.md`](../../docs/api/STATE_MACHINE.md) — incident/work-order transitions
+- [`../../docs/runtime-integration.md`](../../docs/runtime-integration.md) — checkpoint/resume architecture

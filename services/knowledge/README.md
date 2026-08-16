@@ -1,32 +1,36 @@
-# Civitas knowledge service
+# Civitas Knowledge Service
 
-`civitas_knowledge` retrieves municipal policy and playbook evidence for later workflow decisions. It does not decide routing or create work orders, and it never fills missing policy with general model knowledge.
+`civitas_knowledge` retrieves municipal policy and playbook evidence for workflow decisions. It supplies attributable knowledge; routing, work-order generation, and review remain separate workflow responsibilities.
 
 ## Architecture
 
-- `KnowledgeBackend` is the storage boundary.
-- `HttpKnowledgeBackend` consumes the existing authenticated `GET /api/v1/policies` API and validates its success envelope.
-- `InMemoryKnowledgeBackend` provides deterministic local and unit-test operation.
-- `KnowledgeService` applies exact filtering first, then keyword relevance, then a stable reference-ID tie-break. No external vector service is required.
+- `KnowledgeBackend` defines the storage boundary.
+- `HttpKnowledgeBackend` consumes the authenticated policy API and validates Civitas envelopes.
+- `InMemoryKnowledgeBackend` provides deterministic local/test execution.
+- `KnowledgeService` applies exact filtering, keyword relevance, and stable reference-ID tie-breaking.
 
-Queries can request the five MVP incident categories and the supported purposes: department jurisdiction, routing, escalation, safety, work-order fields, operational guidance, and citizen communication restrictions.
+Queries cover department jurisdiction, routing, escalation, safety, required work-order fields, operational guidance, and citizen-communication restrictions across the supported incident taxonomy.
 
 ## Results and provenance
 
-Every `KnowledgeResult` retains the backend `policy_id`, public policy `code`, exact policy text, structured actions/resources, retrieval method, transparent relevance points, and backend source path. Relevance points are ranking signals, not confidence probabilities.
+Every `KnowledgeResult` retains the policy identifier/code, relevant text, structured actions/resources, retrieval method, transparent ranking points, and backend source path. Ranking points are relevance signals, not confidence probabilities.
 
-The grounding state is one of `SUPPORTED`, `PARTIALLY_SUPPORTED`, or `INSUFFICIENT_KNOWLEDGE`. Missing jurisdiction or purpose coverage is explicit. `validate_grounding_references` checks downstream citations against only the records retrieved for that decision.
+Grounding state is explicit:
 
-## Local testing
+- `SUPPORTED`
+- `PARTIALLY_SUPPORTED`
+- `INSUFFICIENT_KNOWLEDGE`
+
+`validate_grounding_references` checks downstream citations against only the records retrieved for the current decision.
+
+## Jurisdiction behavior
+
+Jurisdiction-specific outputs require jurisdiction metadata in the retrieved corpus. When matching jurisdiction evidence is absent, the service returns partial support or insufficiency rather than inferring municipal authority from general model knowledge.
+
+## Testing
 
 ```powershell
 python -m pytest services/knowledge/tests
 ```
 
-Tests use the in-memory backend or an injected HTTP transport and need neither a database nor internet access. A real adapter requires `CIVITAS_BACKEND_BASE_URL` and a bearer token authorized for the backend policy routes.
-
-## Limitations
-
-- The current backend policy entity has no jurisdiction field. Jurisdiction-specific queries therefore abstain or return partial support and never infer jurisdiction.
-- Keyword relevance is intentionally simple for the small curated corpus. A future semantic ranker may be added behind an interface without changing result contracts.
-- The service retrieves evidence; authorized humans remain responsible for high-impact routing, work-order, and closure decisions.
+Tests use the in-memory backend or an injected HTTP transport and require neither a database nor internet access. The real HTTP adapter uses `CIVITAS_BACKEND_BASE_URL` and a backend-authorized bearer token.

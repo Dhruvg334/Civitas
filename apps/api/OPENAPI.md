@@ -1,137 +1,96 @@
-# Civitas API — Route Tour
+# Civitas API Route Reference
 
-> **Integrating?** See [`docs/api/INTEGRATION.md`](../../docs/api/INTEGRATION.md)
-> first for the end-to-end recipe. This doc is the per-route reference.
+Base prefix for operational APIs: `/api/v1`.
 
-Base path: `/api/v1`. All requests require `Authorization: Bearer <jwt>`.
-Common envelope: `{success, data, trace_id, timestamp}` on success,
-`{success:false, error:{code,message,retryable}, trace_id, timestamp}` on error.
+FastAPI serves the machine-readable specification at `/openapi.json` and interactive Swagger UI at `/docs`.
 
-The full OpenAPI spec is served at `GET /openapi.json` (and rendered
-visually at `GET /docs`).
+## Response envelope
 
-## Reports + incidents (Tier 1, ships since 12 Aug)
+Successful Civitas routes return an envelope containing `success`, `data`, `trace_id`, and `timestamp`. Application errors preserve a machine-readable code/message and trace identifier where the route uses the Civitas envelope; FastAPI validation/auth errors retain their HTTP semantics.
 
-| Method | Path | Role | Notes |
+## Health and identity
+
+| Method | Path | Access | Purpose |
 |---|---|---|---|
-| `POST` | `/reports` | citizen | Create incident. Returns `incident_id`. |
-| `GET` | `/reports/{id}` | citizen | Read one. |
-| `POST` | `/reports/{id}/media` | citizen | Multipart upload. Allowlist: png, jpeg, webp, mp4, webm, mov, mkv. Max 50 MB. |
-| `GET` | `/reports/{id}/media` | citizen | List media for the report with signed URLs. |
-| `POST` | `/reports/{id}/clarifications` | triage | Ask a batch of questions. |
-| `POST` | `/reports/{id}/clarifications/{qid}/answer` | citizen | Persist answer. |
-| `GET` | `/reports/{id}/clarifications` | triage | List all clarifications. |
-| `GET` | `/incidents` | triage | Paginated list with `?status=&category=&since=`. |
-| `GET` | `/incidents/{id}` | triage | Detail. |
-| `POST` | `/incidents/{id}/merge` | supervisor | Idempotent link to a duplicate report. |
-| `POST` | `/incidents/{id}/assess` | triage | Persist severity + priority + write trace. |
-| `POST` | `/incidents/{id}/route` | supervisor | Persist routing decision + write trace. |
-| `POST` | `/incidents/{id}/work-orders` | supervisor | Create WO. |
-| `GET` | `/incidents/{id}/route` | triage | List routing decisions. |
-| `POST` | `/incidents/{id}/resolution-submissions` | triage | Store Pavit's resolution-verify output. |
-| `POST` | `/incidents/{id}/resolve` | reviewer | Final close: `resolved` / `partially_resolved` / `reopened`. |
-| `GET` | `/incidents/{id}/trace` | triage | Ordered agent/ML trace events. |
+| `GET` | `/live` | public | Process liveness |
+| `GET` | `/ready` | public | Database-backed readiness |
+| `GET` | `/api/v1/me` | authenticated | Backend-verified identity and role |
 
-## Work orders
+## Reports
 
-| Method | Path | Role |
-|---|---|---|
-| `GET` | `/work-orders/{id}` | triage |
-| `PUT` | `/work-orders/{id}` | supervisor |
-| `POST` | `/work-orders/{id}/approve` | reviewer |
-| `POST` | `/work-orders/{id}/reject` | reviewer |
-
-## Policies / playbooks
-
-| Method | Path | Role | Notes |
+| Method | Path | Minimum role | Purpose |
 |---|---|---|---|
-| `GET` | `/policies` | triage | Filters: `?category=&department=&kind=&limit=` |
-| `GET` | `/policies/{code}` | triage | One by code |
+| `POST` | `/api/v1/reports` | citizen | Create a report with description and coordinates |
+| `GET` | `/api/v1/reports/{report_id}` | citizen | Read stored report context |
+| `POST` | `/api/v1/reports/{report_id}/media` | citizen | Upload report media |
+| `GET` | `/api/v1/reports/{report_id}/media` | citizen | List report media and access metadata |
+| `POST` | `/api/v1/reports/{report_id}/clarifications` | triage | Persist clarification questions |
+| `POST` | `/api/v1/reports/{report_id}/clarifications/{question_id}/answer` | citizen | Persist a clarification answer |
+| `GET` | `/api/v1/reports/{report_id}/clarifications` | triage | List clarification records |
 
-## Geospatial (Passthrough to Pavit's `civitas_geo`)
+`POST /api/v1/reports` expects a non-empty description and valid latitude/longitude. The response `report_id` maps to the persisted incident identifier used across spatial/operational routes.
 
-| Method | Path | Role |
-|---|---|---|
-| `GET` | `/incidents/nearby` | open (city-aware) |
-| `GET` | `/incidents/{id}/candidates` | open |
-| `GET` | `/landmarks/nearby` | open |
-| `GET` | `/incidents/nearby/density` | open |
+## Incidents and geospatial context
 
-## Map-link extraction (utility)
+| Method | Path | Minimum role | Purpose |
+|---|---|---|---|
+| `GET` | `/api/v1/incidents` | triage | Paginated/filterable incident list |
+| `GET` | `/api/v1/incidents/{incident_id}` | triage | Incident detail |
+| `GET` | `/api/v1/incidents/nearby` | route-defined | Nearby incident search |
+| `GET` | `/api/v1/incidents/{incident_id}/candidates` | route-defined | Duplicate candidate context |
+| `GET` | `/api/v1/incidents/nearby/density` | route-defined | Local incident density |
+| `GET` | `/api/v1/landmarks/nearby` | route-defined | Nearby landmark context |
+| `POST` | `/api/v1/incidents/{incident_id}/merge` | supervisor | Link a duplicate report/incident |
+| `POST` | `/api/v1/incidents/{incident_id}/assess` | triage | Persist severity/priority assessment |
+| `POST` | `/api/v1/incidents/{incident_id}/trace` | internal/operational | Persist safe trace event |
+| `GET` | `/api/v1/incidents/{incident_id}/trace` | triage | Read ordered safe trace events |
 
-| Method | Path | Role |
-|---|---|---|
-| `POST` | `/api/v1/map-extract` | open |
+## Routing and work orders
 
-Accepts a Google Maps or OpenStreetMap share URL and returns the
-embedded `(latitude, longitude)`. Pure string-parsing utility — no DB,
-no private state. The intended flow is:
+| Method | Path | Minimum role | Purpose |
+|---|---|---|---|
+| `POST` | `/api/v1/incidents/{incident_id}/route` | supervisor | Persist routing decision |
+| `GET` | `/api/v1/incidents/{incident_id}/route` | triage | Read routing history |
+| `POST` | `/api/v1/incidents/{incident_id}/work-orders` | supervisor | Create work order |
+| `GET` | `/api/v1/work-orders/{work_order_id}` | triage | Read work order |
+| `PUT` | `/api/v1/work-orders/{work_order_id}` | supervisor | Update permitted work-order fields |
+| `POST` | `/api/v1/work-orders/{work_order_id}/approve` | reviewer | Approve work order |
+| `POST` | `/api/v1/work-orders/{work_order_id}/reject` | reviewer | Reject work order |
 
-```
-map URL  →  POST /api/v1/map-extract  →  (lat, lon)
-                                         ↓
-                              POST /api/v1/reports (with that location)
-```
+## Resolution
 
-**Request:**
+| Method | Path | Minimum role | Purpose |
+|---|---|---|---|
+| `POST` | `/api/v1/incidents/{incident_id}/resolution-submissions` | triage | Persist structured resolution-verification result |
+| `GET` | `/api/v1/incidents/{incident_id}/resolution-submissions` | triage | Read resolution submissions |
+| `POST` | `/api/v1/incidents/{incident_id}/resolve` | reviewer | Resolve, partially resolve, or reopen incident |
 
-```json
-{ "url": "https://www.google.com/maps/@28.6139,77.2090,15z" }
-```
+## Policies and playbooks
 
-**Success (200):**
+| Method | Path | Minimum role | Purpose |
+|---|---|---|---|
+| `GET` | `/api/v1/policies` | triage | Filter policy/playbook corpus |
+| `GET` | `/api/v1/policies/{code}` | triage | Retrieve one policy/playbook |
 
-```json
-{
-  "success": true,
-  "data": { "latitude": 28.6139, "longitude": 77.2090, "url": "..." },
-  "trace_id": "...",
-  "timestamp": "..."
-}
-```
+## Workflow runtime
 
-**Errors (all 422):**
+| Method | Path | Minimum role | Purpose |
+|---|---|---|---|
+| `POST` | `/api/v1/reports/{report_id}/workflow` | citizen | Start or reuse checkpointed workflow |
+| `GET` | `/api/v1/workflows/{workflow_id}` | triage | Read safe workflow metadata/status |
+| `POST` | `/api/v1/workflows/{workflow_id}/clarification` | citizen | Persist answers and resume same thread |
+| `POST` | `/api/v1/workflows/{workflow_id}/review` | reviewer | Validate review action and resume same thread |
 
-| Code | When |
-|---|---|
-| `VALIDATION_ERROR` | `payload.url` missing or empty |
-| `MAP_LINK_INVALID` | URL did not match a supported pattern |
-| `MAP_LINK_OUT_OF_RANGE` | Extracted coords outside [-90,90] / [-180,180] |
+Review actions are `approve`, `edit`, `reroute`, `reject`, and `request_more_evidence`. `edit` and `reroute` use narrow typed schemas and reject unknown fields.
 
-**Supported formats:**
+## Internal ML bridge
 
-- Google Maps `/@lat,lon,zoom` — `https://www.google.com/maps/@28.6139,77.2090,15z`
-- Google Maps `/place/.../@lat,lon,zoom` — `https://www.google.com/maps/place/Sunrise+School/@28.6139,77.2090,17z`
-- Google Maps `?q=lat,lon` — `https://maps.google.com/?q=28.6139,77.2090`
-- Google Maps `?ll=lat,lon` — `https://maps.google.com/?ll=28.6139,77.2090`
-- Google Maps `?center=lat,lon` — same shape
-- Google Maps URL-encoded — `?q=28.6139%2C77.2090`
-- OpenStreetMap `?mlat=lat&mlon=lon` — `https://www.openstreetmap.org/?mlat=28.6139&mlon=77.2090#map=15/28.6139/77.2090`
-- OpenStreetMap `?lat=lat&lon=lon` — bare form
-- Plain `lat,lon` string (no scheme) — `28.6139,77.2090`
+Routes under `/api/v1/ml` are server/internal integration surfaces protected by the internal API-key mechanism. They expose the unified ML analysis contract and adapter endpoints required by the workflow runtime. Browser clients do not receive or send the internal key.
 
-## Ops
+## Map-link extraction
 
-| Method | Path | Role |
-|---|---|---|
-| `GET` | `/health` | open |
-| `GET` | `/ready` | open |
+`POST /api/v1/map-extract` accepts supported Google Maps/OpenStreetMap share URLs and extracts validated coordinates for report creation. It performs parsing/validation only and does not access private incident state.
 
-## Sample curl
+## State-machine behavior
 
-```bash
-TOK="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1MSIsInJvbGUiOiJzdXBlcnZpc29yIn0.<signature>"
-H="Authorization: Bearer $TOK"
-
-# Submit a report
-curl -X POST http://localhost:8000/api/v1/reports \
-  -H "$H" -H "Content-Type: application/json" \
-  -d '{"description":"water on road","location":{"latitude":20.2961,"longitude":85.8245},"citizen_selected_category":"water_leakage"}'
-
-# Attach a photo
-curl -X POST http://localhost:8000/api/v1/reports/inc-xxx/media \
-  -H "$H" -F "file=@photo.jpg;type=image/jpeg"
-
-# Approve a work order (as reviewer)
-curl -X POST http://localhost:8000/api/v1/work-orders/wo-xxx/approve -H "$H"
-```
+Incident and work-order transitions are validated at the application layer. Illegal transitions return HTTP conflict responses rather than silently mutating state. See [`../../docs/api/STATE_MACHINE.md`](../../docs/api/STATE_MACHINE.md).

@@ -1,371 +1,109 @@
-# Civitas Backend Integration Guide
+# Civitas API Integration
 
-This is the **start-here doc** for integrating the Civitas backend with the
-agent workflow, frontend, and ML services. If you only have time to read
-one backend doc, read this one.
+This document describes how the web application, operational API, LangGraph runtime, knowledge service, and ML pipeline cooperate during a civic incident workflow.
 
-The other docs in `docs/api/` and `apps/api/` cover specific concerns:
+## Integration topology
 
-| Doc | When to read |
-|---|---|
-| [`docs/api/INTEGRATION.md`](INTEGRATION.md) | Always — start here |
-| [`apps/api/README.md`](../../apps/api/README.md) | Backend dev setup, env vars, pytest |
-| [`apps/api/OPENAPI.md`](../../apps/api/OPENAPI.md) | Full route reference with curl examples |
-| [`docs/api/STATE_MACHINE.md`](STATE_MACHINE.md) | Incident + work-order transition graphs |
-| [`docs/api/HANDOFF_NOTES.md`](HANDOFF_NOTES.md) | Known limitations, secrets, adapter choices |
+```mermaid
+sequenceDiagram
+    participant Web as Next.js Web
+    participant API as FastAPI
+    participant WF as WorkflowRuntimeService
+    participant ML as Unified ML
+    participant K as Knowledge Service
+    participant DB as PostgreSQL/PostGIS
+    participant R as Reviewer
 
----
-
-## TL;DR for the 14 Aug integration
-
-The backend is ready. Production data is seeded. You can run the golden
-scenario against `inc-golden-A` immediately — no need to apply migrations
-or create fixtures.
-
-```bash
-# 1. Health check
-curl http://localhost:8000/health
-
-# 2. Hit the seeded incident
-curl -H "Authorization: Bearer $JWT" \
-     http://localhost:8000/api/v1/incidents/inc-golden-A
-
-# 3. Approve the seeded work order (your agent workflow drives the rest)
-curl -X POST -H "Authorization: Bearer $REVIEWER_JWT" \
-     http://localhost:8000/api/v1/work-orders/wo-golden-A-01/approve
+    Web->>API: Create report + media
+    API->>DB: Persist report/evidence
+    Web->>API: Start workflow(report_id)
+    API->>WF: Invoke stable workflow/thread
+    WF->>API: Load report context
+    WF->>ML: Analyze stored report
+    ML->>DB: Query spatial/incident context
+    ML-->>WF: Vision + duplicate + severity + priority
+    WF->>K: Retrieve policy/playbook evidence
+    K-->>WF: Provenance-bearing knowledge
+    WF->>API: Persist routing/work order/traces
+    WF-->>API: WAITING_FOR_REVIEW
+    R->>API: Review action
+    API->>WF: Resume same thread
+    WF-->>API: COMPLETED / REJECTED / evidence request
 ```
 
----
-
-## What the backend does for you
-
-```
-┌──────────────┐    POST /reports           ┌──────────────┐
-│   Citizen    │ ─────────────────────────▶ │              │
-└──────────────┘                            │              │
-                                            │   Backend    │
-┌──────────────┐    POST /reports/{id}/media │              │
-│   Citizen    │ ─────────────────────────▶ │   (this)     │
-└──────────────┘                            │              │
-                                            │              │
-┌──────────────┐    POST /incidents/{id}/   │              │
-│   Agent      │     merge | assess | route │              │
-│   workflow   │ ─────────────────────────▶ │              │
-└──────────────┘                            │              │
-                                            │              │
-┌──────────────┐    POST /incidents/{id}/   │              │
-│   Reviewer   │     resolve                │              │
-│   (human)    │ ─────────────────────────▶ │              │
-└──────────────┘                            └──────────────┘
-```
-
-The backend **does not**:
-
-- Generate clarification questions (that's your job, Dhruv)
-- Decide routing (your job — we just persist)
-- Run ML models (Pavit's job — we just persist the output)
-- Build a UI (your job, frontend)
-
-The backend **does**:
-
-- Persist every state change with audit trail
-- Enforce the state machine (return 409 INVALID_STATE on illegal moves)
-- Authenticate every request with role-based gates
-- Store all media with signed URLs
-- Expose the policies + playbooks for grounding
-
----
-
-## The golden scenario, step by step
-
-The seeded data: `inc-golden-A` is the main incident, with `inc-golden-B`
-and `inc-golden-C` already linked as duplicates. A work order
-`wo-golden-A-01` is at `awaiting_review`. A routing decision is logged.
-A clarification answer is recorded.
-
-Here's how an agent workflow walks the rest of the loop:
-
-### Step 1 — read the current incident
-
-```bash
-curl -H "Authorization: Bearer $TRIAGE_JWT" \
-     http://localhost:8000/api/v1/incidents/inc-golden-A
-```
-
-Returns:
-
-```json
-{
-  "success": true,
-  "data": {
-    "incident_id": "inc-golden-A",
-    "status": "awaiting_review",
-    "duplicates_seen": 3,
-    "assigned_department": "water_supply",
-    "latest_assessment": { ... risk-v1 severity=78, priority=91 ... },
-    "media_count": 0,
-    "linked_reports_count": 2
-  }
-}
-```
-
-### Step 2 — read the routing decision (if you generated one)
-
-```bash
-curl -H "Authorization: Bearer $TRIAGE_JWT" \
-     http://localhost:8000/api/v1/incidents/inc-golden-A/route
-```
-
-### Step 3 — read the work order
-
-```bash
-curl -H "Authorization: Bearer $TRIAGE_JWT" \
-     http://localhost:8000/api/v1/work-orders/wo-golden-A-01
-```
-
-### Step 4 — read the audit trail (full timeline)
-
-```bash
-curl -H "Authorization: Bearer $TRIAGE_JWT" \
-     http://localhost:8000/api/v1/incidents/inc-golden-A/trace
-```
-
-Returns events in `created_at` order. Each event has `node`,
-`model_version`, `input`, `output`, `validation_outcome`.
-
-### Step 5 — wait for the reviewer to approve
-
-The reviewer (a human) hits:
-
-```bash
-curl -X POST -H "Authorization: Bearer $REVIEWER_JWT" \
-     http://localhost:8000/api/v1/work-orders/wo-golden-A-01/approve
-```
-
-Side effects:
-- Work order: `awaiting_review` → `approved`
-- Incident: `awaiting_review` → `assigned`
-- Incident: `assigned_work_order_id` set to `wo-golden-A-01`
-- One row appended to `agent_traces` with `node='work_order_approve'`
-
-### Step 6 — the field worker does the work
-
-Out of scope for the backend. Once they're done, your agent (or Pavit's
-resolution-verify ML) submits a resolution:
-
-```bash
-curl -X POST -H "Authorization: Bearer $TRIAGE_JWT" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "classification": "partially_resolved",
-       "resolved_evidence": ["active flow no longer visible"],
-       "remaining_evidence": ["standing water remains near footpath"],
-       "uncertainties": ["drainage outside frame"],
-       "model_version": "resolution-verify-v1"
-     }' \
-     http://localhost:8000/api/v1/incidents/inc-golden-A/resolution-submissions
-```
-
-Side effects:
-- One row in `resolution_submissions`
-- Incident: `in_progress` → `resolution_submitted` → `verification_pending`
-- Incident: `resolution_class` set to `partially_resolved`
-
-### Step 7 — reviewer closes the loop
-
-```bash
-curl -X POST -H "Authorization: Bearer $REVIEWER_JWT" \
-     -H "Content-Type: application/json" \
-     -d '{"action": "partially_resolved"}' \
-     http://localhost:8000/api/v1/incidents/inc-golden-A/resolve
-```
-
-Side effects:
-- Incident: `verification_pending` → `partially_resolved`
-- One row in `agent_traces` with `node='reviewer_action'`
-
-### Step 8 — list everything for the citizen update
-
-```bash
-curl -H "Authorization: Bearer $TRIAGE_JWT" \
-     "http://localhost:8000/api/v1/incidents?status=partially_resolved"
-```
-
-Note: `partially_resolved` is what golden §12 expects ("active flow has
-stopped but standing water remains"). See STATE_MACHINE.md for the
-re-open path.
-
----
-
-## Creating a new incident from scratch
-
-If you want to test the full pipeline (not just consume the seeded data):
-
-```bash
-# Submit a report
-curl -X POST -H "Authorization: Bearer $CITIZEN_JWT" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "description": "pothole near the school gate",
-       "location": {"latitude": 20.2961, "longitude": 85.8245},
-       "citizen_selected_category": "pothole"
-     }' \
-     http://localhost:8000/api/v1/reports
-# Returns { "data": { "report_id": "inc-..." } }
-
-# Attach an image
-curl -X POST -H "Authorization: Bearer $CITIZEN_JWT" \
-     -F "file=@photo.jpg;type=image/jpeg" \
-     http://localhost:8000/api/v1/reports/inc-.../media
-# Returns { "data": { "media_id": "med-...", "signed_url": "https://..." } }
-```
-
-The `signed_url` is what you hand to Pavit's ML service for vision
-analysis. It's a 1-hour URL.
-
-### Map-link extraction (optional citizen UX)
-
-If a citizen has a Google Maps or OpenStreetMap share link instead of
-typed coordinates, you can convert the URL to coordinates before
-calling `/reports`:
-
-```bash
-# Step A: extract coords from a map URL
-curl -X POST -H "Content-Type: application/json" \
-     -d '{"url":"https://www.google.com/maps/@28.6139,77.2090,15z"}' \
-     http://localhost:8000/api/v1/map-extract
-# Returns { "data": { "latitude": 28.6139, "longitude": 77.2090, ... } }
-
-# Step B: feed those coords into /reports
-curl -X POST -H "Authorization: Bearer $CITIZEN_JWT" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "description": "pothole near the school gate",
-       "location": {"latitude": 28.6139, "longitude": 77.2090},
-       "citizen_selected_category": "pothole"
-     }' \
-     http://localhost:8000/api/v1/reports
-```
-
-Supported formats: Google Maps `/@lat,lon,...`, `/place/.../@lat,lon`,
-`?q=lat,lon`, `?ll=lat,lon`, `?center=lat,lon` (URL-encoded forms too);
-OpenStreetMap `?mlat`/`?mlon` and bare `?lat`/`?lon`; plain
-`lat,lon` string.
-
-The extractor is a pure string parser — no DB access, no role gate.
-Errors come back as 422 with code `MAP_LINK_INVALID` (URL not parsed)
-or `MAP_LINK_OUT_OF_RANGE` (coords outside canonical ranges).
-
----
-
-## Common envelope
-
-Every response is one of:
-
-**Success:**
-```json
-{
-  "success": true,
-  "data": { ... },
-  "trace_id": "uuid",
-  "timestamp": "2026-08-12T00:00:00Z"
-}
-```
-
-**Error:**
-```json
-{
-  "success": false,
-  "error": {
-    "code": "INVALID_STATE",
-    "message": "incident cannot transition 'resolved' -> 'assigned'",
-    "retryable": false
-  },
-  "trace_id": "uuid",
-  "timestamp": "2026-08-12T00:00:00Z"
-}
-```
-
-Error codes you'll see:
-
-| Code | HTTP | When |
-|---|---|---|
-| `VALIDATION_ERROR` | 422 | Payload missing a required field |
-| `INVALID_STATE` | 409 | State machine rejects the transition |
-| `UNSUPPORTED_MEDIA` | 415 | MIME type not in allowlist |
-| `EMPTY_FILE` | 400 | Uploaded file is 0 bytes |
-| `FILE_TOO_LARGE` | 413 | Upload exceeds 50 MB |
-| `PERSISTENCE_ERROR` | 500 | DB write failed |
-| `STORAGE_ERROR` | 500 | Storage adapter failed |
-| `LOCATION_PLACEHOLDER` | 400 | (0,0) coordinates — sentinel value |
-| `MAP_LINK_INVALID` | 422 | Map URL did not match a supported pattern |
-| `MAP_LINK_OUT_OF_RANGE` | 422 | Map-link coords outside [-90,90] / [-180,180] |
-
----
-
-## Auth in dev mode
-
-Without `SUPABASE_JWT_SECRET` set, the backend accepts any HS256 JWT
-without checking the signature. The token must still decode to a dict
-with `sub` and `role`. For production, set the secret.
-
-Roles (lowest to highest):
-
-```
-citizen < triage < supervisor < reviewer < admin
-```
-
-Required role for each operation is documented in [`apps/api/OPENAPI.md`](../../apps/api/OPENAPI.md).
-
-To mint a dev token from claim dict:
-
-```python
-import jwt
-tok = jwt.encode(
-    {"sub": "u-1", "role": "supervisor"},
-    "any-string-at-least-one-char",
-    algorithm="HS256",
-)
-```
-
-Use the token in the `Authorization: Bearer <token>` header.
-
----
-
-## Troubleshooting
-
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| 401 on every request | JWT missing `sub` or wrong header | `Authorization: Bearer <token>` |
-| 403 on a write | Role too low | Mint a token with the role that matches the route |
-| 409 with `INVALID_STATE` | Lifecycle edge blocked | Check STATE_MACHINE.md; the incident or WO is past the target state |
-| 422 with `VALIDATION_ERROR` | Payload missing a required field | See `OPENAPI.md` for the required payload per route |
-| 415 on media upload | MIME not in allowlist | Allowlist: png, jpeg, jpg, webp, mp4, webm, mov, mkv |
-| Server boots but `psycopg.OperationalError` | DB not reachable | Check `DATABASE_URL`; for local dev use `sqlite:///./test.db` |
-| `/api/v1/incidents/inc-golden-A` 404 | Seed not applied | Apply `database/seed/0002_golden_scenario.sql` |
-| `signed_url` is `local://` not `https://` | LocalDisk adapter in use | Set `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` envs |
-
----
-
-## What lives where
-
-- **Code**: `apps/api/src/civitas_api/{core,operations,routers}`
-- **Routes**: `apps/api/src/civitas_api/routers/{reports,incidents,incidents_ops,media,work_orders,clarifications,routing,resolutions,policies,map_extract}.py`
-- **State machine**: `apps/api/src/civitas_api/operations/state_machine.py`
-- **Schema**: `database/migrations/0001–0005.sql`
-- **Seeds**: `database/seed/0001_demo_landmarks.sql`, `0002_golden_scenario.sql`
-- **Tests**: `apps/api/tests/test_*.py`
-
----
-
-## What is NOT in this backend
-
-- Frontend (`apps/web` — Dhruv)
-- Agent orchestration (`services/workflow` — Dhruv)
-- Knowledge grounding (`services/knowledge` — Dhruv)
-- ML models (`geospatial`, `services/ml` — Pavit)
-- LAZ/TIFF/raster file ingestion (deferred; map-link URL extraction is supported)
-- Rate limiting (use edge proxy)
-
-See [`docs/api/HANDOFF_NOTES.md`](HANDOFF_NOTES.md) for the full
-limitations list.
+## Report intake
+
+The report API receives the citizen description, supported category, and geographic coordinates. Media is stored separately and associated with the report through media records. Local browser previews are not treated as uploaded evidence until the API confirms persistence.
+
+## Workflow start
+
+`POST /api/v1/reports/{report_id}/workflow` creates or reuses the workflow metadata record associated with the report. The runtime assigns a stable `workflow_id`, `thread_id`, and trace context, then invokes the compiled LangGraph graph.
+
+Repeated start requests reuse the existing operational workflow rather than creating duplicate routing decisions or work orders.
+
+## Context and ML analysis
+
+The context loader retrieves the stored report, media metadata, location, incident linkage, clarification state, and persisted analysis where available. The ML intelligence tool consumes the unified `ReportAnalysis` contract, which contains:
+
+- vision output,
+- duplicate candidates,
+- cluster result,
+- severity,
+- priority,
+- model metadata,
+- basis fields,
+- warnings,
+- trace identifier.
+
+The LLM does not recalculate deterministic ML scores.
+
+## Knowledge grounding
+
+The workflow retrieves policy and playbook records by incident category, department, purpose, and available context. Retrieved knowledge retains stable record IDs and provenance. Routing and operational outputs that depend on policy must cite valid knowledge IDs.
+
+When the corpus does not support a policy-dependent claim, the knowledge result reports partial support or insufficiency and the workflow routes the decision through review rather than fabricating a rule.
+
+## Clarification interrupt
+
+A clarification interrupt is created only when missing information can materially change classification, duplicate handling, severity, priority, routing, or safety. The API exposes the interruption through workflow status.
+
+`POST /api/v1/workflows/{workflow_id}/clarification` validates and persists the answer, then resumes the same LangGraph `thread_id` using `Command(resume=...)`.
+
+## Human-review interrupt
+
+The workflow stops at human review before high-impact operational execution. Review actions are:
+
+- `APPROVE`
+- `EDIT`
+- `REROUTE`
+- `REJECT`
+- `REQUEST_MORE_EVIDENCE`
+
+`EDIT` and `REROUTE` use narrow schemas and cannot inject arbitrary workflow state. The backend persists the reviewer action and resumes the existing graph thread.
+
+## Work-order persistence
+
+The operational plan is persisted through the existing work-order service. Replay/idempotency guards keep repeated workflow execution from producing duplicate operational records.
+
+## Traces
+
+Node-level trace records contain safe execution metadata such as node name, status, model/tool, latency, retry count, knowledge references, validation status, warnings, and trace ID. Credentials, authorization headers, prompts containing sensitive report content, and hidden chain-of-thought are excluded.
+
+## State ownership
+
+Two persistence layers have intentionally different responsibilities:
+
+- `workflow_runs` stores application metadata: workflow ID, thread ID, report/incident IDs, trace ID, status, interrupt type, and timestamps.
+- LangGraph's PostgreSQL saver stores graph checkpoints and resume state keyed by `thread_id`.
+
+The application does not duplicate checkpoint state in its own tables.
+
+## Media and spatial context
+
+Media is associated with reports through the media API and storage adapter. Geospatial analysis is provided by the `civitas_geo` package/PostGIS queries for nearby incidents, landmarks, density, and distance-based context.
+
+Map-link extraction is available for supported share URLs and resolves validated coordinates before report creation.
+
+## State transitions
+
+Operational transitions are validated by the state-machine layer. Invalid incident or work-order transitions return a conflict response instead of silently mutating state. See [`STATE_MACHINE.md`](STATE_MACHINE.md) for the complete lifecycle.
