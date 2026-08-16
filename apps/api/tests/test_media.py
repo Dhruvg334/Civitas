@@ -86,3 +86,18 @@ def test_upload_404_on_unknown_report(
         files=files,
     )
     assert r.status_code == 404
+
+
+def test_local_storage_round_trips_persisted_uri(tmp_path) -> None:
+    from civitas_api.core.storage import LocalDiskStorageAdapter
+
+    storage = LocalDiskStorageAdapter(bucket="report-media", root=tmp_path)
+    payload = b"civitas-media"
+    persisted_uri = storage.put("inc-1/asset.bin", payload, "application/octet-stream")
+
+    assert persisted_uri == "local://report-media/inc-1/asset.bin"
+    assert storage.get(persisted_uri) == payload
+    assert storage.head(persisted_uri)["size"] == len(payload)
+    assert storage.signed_url(persisted_uri).startswith(
+        "local://report-media/inc-1/asset.bin?ttl="
+    )

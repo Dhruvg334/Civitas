@@ -330,7 +330,7 @@ export default function Report() {
                 </div>
                 <h2 className="success-title">Report Submitted Successfully</h2>
                 <p className="success-subtitle">
-                  Assigned reference <b>{submittedReportId}</b> and linked to Ward 12 PostGIS cluster queue.
+                  Assigned reference <b>{submittedReportId}</b>. The report is stored and queued for incident analysis.
                 </p>
 
                 <div className="success-info-grid">
@@ -346,10 +346,12 @@ export default function Report() {
                       <code>{activeWorkflowId}</code>
                     </div>
                   )}
-                  <div className="info-tile">
-                    <span>GROUNDED PLAYBOOK</span>
-                    <b>PLAY-WATER-01</b>
-                  </div>
+                  {isDemoMode() && (
+                    <div className="info-tile">
+                      <span>DEMO PLAYBOOK</span>
+                      <b>PLAY-WATER-01</b>
+                    </div>
+                  )}
                   <div className="info-tile">
                     <span>NEXT STEP</span>
                     <p>Supervisor authorization & field crew dispatch</p>
@@ -639,7 +641,7 @@ export default function Report() {
                       </div>
                       <div className="summary-row">
                         <span>Location</span>
-                        <code>{latitude && longitude ? `${latitude}° N, ${longitude}° E` : "Ward 12 Municipal Zone"}</code>
+                        <code>{latitude && longitude ? `${latitude}° N, ${longitude}° E` : "Location required"}</code>
                       </div>
                       <div className="summary-row">
                         <span>Media Evidence</span>

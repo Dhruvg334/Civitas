@@ -1,10 +1,9 @@
 /**
- * Civitas Authentication & Session Management.
- * 
- * Provides production authentication via Supabase and verified backend roles.
- * - Zero hardcoded or browser-manufactured JWTs
- * - Verified identity derived from backend GET /api/v1/me
- * - Public headers cleanly omit Authorization when unauthenticated
+ * Civitas authentication and verified session state.
+ *
+ * Supabase owns authentication. Civitas API /me owns the application role
+ * shown by the frontend. Browser code never manufactures credentials or
+ * assigns municipal privileges from client-controlled metadata.
  */
 
 import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase/client";
@@ -29,8 +28,52 @@ export interface UserSession {
   expiresAt?: string;
 }
 
-// In-memory session store for SSR and test execution
+interface VerifiedPrincipalResponse {
+  success: true;
+  data: {
+    user_id: string;
+    email: string;
+    role: CivicRole;
+    display_name: string;
+  };
+}
+
 let memorySession: UserSession | null = null;
+
+function apiBaseUrl(): string {
+  const raw = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1";
+  const trimmed = raw.replace(/\/+$/, "");
+  return trimmed.endsWith("/api/v1") ? trimmed : `${trimmed}/api/v1`;
+}
+
+function demoMode(): boolean {
+  return process.env.NEXT_PUBLIC_CIVITAS_DEMO_MODE === "true";
+}
+
+async function verifiedUserFromBackend(accessToken: string): Promise<CivicUser> {
+  const response = await fetch(`${apiBaseUrl()}/me`, {
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Civitas identity verification failed (HTTP ${response.status}).`);
+  }
+  const payload = (await response.json()) as VerifiedPrincipalResponse;
+  if (!payload?.success || !payload.data?.user_id || !payload.data?.role) {
+    throw new Error("Civitas identity verification returned an invalid response.");
+  }
+  const name = payload.data.display_name || payload.data.email.split("@")[0] || "Civic User";
+  return {
+    id: payload.data.user_id,
+    email: payload.data.email,
+    name,
+    role: payload.data.role,
+    roleTitle: getRoleTitle(payload.data.role),
+    avatarInitials: name.slice(0, 2).toUpperCase(),
+  };
+}
 
 export function getMemorySession(): UserSession | null {
   return memorySession;
@@ -43,65 +86,116 @@ export function setMemorySession(session: UserSession | null): void {
   }
 }
 
-/**
- * Obtain the active Supabase or memory bearer access token.
- */
+export async function restoreSession(): Promise<UserSession | null> {
+  if (memorySession?.accessToken) {
+    return memorySession;
+  }
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    return memorySession;
+  }
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session?.access_token) {
+    setMemorySession(null);
+    return null;
+  }
+  try {
+    const user = await verifiedUserFromBackend(data.session.access_token);
+    const restored: UserSession = {
+      accessToken: data.session.access_token,
+      user,
+      expiresAt: data.session.expires_at
+        ? new Date(data.session.expires_at * 1000).toISOString()
+        : undefined,
+    };
+    setMemorySession(restored);
+    return restored;
+  } catch {
+    await supabase.auth.signOut();
+    setMemorySession(null);
+    return null;
+  }
+}
+
 export async function getAccessToken(): Promise<string | null> {
   if (memorySession?.accessToken) {
     return memorySession.accessToken;
   }
-
-  const supabase = getSupabaseClient();
-  if (supabase) {
-    try {
-      const { data, error } = await supabase.auth.getSession();
-      if (!error && data.session?.access_token) {
-        return data.session.access_token;
-      }
-    } catch {
-      // Fallback
-    }
-  }
-
-  return null;
+  const restored = await restoreSession();
+  return restored?.accessToken || null;
 }
 
-/**
- * Returns request headers with the real Bearer token if present.
- * Unauthenticated calls return clean headers without Authorization.
- */
 export async function getAuthHeadersAsync(): Promise<Record<string, string>> {
   const token = await getAccessToken();
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-  };
+  const headers: Record<string, string> = { Accept: "application/json" };
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
   return headers;
 }
 
-/**
- * Synchronous auth header helper for simple read requests.
- */
 export function getAuthHeaders(): Record<string, string> {
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-  };
+  const headers: Record<string, string> = { Accept: "application/json" };
   if (memorySession?.accessToken) {
     headers.Authorization = `Bearer ${memorySession.accessToken}`;
   }
   return headers;
 }
 
-/**
- * Authenticate with Supabase using email and password.
- */
+export interface SignUpResult {
+  user: CivicUser | null;
+  confirmationRequired: boolean;
+}
+
+export async function signUpWithPassword(
+  email: string,
+  password: string,
+  displayName: string
+): Promise<SignUpResult> {
+  const supabase = getSupabaseClient();
+  if (!supabase) {
+    throw new Error(
+      "Supabase identity provider is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+    );
+  }
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { display_name: displayName.trim() || undefined },
+    },
+  });
+  if (error) {
+    throw new Error(error.message || "Unable to create the Civitas account.");
+  }
+
+  if (!data.session?.access_token) {
+    setMemorySession(null);
+    return { user: null, confirmationRequired: true };
+  }
+
+  try {
+    const user = await verifiedUserFromBackend(data.session.access_token);
+    setMemorySession({
+      accessToken: data.session.access_token,
+      user,
+      expiresAt: data.session.expires_at
+        ? new Date(data.session.expires_at * 1000).toISOString()
+        : undefined,
+    });
+    return { user, confirmationRequired: false };
+  } catch (verificationError) {
+    await supabase.auth.signOut();
+    setMemorySession(null);
+    throw verificationError;
+  }
+}
+
 export async function signInWithPassword(email: string, password: string): Promise<CivicUser> {
   const supabase = getSupabaseClient();
   if (!supabase) {
-    if (process.env.NEXT_PUBLIC_CIVITAS_DEMO_MODE === "true") {
-      // Demo-only presentation preview session (zero fake tokens)
+    if (demoMode()) {
       const demoUser: CivicUser = {
         id: "demo-citizen-01",
         email: email || "demo.resident@civitas.local",
@@ -111,9 +205,7 @@ export async function signInWithPassword(email: string, password: string): Promi
         ward: "Ward 12 · Bhubaneswar",
         avatarInitials: "DR",
       };
-      setMemorySession({
-        user: demoUser,
-      });
+      setMemorySession({ user: demoUser });
       return demoUser;
     }
     throw new Error(
@@ -122,59 +214,35 @@ export async function signInWithPassword(email: string, password: string): Promi
   }
 
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error || !data.session || !data.user) {
+  if (error || !data.session?.access_token) {
     throw new Error(error?.message || "Invalid authentication credentials.");
   }
 
-  const token = data.session.access_token;
-  const userMetadataRole = (data.user.app_metadata?.role || data.user.user_metadata?.role || "citizen") as CivicRole;
-  const userName = data.user.user_metadata?.name || data.user.email?.split("@")[0] || "Civic User";
-
-  const user: CivicUser = {
-    id: data.user.id,
-    email: data.user.email || "",
-    name: userName,
-    role: userMetadataRole,
-    roleTitle: getRoleTitle(userMetadataRole),
-    avatarInitials: userName.slice(0, 2).toUpperCase(),
-  };
-
-  setMemorySession({
-    accessToken: token,
-    user,
-    expiresAt: data.session.expires_at ? new Date(data.session.expires_at * 1000).toISOString() : undefined,
-  });
-
-  return user;
+  try {
+    const user = await verifiedUserFromBackend(data.session.access_token);
+    setMemorySession({
+      accessToken: data.session.access_token,
+      user,
+      expiresAt: data.session.expires_at
+        ? new Date(data.session.expires_at * 1000).toISOString()
+        : undefined,
+    });
+    return user;
+  } catch (verificationError) {
+    await supabase.auth.signOut();
+    setMemorySession(null);
+    throw verificationError;
+  }
 }
 
-/**
- * Sign out of active Supabase session.
- */
 export async function signOut(): Promise<void> {
   const supabase = getSupabaseClient();
   if (supabase) {
-    try {
-      await supabase.auth.signOut();
-    } catch {
-      // Ignore
-    }
+    await supabase.auth.signOut();
   }
   setMemorySession(null);
-  if (typeof window !== "undefined") {
-    try {
-      localStorage.removeItem("civitas_current_user");
-      window.dispatchEvent(new Event("storage"));
-      window.dispatchEvent(new Event("civitas_auth_changed"));
-    } catch {
-      // Ignore
-    }
-  }
 }
 
-/**
- * Check if the active caller has a minimum role rank.
- */
 export function hasMinimumRole(role: CivicRole, required: CivicRole): boolean {
   const ranks: Record<CivicRole, number> = {
     citizen: 1,
@@ -183,7 +251,7 @@ export function hasMinimumRole(role: CivicRole, required: CivicRole): boolean {
     reviewer: 4,
     admin: 5,
   };
-  return (ranks[role] || 1) >= (ranks[required] || 1);
+  return ranks[role] >= ranks[required];
 }
 
 export function getRoleTitle(role: CivicRole): string {
@@ -191,63 +259,72 @@ export function getRoleTitle(role: CivicRole): string {
     case "admin":
       return "Municipal System Administrator";
     case "reviewer":
-      return "Certified Municipal Reviewer · Supervisor";
+      return "Municipal Reviewer";
     case "supervisor":
       return "Municipal Field Supervisor";
     case "triage":
-      return "Civic Operations Triage Lead";
+      return "Civic Operations Triage";
     case "citizen":
     default:
-      return "Registered Citizen Resident";
+      return "Registered Citizen";
   }
 }
 
-/**
- * Listen for auth changes.
- */
 export function onAuthStateChange(callback: (user: CivicUser | null) => void): () => void {
   if (typeof window === "undefined") {
     return () => {};
   }
 
+  let active = true;
   const supabase = getSupabaseClient();
-  let supabaseUnsubscribe: (() => void) | null = null;
+  const sync = async () => {
+    const restored = await restoreSession();
+    if (active) callback(restored?.user || memorySession?.user || null);
+  };
 
+  void sync();
+
+  let supabaseUnsubscribe: (() => void) | null = null;
   if (supabase) {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        const role = (session.user.app_metadata?.role || session.user.user_metadata?.role || "citizen") as CivicRole;
-        const name = session.user.user_metadata?.name || session.user.email?.split("@")[0] || "User";
-        callback({
-          id: session.user.id,
-          email: session.user.email || "",
-          name,
-          role,
-          roleTitle: getRoleTitle(role),
-          avatarInitials: name.slice(0, 2).toUpperCase(),
-        });
-      } else {
-        callback(memorySession?.user || null);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!active) return;
+      if (!session?.access_token) {
+        setMemorySession(null);
+        callback(null);
+        return;
+      }
+      try {
+        const user = await verifiedUserFromBackend(session.access_token);
+        const nextSession: UserSession = {
+          accessToken: session.access_token,
+          user,
+          expiresAt: session.expires_at
+            ? new Date(session.expires_at * 1000).toISOString()
+            : undefined,
+        };
+        setMemorySession(nextSession);
+        if (active) callback(user);
+      } catch {
+        setMemorySession(null);
+        if (active) callback(null);
       }
     });
     supabaseUnsubscribe = () => subscription.unsubscribe();
   }
 
-  const handleCustomChange = () => {
-    callback(memorySession?.user || null);
-  };
-
+  const handleCustomChange = () => callback(memorySession?.user || null);
   window.addEventListener("civitas_auth_changed", handleCustomChange);
-  window.addEventListener("storage", handleCustomChange);
 
   return () => {
-    if (supabaseUnsubscribe) supabaseUnsubscribe();
+    active = false;
+    supabaseUnsubscribe?.();
     window.removeEventListener("civitas_auth_changed", handleCustomChange);
-    window.removeEventListener("storage", handleCustomChange);
   };
 }
 
-// Test / mock helpers
+// Test helpers.
 export function setSession(session: UserSession): void {
   setMemorySession(session);
 }

@@ -167,10 +167,10 @@ export function ReviewFields({
 }
 
 export function ReviewPanel({
-  workflowId = "wf-demo-water-0241",
+  workflowId,
   onReviewComplete,
 }: {
-  workflowId?: string;
+  workflowId: string;
   onReviewComplete?: (summary: WorkflowSummary) => void;
 }) {
   const [mode, setMode] = useState<ReviewMode>("idle");

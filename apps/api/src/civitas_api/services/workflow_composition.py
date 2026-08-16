@@ -4,19 +4,22 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
-from civitas_knowledge.backends import InMemoryKnowledgeBackend
+from civitas_knowledge.backends import InMemoryKnowledgeBackend, KnowledgeBackend
 from civitas_knowledge.contracts import (
+    KnowledgeProvenance,
     KnowledgePurpose,
     KnowledgeQuery,
     KnowledgeRecord,
     KnowledgeResult,
+    PolicyType,
 )
 from civitas_knowledge.retrieval import KnowledgeService
 from civitas_workflow.agents import CivitasAgents
 from civitas_workflow.graph import WorkflowDependencies, build_workflow
-from civitas_workflow.llm import LLMClient
+from civitas_workflow.llm import GroqLLMClient, LLMClient
 from civitas_workflow.tools import (
     KnowledgeTool,
     MLIntelligenceTool,
@@ -32,8 +35,10 @@ from civitas_workflow.workflow_contracts import (
     WorkflowContext,
     WorkflowTraceEvent,
 )
+from langgraph.checkpoint.base import BaseCheckpointSaver
 
-from civitas_api.operations import clarifications, reports, routing, work_orders
+from civitas_api.operations import clarifications, policies, reports, routing, work_orders
+from civitas_api.services.workflow_runtime import WorkflowRuntimeService
 
 
 class LocalContext(ReportContextTool):
@@ -61,19 +66,14 @@ class LocalContext(ReportContextTool):
 
 class LocalML(MLIntelligenceTool):
     def analyze(self, context: WorkflowContext, *, trace_id: str) -> MLIntelligence:
-        from civitas_ml import analyze_report
+        from civitas_api.services.ml_runtime import analyze_persisted_report
 
-        result = analyze_report(
-            report_id=context.report_id,
-            description=context.description,
-            latitude=context.latitude,
-            longitude=context.longitude,
-        )
+        result = analyze_persisted_report(context.report_id, trace_id=trace_id)
         return MLIntelligence(
             available=True,
-            primary_category=result.vision.predicted_category,
-            observable_evidence=result.vision.basis,
-            uncertainty=result.basis,
+            primary_category=result.vision.primary_category,
+            observable_evidence=result.vision.observable_evidence,
+            uncertainty=[*result.vision.uncertainty, *result.basis],
             duplicate_verdict=result.duplicate.verdict,
             cluster_verdict=result.cluster.verdict,
             severity_score=result.severity.score,
@@ -83,6 +83,36 @@ class LocalML(MLIntelligenceTool):
             feature_contributions=[factor.factor for factor in result.severity.factors],
             model_versions=[model.model_version for model in result.models],
         )
+
+
+class DatabaseKnowledgeBackend(KnowledgeBackend):
+    """Read the canonical policy/playbook corpus directly from Civitas persistence."""
+
+    def list_records(self, *, policy_type: PolicyType | None = None) -> list[KnowledgeRecord]:
+        rows = policies.list_policies(kind=policy_type.value if policy_type else None, limit=200)
+        return [
+            KnowledgeRecord(
+                record_id=str(row["policy_id"]),
+                reference_id=str(row["code"]),
+                title=str(row["title"]),
+                policy_type=PolicyType(str(row["kind"])),
+                text=str(row["body"]),
+                categories=list(row.get("categories") or []),
+                departments=list(row.get("departments") or []),
+                jurisdiction=(str(row["jurisdiction"]) if row.get("jurisdiction") else None),
+                required_actions=list(row.get("required_actions") or []),
+                suggested_resources=list(row.get("suggested_resources") or []),
+                severity_factors=list(row.get("severity_factors") or []),
+                priority_factors=list(row.get("priority_factors") or []),
+                provenance=KnowledgeProvenance(
+                    backend="civitas_database",
+                    source_identifier=str(row["policy_id"]),
+                    source_path=f"policies/{row['code']}",
+                    attributes={"reference_id": str(row["code"])},
+                ),
+            )
+            for row in rows
+        ]
 
 
 class LocalKnowledge(KnowledgeTool):
@@ -167,7 +197,11 @@ class LocalTrace(TraceTool):
     def record(self, incident_id: str, trace_id: str, event: WorkflowTraceEvent) -> None:
         with reports.get_connection() as conn, conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO agent_traces (trace_id,incident_id,node,model_version,latency_ms,validation_outcome,created_at) VALUES (%(id)s,%(incident)s,%(node)s,%(model)s,%(latency)s,%(outcome)s,CURRENT_TIMESTAMP)",
+                "INSERT INTO agent_traces "
+                "(trace_id,incident_id,node,model_version,latency_ms,"
+                "validation_outcome,created_at) "
+                "VALUES (%(id)s,%(incident)s,%(node)s,%(model)s,%(latency)s,%(outcome)s,"
+                "CURRENT_TIMESTAMP)",
                 {
                     "id": f"{trace_id}-{event.node}-{uuid4().hex}",
                     "incident": incident_id,
@@ -180,9 +214,9 @@ class LocalTrace(TraceTool):
             conn.commit()
 
 
-def create_test_runtime(llm: LLMClient, records: Sequence[KnowledgeRecord]):
-    from civitas_api.services.workflow_runtime import WorkflowRuntimeService
-
+def create_test_runtime(
+    llm: LLMClient, records: Sequence[KnowledgeRecord]
+) -> WorkflowRuntimeService:
     return WorkflowRuntimeService(
         build_workflow(
             WorkflowDependencies(
@@ -195,5 +229,26 @@ def create_test_runtime(llm: LLMClient, records: Sequence[KnowledgeRecord]):
                     llm, prompt_root=Path(__file__).resolve().parents[5] / "prompts"
                 ),
             )
+        )
+    )
+
+
+def create_production_runtime(
+    checkpointer: BaseCheckpointSaver[Any],
+) -> WorkflowRuntimeService:
+    """Compose the deployed runtime in-process around one durable LangGraph saver."""
+    return WorkflowRuntimeService(
+        build_workflow(
+            WorkflowDependencies(
+                context_tool=LocalContext(),
+                ml_tool=LocalML(),
+                knowledge_tool=LocalKnowledge(KnowledgeService(DatabaseKnowledgeBackend())),
+                persistence_tool=LocalPersistence(),
+                trace_tool=LocalTrace(),
+                agents=CivitasAgents(
+                    GroqLLMClient(), prompt_root=Path(__file__).resolve().parents[5] / "prompts"
+                ),
+            ),
+            checkpointer=checkpointer,
         )
     )

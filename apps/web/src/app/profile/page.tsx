@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { Footer, Nav, Status } from "@/components/site";
 import { FlatIcon } from "@/components/flat-icons";
-import { getSession, clearSession, setSession, CivicUser, UserSession } from "@/lib/auth";
+import { restoreSession, setSession, signOut, CivicUser, UserSession } from "@/lib/auth";
 import { submitWorkflowClarification, fetchMe, isDemoMode } from "@/lib/api";
 
 const DEFAULT_PERSONAS: Record<string, CivicUser> = {
@@ -82,7 +82,6 @@ const GUEST_PERSONA: CivicUser = {
   email: "resident@civic.local",
   role: "citizen",
   roleTitle: "Public Citizen Preview",
-  ward: "Ward 12 · Bhubaneswar",
   avatarInitials: "CR",
 };
 
@@ -99,7 +98,7 @@ export default function Profile() {
 
   useEffect(() => {
     const syncUser = async () => {
-      const session = getSession();
+      const session = await restoreSession();
       if (session && session.user) {
         startTransition(() => {
           setUser(session.user);
@@ -150,8 +149,8 @@ export default function Profile() {
     setTimeout(() => setSavedNotice(""), 4000);
   };
 
-  const handleSignOut = () => {
-    clearSession();
+  const handleSignOut = async () => {
+    await signOut();
     setUser(GUEST_PERSONA);
     setIsGuest(true);
     setSavedNotice("✓ Signed out. Viewing public resident profile.");
@@ -206,7 +205,7 @@ export default function Profile() {
 
             <h1 className="profile-name-heading">{user.name}</h1>
             <p className="profile-role-sub">{user.roleTitle}</p>
-            <p className="profile-ward-text">📍 Primary Geofence: <b>{user.ward || "Municipal Operations Grid"}</b></p>
+            <p className="profile-ward-text">📍 Profile Area: <b>{user.ward || "Not provided"}</b></p>
 
             {isGuest && (
               <div className="guest-banner-row">
@@ -299,22 +298,22 @@ export default function Profile() {
               <div className="stat-tile">
                 <span className="stat-label">ACCOUNT STATUS</span>
                 <b className="stat-num good-num">{isGuest ? "Guest Preview" : "Authenticated"}</b>
-                <small>{isGuest ? "Sign in to track reports" : "Session Verified"}</small>
+                <small>{isGuest ? "Sign in to track reports" : "Identity verified by Civitas API"}</small>
               </div>
               <div className="stat-tile">
-                <span className="stat-label">OPEN REPORTS</span>
-                <b className="stat-num">0 Active</b>
-                <small>No open incidents pending</small>
+                <span className="stat-label">REPORT ACTIVITY</span>
+                <b className="stat-num">Not loaded</b>
+                <small>User-specific report history is shown when available from the API.</small>
               </div>
               <div className="stat-tile">
                 <span className="stat-label">CLARIFICATIONS</span>
-                <b className="stat-num">0 Pending</b>
-                <small>All inquiries resolved</small>
+                <b className="stat-num">Not loaded</b>
+                <small>No clarification count is inferred client-side.</small>
               </div>
               <div className="stat-tile">
-                <span className="stat-label">INTELLIGENCE RUNTIME</span>
-                <b className="stat-num good-num">Connected</b>
-                <small>LangGraph & PostGIS Ready</small>
+                <span className="stat-label">AUTHORIZATION ROLE</span>
+                <b className="stat-num good-num">{isGuest ? "Public" : user.role}</b>
+                <small>Backend-verified role</small>
               </div>
             </>
           )}
@@ -500,25 +499,22 @@ export default function Profile() {
               <h2>PostGIS 3.4 Municipal Geofenced Boundaries</h2>
               <p>Your civic activity is spatially indexed to prevent duplicate ticket sprawl.</p>
 
-              <div className="ward-cards-grid">
-                <div className="ward-select-card active">
-                  <div className="ward-card-header">
-                    <FlatIcon name="map" size={16} color="#0f5f4f" />
-                    <b>Ward 12 · DAV Public School Zone</b>
+              {demoModeActive ? (
+                <div className="ward-cards-grid">
+                  <div className="ward-select-card active">
+                    <div className="ward-card-header">
+                      <FlatIcon name="map" size={16} color="#0f5f4f" />
+                      <b>Ward 12 · DAV Public School Zone (Demo)</b>
+                    </div>
+                    <p>Seeded demo zone used to illustrate spatial subscriptions and landmark buffers.</p>
+                    <span className="geofence-status">Demo spatial subscription</span>
                   </div>
-                  <p>Primary zone: Includes residential grid, DAV School 500m hazard buffer, and East Gate crossroad.</p>
-                  <span className="geofence-status">✓ Active Spatial Subscription</span>
                 </div>
-
-                <div className="ward-select-card">
-                  <div className="ward-card-header">
-                    <FlatIcon name="map" size={16} color="#687067" />
-                    <b>Ward 08 · City Hospital & Commercial Axis</b>
-                  </div>
-                  <p>Secondary zone: Includes trauma center corridor, flyover, and arterial transit lanes.</p>
-                  <span className="geofence-status idle">Available for Subscription</span>
+              ) : (
+                <div className="empty-reports-panel" style={{ border: "1px solid #172019", background: "#fbf9f4", padding: "32px", borderRadius: "6px" }}>
+                  <p style={{ margin: 0, color: "#555e54" }}>No user-specific municipal geofence is available from the current profile API.</p>
                 </div>
-              </div>
+              )}
             </div>
           )}
 

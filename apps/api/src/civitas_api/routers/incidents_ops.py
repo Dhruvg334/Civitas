@@ -24,6 +24,9 @@ from pydantic import BaseModel, Field
 from civitas_api.core.auth import Principal, Role, require_role
 from civitas_api.core.envelope import error_envelope, success_envelope
 from civitas_api.operations import reports as reports_ops
+from civitas_api.operations import routing as routing_ops
+from civitas_api.operations import work_orders as work_order_ops
+from civitas_api.operations import workflow_runs as workflow_run_ops
 
 router = APIRouter(prefix="/api/v1/incidents", tags=["incidents"])
 
@@ -126,6 +129,9 @@ def get_incident(
 
     reported_at = row.get("reported_at")
     status_updated_at = row.get("status_updated_at")
+    workflow = workflow_run_ops.find_latest(incident_id)
+    routings = routing_ops.list_routings_for_incident(incident_id)
+    work_orders = work_order_ops.list_work_orders_for_incident(incident_id)
 
     return success_envelope(
         {
@@ -147,6 +153,11 @@ def get_incident(
             "linked_reports_count": linked_count,
             "assessment_count": assessment_count,
             "latest_assessment": dict(latest) if latest else None,
+            "routing_decisions": routings,
+            "work_orders": work_orders,
+            "workflow_id": workflow.get("workflow_id") if workflow else None,
+            "workflow_status": workflow.get("status") if workflow else None,
+            "workflow_trace_id": workflow.get("trace_id") if workflow else None,
         }
     )
 

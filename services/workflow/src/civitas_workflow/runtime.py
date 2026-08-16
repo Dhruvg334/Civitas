@@ -73,15 +73,91 @@ def _compose(
 
 
 def create_postgres_checkpointer(database_url: str) -> BaseCheckpointSaver[Any]:
-    """Create LangGraph's PostgreSQL saver when its optional dependency is installed."""
+    """Create a hardened PostgreSQL saver with explicit Civitas type allowlisting."""
     try:
         from langgraph.checkpoint.postgres import PostgresSaver  # type: ignore[import-not-found]
-    except ImportError as exc:  # pragma: no cover - depends on deployment extra
+        from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+        from psycopg import Connection
+        from psycopg.rows import dict_row
+    except ImportError as exc:  # pragma: no cover - deployment dependency
         raise RuntimeError(
-            "PostgreSQL checkpointing requires langgraph-checkpoint-postgres; "
-            "install the workflow production extra."
+            "PostgreSQL checkpointing requires langgraph-checkpoint-postgres and psycopg."
         ) from exc
-    return cast(BaseCheckpointSaver[Any], PostgresSaver.from_conn_string(database_url))
+
+    from civitas_knowledge.contracts import (
+        GroundingReferenceValidation,
+        GroundingStatus,
+        IncidentCategory,
+        KnowledgeEvidence,
+        KnowledgeProvenance,
+        KnowledgePurpose,
+        KnowledgeQuery,
+        KnowledgeRecord,
+        KnowledgeReference,
+        KnowledgeResult,
+        PolicyReference,
+        PolicyType,
+        RetrievalMethod,
+    )
+
+    from civitas_workflow.workflow_contracts import (
+        CitizenCommunication,
+        CivitasWorkflowState,
+        ClarificationPlan,
+        ClarificationQuestion,
+        CriticIssue,
+        CriticResult,
+        CriticVerdict,
+        HumanReviewAction,
+        HumanReviewDecision,
+        MLIntelligence,
+        OperationalPlan,
+        RoutingDecision,
+        StructuredEvidence,
+        WorkflowCheckpoint,
+        WorkflowContext,
+        WorkflowStatus,
+        WorkflowTraceEvent,
+    )
+
+    serializer = JsonPlusSerializer(
+        allowed_msgpack_modules=[
+            GroundingReferenceValidation,
+            GroundingStatus,
+            IncidentCategory,
+            KnowledgeEvidence,
+            KnowledgeProvenance,
+            KnowledgePurpose,
+            KnowledgeQuery,
+            KnowledgeRecord,
+            KnowledgeReference,
+            KnowledgeResult,
+            PolicyReference,
+            PolicyType,
+            RetrievalMethod,
+            CitizenCommunication,
+            CivitasWorkflowState,
+            ClarificationPlan,
+            ClarificationQuestion,
+            CriticIssue,
+            CriticResult,
+            CriticVerdict,
+            HumanReviewAction,
+            HumanReviewDecision,
+            MLIntelligence,
+            OperationalPlan,
+            RoutingDecision,
+            StructuredEvidence,
+            WorkflowCheckpoint,
+            WorkflowContext,
+            WorkflowStatus,
+            WorkflowTraceEvent,
+        ]
+    )
+    connection = Connection.connect(
+        database_url, autocommit=True, prepare_threshold=0, row_factory=dict_row
+    )
+    return cast(BaseCheckpointSaver[Any], PostgresSaver(connection, serde=serializer))
 
 
 def _required_env(name: str) -> str:

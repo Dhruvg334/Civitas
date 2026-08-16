@@ -1,29 +1,18 @@
-"""Authentication and roles.
+"""Authentication and authorization for Civitas.
 
-Verifies a Supabase-issued JWT (HS256) and resolves the user's role from
-the `app_metadata.role` or `role` claim. Five roles are recognized:
+Production accepts Supabase-issued bearer tokens through either:
+- legacy HS256 verification when ``SUPABASE_JWT_SECRET`` is configured; or
+- Supabase's JWKS endpoint for asymmetric signing keys (RS256/ES256).
 
-    citizen   can submit reports, view own incidents, upload media
-    triage    can list/inspect incidents, run assess
-    supervisor can do everything triage can, plus merge + route
-    reviewer  can approve/reject work orders, close/reopen incidents
-    admin     unrestricted
-
-Role gating is enforced via FastAPI dependencies. In tests, the
-`get_current_principal` dependency is monkeypatched to return a
-`Principal` directly so the same route code runs without a real JWT.
-
-When `SUPABASE_JWT_SECRET` is empty, the dependency enters *dev mode*:
-it accepts any token and decodes it without signature verification,
-attaching whatever role is in the payload. This keeps local development
-unblocked without weakening production (where the secret is required).
+Local development keeps the existing unsigned-token convenience only when no
+Supabase verifier is configured and ``CIVITAS_ENV`` is not production.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends, Header, HTTPException, status
 
@@ -47,8 +36,6 @@ ROLE_RANK: dict[Role, int] = {
 
 @dataclass(frozen=True)
 class Principal:
-    """The authenticated caller. Attached to every request via dependency."""
-
     user_id: str
     role: Role
     email: str | None = None
@@ -58,11 +45,6 @@ class Principal:
 
 
 def _normalize_role(raw: str | None) -> Role:
-    """Map a claim value to a Role, defaulting to CITIZEN for unknown values.
-
-    Production code should not pass unknown roles; this is lenient on
-    purpose so a token issued before a role was added does not 500.
-    """
     if not raw:
         return Role.CITIZEN
     try:
@@ -71,49 +53,98 @@ def _normalize_role(raw: str | None) -> Role:
         return Role.CITIZEN
 
 
-def _decode_jwt(token: str, secret: str | None) -> dict:
-    """Decode a JWT. In dev mode (no secret), signature is not verified.
-
-    Production must set SUPABASE_JWT_SECRET. PyJWT is a runtime dep —
-    imported lazily so the package is importable in environments that
-    only run schema/maintenance code.
-    """
+def _pyjwt() -> Any:
     try:
         import jwt as pyjwt  # type: ignore[import-not-found]
     except ImportError as exc:  # pragma: no cover
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="PyJWT not installed; required for auth",
+            detail="PyJWT is required for authentication",
         ) from exc
+    return pyjwt
 
-    if not secret:
-        # Dev mode — decode without verification. Caller must override in prod.
-        return pyjwt.decode(token, options={"verify_signature": False})
-    return pyjwt.decode(token, secret, algorithms=["HS256"])
+
+def _decode_jwt(token: str) -> dict[str, Any]:
+    from civitas_api.core.config import get_settings
+
+    settings = get_settings()
+    pyjwt = _pyjwt()
+    issuer = f"{settings.supabase_url.rstrip('/')}/auth/v1" if settings.supabase_url else None
+
+    try:
+        if settings.supabase_jwt_secret.strip():
+            payload = pyjwt.decode(
+                token,
+                settings.supabase_jwt_secret,
+                algorithms=["HS256"],
+                audience="authenticated",
+                options={"require": ["exp", "sub"]},
+            )
+            if issuer and payload.get("iss") and payload["iss"] != issuer:
+                raise pyjwt.InvalidIssuerError("Invalid issuer")
+            return payload
+
+        header = pyjwt.get_unverified_header(token)
+        algorithm = str(header.get("alg") or "")
+
+        if settings.supabase_url.strip() and (settings.is_production or algorithm in {"RS256", "ES256"}):
+            jwks_url = f"{settings.supabase_url.rstrip('/')}/auth/v1/.well-known/jwks.json"
+            signing_key = pyjwt.PyJWKClient(jwks_url).get_signing_key_from_jwt(token)
+            if algorithm not in {"RS256", "ES256"}:
+                raise pyjwt.InvalidAlgorithmError(
+                    f"unsupported Supabase JWT algorithm: {algorithm}"
+                )
+            payload = pyjwt.decode(
+                token,
+                signing_key.key,
+                algorithms=[algorithm],
+                audience="authenticated",
+                options={"require": ["exp", "sub"]},
+            )
+            if issuer and payload.get("iss") and payload["iss"] != issuer:
+                raise pyjwt.InvalidIssuerError("Invalid issuer")
+            return payload
+
+        if settings.is_production:
+            raise pyjwt.InvalidTokenError("no production JWT verifier is configured")
+
+        # Explicit local-development fallback only.
+        return pyjwt.decode(
+            token,
+            options={
+                "verify_signature": False,
+                "verify_exp": False,
+                "verify_aud": False,
+                "verify_iss": False,
+            },
+            algorithms=["HS256", "RS256", "ES256"],
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:  # PyJWT raises several InvalidTokenError subclasses.
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="invalid or expired bearer token",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
 
 
 def get_current_principal(
     authorization: Annotated[str | None, Header(alias="Authorization")] = None,
 ) -> Principal:
-    """FastAPI dependency: extract and verify the bearer token."""
-    from civitas_api.core.config import get_settings
-
     if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="missing or malformed Authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ", 1)[1].strip()
-    settings = get_settings()
-    payload = _decode_jwt(token, settings.supabase_jwt_secret or None)
 
+    token = authorization.split(" ", 1)[1].strip()
+    payload = _decode_jwt(token)
     sub = payload.get("sub")
     if not sub:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="token has no subject",
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="token has no subject")
+
     role = _normalize_role(
         (payload.get("app_metadata") or {}).get("role") or payload.get("role")
     )
@@ -122,8 +153,6 @@ def get_current_principal(
 
 
 def require_role(minimum: Role):
-    """Dependency factory: require caller to have at least `minimum` role."""
-
     def _check(
         principal: Annotated[Principal, Depends(get_current_principal)],
     ) -> Principal:

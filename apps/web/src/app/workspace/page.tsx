@@ -11,7 +11,7 @@ interface IncidentItem {
   id: string;
   title: string;
   category: string;
-  priority: "P1" | "P2" | "P3";
+  priority: "P1" | "P2" | "P3" | "P?";
   status: string;
   tone: "neutral" | "good" | "warn" | "danger";
   reportsCount: number;
@@ -44,7 +44,7 @@ export default function Workspace() {
             Low: "P3",
             P3: "P3",
           };
-          const priority = prioMap[r.priority] || "P2";
+          const priority: IncidentItem["priority"] = prioMap[r.priority] || "P?";
           let tone: "neutral" | "good" | "warn" | "danger" = "neutral";
           if (r.status === "WAITING_FOR_REVIEW") tone = "warn";
           else if (r.status === "RESOLVED") tone = "good";
@@ -60,8 +60,8 @@ export default function Workspace() {
             reportsCount: r.reportsCount || 1,
             ward: r.location?.landmark ? `Municipal Zone (${r.location.landmark})` : "Municipal Operations Zone",
             landmark: r.location?.landmark || "Location unavailable",
-            time: "Live Sync",
-            department: r.primaryDepartment || "Municipal Dispatch",
+            time: r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "Time unavailable",
+            department: r.primaryDepartment || "Unassigned",
           };
         });
         setIncidents(mapped);
@@ -114,7 +114,7 @@ export default function Workspace() {
             Low: "P3",
             P3: "P3",
           };
-          const priority = prioMap[r.priority] || "P2";
+          const priority: IncidentItem["priority"] = prioMap[r.priority] || "P?";
           let tone: "neutral" | "good" | "warn" | "danger" = "neutral";
           if (r.status === "WAITING_FOR_REVIEW") tone = "warn";
           else if (r.status === "RESOLVED") tone = "good";
@@ -128,10 +128,10 @@ export default function Workspace() {
             status: r.status,
             tone,
             reportsCount: r.reportsCount || 1,
-            ward: "Ward 12 · Bhubaneswar",
-            landmark: r.location?.landmark || "Ward 12 Area",
-            time: "Live Sync",
-            department: r.primaryDepartment || "Municipal Dispatch",
+            ward: r.location?.landmark ? `Municipal Zone (${r.location.landmark})` : "Municipal Operations Zone",
+            landmark: r.location?.landmark || "Location unavailable",
+            time: r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "Time unavailable",
+            department: r.primaryDepartment || "Unassigned",
           };
         });
         setIncidents(mapped);
@@ -193,9 +193,9 @@ export default function Workspace() {
           <div className="ops-banner-inner">
             <div>
               <SectionLabel index="01">MUNICIPAL COMMAND CENTER</SectionLabel>
-              <h1 className="ops-heading">Ward 12 Operations Workspace</h1>
+              <h1 className="ops-heading">Municipal Operations Workspace</h1>
               <p className="ops-subtext">
-                Live spatial incident queue with PostGIS clustering, multimodal ML triage, and human-in-the-loop work order verification.
+                Spatial incident operations with geospatial context, multimodal analysis, and human-reviewed work-order decisions.
               </p>
             </div>
 
@@ -205,12 +205,12 @@ export default function Workspace() {
                 <b>{incidents.length} Incidents</b>
               </div>
               <div className="stat-pill">
-                <span>GIS SYNC</span>
-                <b className="gis-connected">● PostGIS 3.4 Live</b>
+                <span>SPATIAL CONTEXT</span>
+                <b className="gis-connected">PostGIS-backed</b>
               </div>
               <div className="stat-pill">
                 <span>SUPERVISOR GATES</span>
-                <b className="p1-alert">{incidents.filter((i) => i.status === "WAITING_FOR_REVIEW").length || 1} Pending</b>
+                <b className="p1-alert">{incidents.filter((i) => i.status === "WAITING_FOR_REVIEW").length} Pending</b>
               </div>
             </div>
           </div>
@@ -263,7 +263,7 @@ export default function Workspace() {
             <div className="incident-cards-scrollable" role="list">
               {loading && (
                 <div className="empty-queue-message">
-                  <span>Synchronizing live incidents from PostGIS operations queue...</span>
+                  <span>Loading incidents from the municipal operations API...</span>
                 </div>
               )}
 

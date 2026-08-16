@@ -22,17 +22,15 @@ services:
         sync: false
       - key: SUPABASE_URL
         sync: false
-      - key: SUPABASE_ANON_KEY
-        sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
-      - key: SUPABASE_JWT_SECRET
         sync: false
       - key: GROQ_API_KEY
         sync: false
       - key: CIVITAS_INTERNAL_API_KEY
         generateValue: true
       - key: CIVITAS_LLM_PRIMARY_MODEL
-        value: llama-3.3-70b-versatile
+        value: openai/gpt-oss-120b
       - key: CIVITAS_LLM_FAST_MODEL
-        value: llama-3.1-8b-instant
+        value: openai/gpt-oss-20b
+      - key: LANGGRAPH_STRICT_MSGPACK
+        value: "true"

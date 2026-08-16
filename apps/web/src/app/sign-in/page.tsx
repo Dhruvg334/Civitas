@@ -4,9 +4,8 @@ import { FormEvent, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Footer, Nav } from "@/components/site";
-import { OnboardingPanel } from "@/components/onboarding-panel";
 import { FlatIcon } from "@/components/flat-icons";
-import { signInWithPassword } from "@/lib/auth";
+import { signInWithPassword, signUpWithPassword } from "@/lib/auth";
 
 interface LiveMetricNode {
   id: string;
@@ -62,7 +61,6 @@ export default function SignIn() {
   const [notice, setNotice] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [activeFeedIndex, setActiveFeedIndex] = useState(0);
 
   // Auto-cycle live telemetry items
@@ -81,10 +79,19 @@ export default function SignIn() {
 
     try {
       if (isSignUp) {
-        setShowOnboarding(true);
+        const result = await signUpWithPassword(email, password, name);
+        if (result.confirmationRequired) {
+          setNotice("Account created. Check your email to confirm your address, then sign in to Civitas.");
+          setIsSignUp(false);
+        } else if (result.user) {
+          setNotice(`Welcome to Civitas, ${result.user.name}. Your account is active.`);
+          setTimeout(() => {
+            router.push(result.user?.role === "reviewer" || result.user?.role === "supervisor" ? "/workspace" : "/profile");
+          }, 600);
+        }
       } else {
         const user = await signInWithPassword(email, password);
-        setNotice(`✓ Welcome back, ${user.name}! Signed in successfully.`);
+        setNotice(`Welcome back, ${user.name}. Signed in successfully.`);
         setTimeout(() => {
           router.push(user.role === "reviewer" || user.role === "supervisor" ? "/workspace" : "/profile");
         }, 600);
@@ -278,7 +285,7 @@ export default function SignIn() {
                   {isSubmitting
                     ? "Authenticating..."
                     : isSignUp
-                    ? "Start Guided Onboarding →"
+                    ? "Create Civitas Account →"
                     : "Sign In to Workspace →"}
                 </button>
 
@@ -324,18 +331,6 @@ export default function SignIn() {
 
       {/* STANDARD SITE FOOTER */}
       <Footer />
-
-      {/* MULTI-STEP ONBOARDING MODAL */}
-      {showOnboarding && (
-        <OnboardingPanel
-          initialEmail={email}
-          initialName={name}
-          onClose={() => {
-            setShowOnboarding(false);
-            setNotice("✓ Account created and verified! Welcome to Civitas.");
-          }}
-        />
-      )}
 
       <style jsx>{`
         .auth-page-shell {

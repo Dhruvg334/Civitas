@@ -4,7 +4,7 @@ import { expect, it } from "vitest";
 import { ReviewFields, ReviewPanel } from "./review-panel";
 
 it("keeps review controls narrow by default", () => {
-  const html = renderToStaticMarkup(<ReviewPanel />);
+  const html = renderToStaticMarkup(<ReviewPanel workflowId="wf-test-review" />);
 
   expect(html).toContain("Approve");
   expect(html).toContain("Reroute");

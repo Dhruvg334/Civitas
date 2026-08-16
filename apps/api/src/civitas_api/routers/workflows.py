@@ -72,7 +72,7 @@ def start(
 
 @router.get("/workflows/{workflow_id}")
 def get(
-    workflow_id: str, _: Annotated[Principal, Depends(require_role(Role.TRIAGE))]
+    workflow_id: str, _: Annotated[Principal, Depends(require_role(Role.CITIZEN))]
 ) -> dict[str, Any]:
     return _call(_runtime().get, workflow_id)
 

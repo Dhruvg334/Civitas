@@ -51,14 +51,22 @@ export function isDemoMode(): boolean {
   return process.env.NEXT_PUBLIC_CIVITAS_DEMO_MODE === "true";
 }
 
-export type IncidentPriority = "Low" | "Medium" | "High" | "Critical" | "P1" | "P2" | "P3";
+export type IncidentPriority =
+  | "Low"
+  | "Medium"
+  | "High"
+  | "Critical"
+  | "P1"
+  | "P2"
+  | "P3"
+  | "Unassigned";
 
 export interface IncidentRecord {
   id: string;
   title: string;
   category: string;
   priority: IncidentPriority;
-  severityScore: number;
+  severityScore: number | null;
   reportsCount: number;
   primaryDepartment: string;
   secondaryDepartments: string[];
@@ -68,10 +76,12 @@ export interface IncidentRecord {
     latitude: number | null;
     longitude: number | null;
   };
-  submittedAt: string;
+  submittedAt: string | null;
   workOrderId?: string;
   workOrderSummary?: string;
   workflowId?: string;
+  workflowStatus?: WorkflowStatusType;
+  workflowTraceId?: string;
 }
 
 export interface IncidentTraceStep {
@@ -126,13 +136,13 @@ export interface WorkflowReviewRequest {
 
 export interface UploadedMediaRecord {
   media_id: string;
-  incident_id: string;
+  report_id: string;
   kind: "image" | "video";
   mime_type: string;
   bytes_size: number;
   storage_path: string;
   uploaded_at: string;
-  url?: string;
+  signed_url?: string;
 }
 
 export interface UserProfileResponse {
@@ -167,17 +177,25 @@ interface RawIncidentPayload {
   work_order_summary?: string;
   workOrderSummary?: string;
   workflow_id?: string;
+  workflow_status?: WorkflowStatusType;
+  workflow_trace_id?: string;
 }
 
 interface RawIncidentDetailPayload extends RawIncidentPayload {
   description?: string;
-  assessment?: {
+  latest_assessment?: {
     severity_score?: number;
     priority_level?: IncidentPriority;
   };
+  routing_decisions?: Array<{
+    primary_department?: string;
+    secondary_departments?: string[];
+  }>;
   work_orders?: Array<{
     work_order_id?: string;
     summary?: string;
+    primary_department?: string;
+    secondary_departments?: string[];
   }>;
 }
 
@@ -344,10 +362,10 @@ export async function fetchIncidents(): Promise<IncidentRecord[]> {
         id: item.incident_id || item.id || "INC-UNKNOWN",
         title: item.title || (item.category ? `${item.category.replace(/_/g, " ")} Incident` : `Incident ${item.incident_id || item.id}`),
         category: item.category ? item.category.replace(/_/g, " ") : "General Incident",
-        priority: (item.priority_level || item.priority || "Medium") as IncidentPriority,
-        severityScore: item.severity_score || 65,
+        priority: (item.priority_level || item.priority || "Unassigned") as IncidentPriority,
+        severityScore: item.severity_score ?? item.severityScore ?? null,
         reportsCount: item.duplicates_seen || item.reportsCount || 1,
-        primaryDepartment: item.assigned_department || item.primaryDepartment || "Municipal Operations",
+        primaryDepartment: item.assigned_department || item.primaryDepartment || "Unassigned",
         secondaryDepartments: item.secondary_departments || [],
         status: item.status || "submitted",
         location: {
@@ -355,10 +373,12 @@ export async function fetchIncidents(): Promise<IncidentRecord[]> {
           latitude: lat,
           longitude: lng,
         },
-        submittedAt: item.reported_at || item.submittedAt || new Date().toISOString(),
+        submittedAt: item.reported_at || item.submittedAt || null,
         workOrderId: item.assigned_work_order_id || item.workOrderId,
         workOrderSummary: item.work_order_summary || item.workOrderSummary,
         workflowId: item.workflow_id,
+        workflowStatus: item.workflow_status,
+        workflowTraceId: item.workflow_trace_id,
       };
     });
   } catch (err) {
@@ -375,7 +395,7 @@ export async function fetchIncidents(): Promise<IncidentRecord[]> {
 export async function fetchIncidentDetail(id: string): Promise<IncidentRecord> {
   try {
     const headers = await getAuthHeadersAsync();
-    const res = await fetch(`${getApiBaseUrl()}/incidents/${id}`, {
+    const res = await fetch(`${getApiBaseUrl()}/incidents/${encodeURIComponent(id)}`, {
       headers,
     });
     if (!res.ok) {
@@ -392,21 +412,32 @@ export async function fetchIncidentDetail(id: string): Promise<IncidentRecord> {
       id: data.incident_id || data.id || id,
       title: data.title || (data.category ? `${data.category.replace(/_/g, " ")} Incident` : `Incident ${id}`),
       category: data.category ? data.category.replace(/_/g, " ") : "Municipal Incident",
-      priority: (data.assessment?.priority_level || data.priority || "High") as IncidentPriority,
-      severityScore: data.assessment?.severity_score || data.severityScore || 78,
+      priority: (data.latest_assessment?.priority_level || data.priority || "Unassigned") as IncidentPriority,
+      severityScore: data.latest_assessment?.severity_score ?? data.severityScore ?? null,
       reportsCount: data.duplicates_seen || data.reportsCount || 1,
-      primaryDepartment: data.assigned_department || data.primaryDepartment || "Municipal Operations",
-      secondaryDepartments: data.secondary_departments || [],
+      primaryDepartment:
+        data.assigned_department ||
+        data.routing_decisions?.[0]?.primary_department ||
+        data.work_orders?.[0]?.primary_department ||
+        data.primaryDepartment ||
+        "Unassigned",
+      secondaryDepartments:
+        data.routing_decisions?.[0]?.secondary_departments ||
+        data.work_orders?.[0]?.secondary_departments ||
+        data.secondary_departments ||
+        [],
       status: data.status || "submitted",
       location: {
         landmark,
         latitude: lat,
         longitude: lng,
       },
-      submittedAt: data.reported_at || data.submittedAt || new Date().toISOString(),
+      submittedAt: data.reported_at || data.submittedAt || null,
       workOrderId: data.assigned_work_order_id || (data.work_orders?.[0]?.work_order_id),
       workOrderSummary: data.work_orders?.[0]?.summary,
       workflowId: data.workflow_id,
+      workflowStatus: data.workflow_status,
+      workflowTraceId: data.workflow_trace_id,
     };
   } catch (err) {
     if (isDemoMode()) {
@@ -541,7 +572,7 @@ export async function uploadReportMedia(
     if (isDemoMode()) {
       return {
         media_id: `med-demo-${Math.floor(1000 + Math.random() * 9000)}`,
-        incident_id: reportId,
+        report_id: reportId,
         kind: file.type.startsWith("video") ? "video" : "image",
         mime_type: file.type,
         bytes_size: file.size,

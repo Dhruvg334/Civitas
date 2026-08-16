@@ -63,18 +63,12 @@ def analyze(
     _: Annotated[None, Depends(require_internal_key)],
 ) -> dict[str, Any]:
     """Thin internal bridge to the existing unified ReportAnalysis pipeline."""
-    row = reports_ops.get_incident(body.report_id)
-    if row is None:
-        raise HTTPException(status_code=404, detail="report not found")
-    from civitas_ml import analyze_report
+    from civitas_api.services.ml_runtime import analyze_persisted_report
 
-    analysis = analyze_report(
-        report_id=body.report_id,
-        description=str(row.get("description") or ""),
-        latitude=float(row["latitude"]),
-        longitude=float(row["longitude"]),
-        timestamp=row.get("reported_at"),
-    ).model_copy(update={"trace_id": body.trace_id})
+    try:
+        analysis = analyze_persisted_report(body.report_id, trace_id=body.trace_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail="report not found") from exc
     return success_envelope(analysis.model_dump(mode="json"))
 
 
@@ -178,14 +172,8 @@ def media_bytes(media_id: str, _: Annotated[None, Depends(require_internal_key)]
     if row is None:
         raise HTTPException(status_code=404, detail="media not found")
     storage_path = str(row["storage_path"])
-    # Local adapter stores a local://bucket/path marker; adapters consume object path.
-    if storage_path.startswith(("local://", "supabase://")):
-        parts = storage_path.split("/", 3)
-        object_path = parts[3] if len(parts) == 4 else storage_path
-    else:
-        object_path = storage_path
     try:
-        data = get_storage().get(object_path)
+        data = get_storage().get(storage_path)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="media object not found") from exc
     return Response(content=data, media_type=row.get("mime_type") or "application/octet-stream")

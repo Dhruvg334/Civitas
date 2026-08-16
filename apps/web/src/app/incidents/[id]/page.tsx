@@ -1,12 +1,13 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { ReviewPanel } from "@/components/review-panel";
 import { ResolutionSlider } from "@/components/resolution-slider";
 import { AgentTraceVisualizer } from "@/components/agent-trace-visualizer";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Nav, Status, Footer } from "@/components/site";
 import { MiniMap } from "@/components/civic-visuals";
+import { ApiError, fetchIncidentDetail, IncidentRecord, isDemoMode } from "@/lib/api";
 
 interface IncidentData {
   title: string;
@@ -82,6 +83,87 @@ const INCIDENT_CATALOG: Record<string, IncidentData> = {
   },
 };
 
+function LiveIncidentDossier({ incident }: { incident: IncidentRecord }) {
+  const reviewable =
+    incident.workflowId &&
+    ["WAITING_FOR_REVIEW", "WAITING_FOR_HUMAN_REVIEW"].includes(
+      (incident.workflowStatus || incident.status).toUpperCase()
+    );
+  const status = incident.workflowStatus || incident.status;
+  const severity = incident.severityScore === null ? "Not assessed" : `${incident.severityScore}/100`;
+
+  return (
+    <>
+      <Nav />
+      <main className="live-incident-shell">
+        <header className="live-incident-header">
+          <div>
+            <span className="live-kicker">INCIDENT DOSSIER · {incident.id}</span>
+            <h1>{incident.title}</h1>
+            <p>
+              {incident.category} · {incident.location.landmark}
+            </p>
+          </div>
+          <Status tone={status === "COMPLETED" || status === "resolved" ? "good" : status.includes("REVIEW") ? "warn" : "neutral"}>
+            {status.replaceAll("_", " ")}
+          </Status>
+        </header>
+
+        <div className="live-incident-grid">
+          <section className="live-panel">
+            <span className="panel-label">CURRENT ASSESSMENT</span>
+            <div className="metric-grid">
+              <div><span>PRIORITY</span><b>{incident.priority}</b></div>
+              <div><span>SEVERITY</span><b>{severity}</b></div>
+              <div><span>REPORTS CLUSTERED</span><b>{incident.reportsCount}</b></div>
+              <div><span>DEPARTMENT</span><b>{incident.primaryDepartment}</b></div>
+            </div>
+          </section>
+
+          <section className="live-panel">
+            <span className="panel-label">LOCATION & WORKFLOW</span>
+            <dl className="fact-list">
+              <div><dt>Location</dt><dd>{incident.location.landmark}</dd></div>
+              <div><dt>Coordinates</dt><dd>{incident.location.latitude !== null && incident.location.longitude !== null ? `${incident.location.latitude.toFixed(5)}, ${incident.location.longitude.toFixed(5)}` : "Unavailable"}</dd></div>
+              <div><dt>Submitted</dt><dd>{incident.submittedAt ? new Date(incident.submittedAt).toLocaleString() : "Unavailable"}</dd></div>
+              <div><dt>Workflow</dt><dd>{incident.workflowId || "No workflow run associated"}</dd></div>
+              <div><dt>Trace</dt><dd>{incident.workflowTraceId || "No workflow trace available"}</dd></div>
+            </dl>
+          </section>
+
+          <section className="live-panel live-work-order">
+            <span className="panel-label">OPERATIONAL OUTPUT</span>
+            <h2>{incident.workOrderId ? `Work order ${incident.workOrderId}` : "Work order not yet issued"}</h2>
+            <p>{incident.workOrderSummary || "No persisted work-order recommendation is available for this incident."}</p>
+            {incident.secondaryDepartments.length > 0 && (
+              <p className="secondary-depts">Coordination: {incident.secondaryDepartments.join(", ")}</p>
+            )}
+          </section>
+
+          <aside className="live-panel review-slot">
+            <span className="panel-label">HUMAN REVIEW</span>
+            {reviewable && incident.workflowId ? (
+              <ErrorBoundary>
+                <ReviewPanel workflowId={incident.workflowId} />
+              </ErrorBoundary>
+            ) : (
+              <p className="review-note">
+                {incident.workflowId
+                  ? `Workflow is currently ${status.replaceAll("_", " ").toLowerCase()}. Review controls appear only at an active review checkpoint.`
+                  : "No active workflow review checkpoint is associated with this incident."}
+              </p>
+            )}
+          </aside>
+        </div>
+      </main>
+      <Footer />
+      <style jsx>{`
+        .live-incident-shell{max-width:1240px;margin:0 auto;padding:52px 24px 80px}.live-incident-header{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;border-bottom:2px solid #172019;padding-bottom:24px;margin-bottom:28px}.live-kicker,.panel-label{font-size:.65rem;font-weight:900;letter-spacing:.11em;color:#0f5f4f}.live-incident-header h1{font:700 clamp(2rem,4vw,3.3rem)/1.05 Georgia,serif;margin:8px 0;color:#172019}.live-incident-header p{margin:0;color:#687067}.live-incident-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,.7fr);gap:24px}.live-panel{border:1px solid #172019;background:#fffdf8;padding:24px;box-shadow:4px 4px 0 #172019}.metric-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}.metric-grid div{background:#f7f5ef;border:1px solid #d9d7ce;padding:14px}.metric-grid span,.fact-list dt{display:block;font-size:.62rem;font-weight:850;color:#687067}.metric-grid b{display:block;margin-top:5px;color:#172019}.fact-list{margin:16px 0 0}.fact-list div{display:grid;grid-template-columns:110px 1fr;gap:16px;padding:10px 0;border-bottom:1px solid #e2ded4}.fact-list dd{margin:0;color:#172019;overflow-wrap:anywhere}.live-work-order h2{font:700 1.35rem Georgia,serif;color:#172019;margin:14px 0 8px}.live-work-order p,.review-note{color:#555e54;line-height:1.6}.secondary-depts{font-size:.82rem}.review-slot{grid-row:span 2}@media(max-width:900px){.live-incident-grid{grid-template-columns:1fr}.live-incident-header{flex-direction:column}.metric-grid{grid-template-columns:1fr}.review-slot{grid-row:auto}}
+      `}</style>
+    </>
+  );
+}
+
 export default function Incident({
   params,
 }: {
@@ -89,6 +171,31 @@ export default function Incident({
 }) {
   const { id } = use(params);
   const incidentId = (id || "INC-0241").toUpperCase();
+  const demoIncident = isDemoMode() || id.toLowerCase() === "demo-water";
+  const [liveIncident, setLiveIncident] = useState<IncidentRecord | null>(null);
+  const [liveError, setLiveError] = useState<string | null>(null);
+  const [liveLoading, setLiveLoading] = useState(!demoIncident);
+
+  useEffect(() => {
+    if (demoIncident) return;
+    let mounted = true;
+    fetchIncidentDetail(incidentId)
+      .then((record) => {
+        if (mounted) setLiveIncident(record);
+      })
+      .catch((error) => {
+        if (mounted) {
+          setLiveError(error instanceof ApiError ? error.message : "Unable to load incident dossier.");
+        }
+      })
+      .finally(() => {
+        if (mounted) setLiveLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [demoIncident, incidentId]);
+
   const incident: IncidentData = INCIDENT_CATALOG[incidentId] || {
     title: `Civic Incident ${incidentId}`,
     priority: "P2",
@@ -104,6 +211,16 @@ export default function Incident({
     workOrderDesc: "Deploy district inspection crew to assess site and implement corrective action.",
   };
   const [activeTab, setActiveTab] = useState<string>("evidence");
+
+  if (!demoIncident) {
+    if (liveLoading) {
+      return <><Nav /><main className="shell"><div className="card"><h1>Loading incident dossier…</h1><p>Retrieving the current incident, assessment, routing and workflow state.</p></div></main><Footer /></>;
+    }
+    if (liveError || !liveIncident) {
+      return <><Nav /><main className="shell"><div className="card"><h1>Incident unavailable</h1><p>{liveError || "The incident could not be loaded."}</p></div></main><Footer /></>;
+    }
+    return <LiveIncidentDossier incident={liveIncident} />;
+  }
 
   return (
     <>

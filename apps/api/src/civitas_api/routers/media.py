@@ -34,8 +34,6 @@ ALLOWED_VIDEO_MIME = {"video/mp4", "video/webm", "video/quicktime", "video/x-mat
 ALLOWED_MIME = ALLOWED_IMAGE_MIME | ALLOWED_VIDEO_MIME
 MAX_BYTES = 50 * 1024 * 1024  # 50 MB
 
-MAX_BYTES = 50 * 1024 * 1024  # 50 MB
-
 
 def _now() -> datetime:
     return datetime.now(UTC)
@@ -101,12 +99,15 @@ async def upload_media(
     try:
         storage = get_storage()
         put_path = storage.put(storage_path, data, mime)
-    except Exception as exc:  # noqa: BLE001
-        return error_envelope(
-            code="STORAGE_ERROR",
-            message=f"failed to write media: {exc}",
-            retryable=True,
-        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=error_envelope(
+                code="STORAGE_ERROR",
+                message=f"failed to write media: {exc}",
+                retryable=True,
+            ),
+        ) from exc
 
     parsed_captured_at: datetime | None = None
     if captured_at:
@@ -137,12 +138,15 @@ async def upload_media(
                 },
             )
             conn.commit()
-    except Exception as exc:  # noqa: BLE001
-        return error_envelope(
-            code="PERSISTENCE_ERROR",
-            message=f"failed to record media row: {exc}",
-            retryable=True,
-        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=error_envelope(
+                code="PERSISTENCE_ERROR",
+                message=f"failed to record media row: {exc}",
+                retryable=True,
+            ),
+        ) from exc
 
     try:
         signed = get_storage().signed_url(storage_path, ttl_seconds=3600)

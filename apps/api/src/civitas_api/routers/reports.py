@@ -52,12 +52,15 @@ def create_report(
             longitude=payload.location.longitude,
             citizen_selected_category=payload.citizen_selected_category,
         )
-    except Exception as exc:  # noqa: BLE001 - any DB failure -> error envelope
-        return error_envelope(
-            code="PERSISTENCE_ERROR",
-            message=f"failed to persist report: {exc}",
-            retryable=True,
-        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=error_envelope(
+                code="PERSISTENCE_ERROR",
+                message=f"failed to persist report: {exc}",
+                retryable=True,
+            ),
+        ) from exc
 
     data = ReportData(
         report_id=row["incident_id"],

@@ -1,4 +1,3 @@
-import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -28,33 +27,28 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Own the optional production LangGraph saver for the app lifetime."""
-    checkpoint_url = os.getenv("CIVITAS_WORKFLOW_CHECKPOINT_DATABASE_URL", "").strip()
+    checkpoint_url = settings.workflow_checkpoint_database_url.strip()
     if checkpoint_url and not settings.database_url.startswith("sqlite:///"):
-        from civitas_workflow.runtime import (
-            create_postgres_checkpointer,
-            create_production_workflow,
-        )
+        from civitas_workflow.runtime import create_postgres_checkpointer
 
-        from civitas_api.services.workflow_runtime import WorkflowRuntimeService
+        from civitas_api.services.workflow_composition import create_production_runtime
 
         saver = create_postgres_checkpointer(checkpoint_url)
         saver.setup()
-        app.state.workflow_runtime = WorkflowRuntimeService(
-            create_production_workflow(
-                checkpointer=saver, prompt_root=__import__("pathlib").Path("prompts")
-            )
-        )
+        app.state.workflow_runtime = create_production_runtime(saver)
         app.state.workflow_checkpointer = saver
     yield
     saver = getattr(app.state, "workflow_checkpointer", None)
-    if saver is not None and hasattr(saver, "close"):
-        saver.close()
+    if saver is not None:
+        connection = getattr(saver, "conn", None)
+        if connection is not None and hasattr(connection, "close"):
+            connection.close()
 
 
 app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origin.strip() for origin in settings.cors_origins.split(",")],
+    allow_origins=settings.cors_origin_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

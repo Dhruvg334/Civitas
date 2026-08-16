@@ -29,6 +29,19 @@ from pathlib import Path
 from typing import Any
 
 
+def _object_key(value: str, bucket: str) -> str:
+    """Normalize a persisted storage URI or raw object key for adapter reads."""
+    raw = value.split("?", 1)[0]
+    for scheme in ("local://", "supabase://"):
+        if raw.startswith(scheme):
+            remainder = raw[len(scheme):]
+            prefix = f"{bucket}/"
+            if remainder.startswith(prefix):
+                return remainder[len(prefix):]
+            return remainder.split("/", 1)[1] if "/" in remainder else remainder
+    return raw.lstrip("/")
+
+
 class StorageAdapter(ABC):
     bucket: str
 
@@ -52,6 +65,7 @@ class LocalDiskStorageAdapter(StorageAdapter):
         self._root.mkdir(parents=True, exist_ok=True)
 
     def _resolve(self, object_path: str) -> Path:
+        object_path = _object_key(object_path, self.bucket)
         # Reject path traversal — object_path is constructed by us, but be safe.
         if ".." in object_path.split("/"):
             raise ValueError(f"invalid object_path: {object_path!r}")
@@ -65,14 +79,18 @@ class LocalDiskStorageAdapter(StorageAdapter):
 
     def signed_url(self, object_path: str, ttl_seconds: int = 3600) -> str:
         # Local mode has no real signing; return a deterministic dev URL.
-        return f"local://{self.bucket}/{object_path}?ttl={ttl_seconds}"
+        key = _object_key(object_path, self.bucket)
+        return f"local://{self.bucket}/{key}?ttl={ttl_seconds}"
 
     def head(self, object_path: str) -> dict[str, Any] | None:
         target = self._resolve(object_path)
         if not target.exists():
             return None
         st = target.stat()
-        return {"size": st.st_size, "modified": datetime.fromtimestamp(st.st_mtime, tz=UTC).isoformat()}
+        return {
+            "size": st.st_size,
+            "modified": datetime.fromtimestamp(st.st_mtime, tz=UTC).isoformat(),
+        }
 
     def get(self, object_path: str) -> bytes:
         target = self._resolve(object_path)
@@ -115,6 +133,7 @@ class SupabaseStorageAdapter(StorageAdapter):
     def signed_url(self, object_path: str, ttl_seconds: int = 3600) -> str:
         import httpx
 
+        object_path = _object_key(object_path, self.bucket)
         url = f"{self._base}/storage/v1/object/sign/{self.bucket}/{object_path}"
         resp = httpx.post(
             url,
@@ -139,10 +158,13 @@ class SupabaseStorageAdapter(StorageAdapter):
 
     def get(self, object_path: str) -> bytes:
         import httpx
+        object_path = _object_key(object_path, self.bucket)
         url = f"{self._base}/storage/v1/object/{self.bucket}/{object_path}"
         resp = httpx.get(url, headers=self._auth_headers(), timeout=30)
         if resp.status_code != 200:
-            raise FileNotFoundError(f"storage object unavailable: {object_path} ({resp.status_code})")
+            raise FileNotFoundError(
+                f"storage object unavailable: {object_path} ({resp.status_code})"
+            )
         return resp.content
 
 
