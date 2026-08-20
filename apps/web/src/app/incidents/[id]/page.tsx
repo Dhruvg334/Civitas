@@ -196,7 +196,53 @@ export default function Incident({
     };
   }, [demoIncident, incidentId]);
 
-  const incident: IncidentData = INCIDENT_CATALOG[incidentId] || {
+  const [activeTab, setActiveTab] = useState<string>("evidence");
+
+  if (!demoIncident) {
+    if (liveLoading) {
+      return (
+        <>
+          <Nav />
+          <main className="incident-shell">
+            <div className="dossier-card" style={{ padding: "40px 24px", textAlign: "center" }}>
+              <h2>Loading incident dossier…</h2>
+              <p style={{ color: "#687067", marginTop: "8px" }}>Retrieving the current incident assessment, PostGIS spatial clustering, and LangGraph workflow state.</p>
+            </div>
+          </main>
+          <Footer />
+        </>
+      );
+    }
+    if (liveError || !liveIncident) {
+      return (
+        <>
+          <Nav />
+          <main className="incident-shell">
+            <div className="dossier-card" style={{ padding: "40px 24px", textAlign: "center" }}>
+              <h2>Incident Unavailable</h2>
+              <p style={{ color: "#dc2626", marginTop: "8px" }}>{liveError || "The requested incident could not be found or loaded."}</p>
+            </div>
+          </main>
+          <Footer />
+        </>
+      );
+    }
+  }
+
+  const incident: IncidentData = liveIncident ? {
+    title: liveIncident.title || `Civic Incident ${incidentId}`,
+    priority: (["P1", "P2", "P3"].includes(liveIncident.priority) ? liveIncident.priority : "P2") as "P1" | "P2" | "P3",
+    ward: liveIncident.location.landmark.includes("Ward") ? liveIncident.location.landmark : "WARD 12 · MUNICIPAL ZONE",
+    department: liveIncident.primaryDepartment || "Public Works & Infrastructure",
+    category: liveIncident.category || "general_hazard",
+    landmark: liveIncident.location.landmark || "Ward 12 Municipal Corridor",
+    playbook: INCIDENT_CATALOG[incidentId]?.playbook || "PLAY-GEN-01 (Standard Civic Hazard Resolution)",
+    reportsCount: liveIncident.reportsCount || 1,
+    observedText: liveIncident.workOrderSummary || "Visual evidence attached and verified by multimodal intake.",
+    reportedText: liveIncident.title || "Citizen report logged with evidence attachment.",
+    inferredText: `Severity index: ${liveIncident.severityScore ?? "Assessed"} / 100. Target SLA: 8 - 14 hours.`,
+    workOrderDesc: liveIncident.workOrderSummary || "Deploy district inspection crew to assess site and implement corrective action.",
+  } : (INCIDENT_CATALOG[incidentId] || {
     title: `Civic Incident ${incidentId}`,
     priority: "P2",
     ward: "WARD 12 · MUNICIPAL ZONE",
@@ -209,18 +255,10 @@ export default function Incident({
     reportedText: "Citizen report logged with evidence attachment.",
     inferredText: "Standard field inspection protocol recommended.",
     workOrderDesc: "Deploy district inspection crew to assess site and implement corrective action.",
-  };
-  const [activeTab, setActiveTab] = useState<string>("evidence");
+  });
 
-  if (!demoIncident) {
-    if (liveLoading) {
-      return <><Nav /><main className="shell"><div className="card"><h1>Loading incident dossier…</h1><p>Retrieving the current incident, assessment, routing and workflow state.</p></div></main><Footer /></>;
-    }
-    if (liveError || !liveIncident) {
-      return <><Nav /><main className="shell"><div className="card"><h1>Incident unavailable</h1><p>{liveError || "The incident could not be loaded."}</p></div></main><Footer /></>;
-    }
-    return <LiveIncidentDossier incident={liveIncident} />;
-  }
+  const workflowStatus = liveIncident?.workflowStatus || liveIncident?.status || "WAITING_FOR_REVIEW";
+  const workflowId = liveIncident?.workflowId || `wf-${incidentId.toLowerCase()}`;
 
   return (
     <>
@@ -238,16 +276,18 @@ export default function Incident({
             </div>
             <h1 className="incident-main-heading">{incident.title}</h1>
             <p className="incident-sub-desc">
-              {incident.reportsCount} related resident reports (photo, text, video) consolidated via PostGIS spatial clustering and CLIP zero-shot vision classification.
+              {incident.reportsCount} related resident report{incident.reportsCount > 1 ? "s" : ""} consolidated via PostGIS spatial clustering and CLIP zero-shot vision classification.
             </p>
           </div>
 
           <div className="incident-state-card">
             <span className="state-label">WORKFLOW STATE</span>
-            <Status tone={incident.priority === "P1" ? "warn" : "good"}>WAITING_FOR_REVIEW</Status>
+            <Status tone={workflowStatus.includes("REVIEW") ? "warn" : workflowStatus === "COMPLETED" || workflowStatus === "resolved" ? "good" : "neutral"}>
+              {workflowStatus.replaceAll("_", " ")}
+            </Status>
             <div className="trace-id-box">
-              <span>TRACE: CIV-TR-{incidentId.slice(-4)}</span>
-              <span>THREAD: th-{incident.category}-{incidentId.slice(-4)}</span>
+              <span>TRACE: {liveIncident?.workflowTraceId || `CIV-TR-${incidentId.slice(-4)}`}</span>
+              <span>WORKFLOW: {workflowId}</span>
             </div>
           </div>
         </header>
@@ -463,7 +503,7 @@ export default function Incident({
                 <span>HUMAN-IN-THE-LOOP CHECKPOINT</span>
               </div>
               <ErrorBoundary>
-                <ReviewPanel workflowId={`wf-${incidentId.toLowerCase()}`} />
+                <ReviewPanel workflowId={workflowId} />
               </ErrorBoundary>
             </div>
           </aside>
