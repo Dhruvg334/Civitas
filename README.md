@@ -135,9 +135,24 @@ The LangGraph workflow coordinates specialized stages for evidence structuring, 
 
 Authorized reviewers can approve, reject, request more evidence, edit permitted work-order fields, or override routing through narrow typed contracts. The frontend cannot inject arbitrary graph state, and backend authorization remains authoritative.
 
-### Resolution verification
+### Multi-class resolution verification & contractor anti-fraud defense
 
-New field evidence can be compared with the original report to classify an outcome as resolved, partially resolved, unverifiable, or conflicting. Ambiguous evidence remains reviewable instead of being converted into a false closure signal.
+Civitas prevents premature closures and contractor billing fraud through multi-tier verification:
+- **Perceptual Image Hash (dHash) Duplicate Detection**: Computes 64-bit gradient difference hashes of before-and-after photos to catch contractors recycling the original incident image as proof of repair.
+- **Temporal & Spatial Sanity Validation**: Validates that resolution photos were captured *after* work order creation and within 75 meters of the incident coordinates, rejecting stale stock photos and off-site spoofing.
+- **Multi-Class Outcome Classification**: Categorizes repair evidence into `RESOLVED`, `PARTIALLY_RESOLVED`, `UNVERIFIABLE`, or `CONFLICTING_EVIDENCE`.
+
+### Citizen 72-hour dispute window & automated re-open engine
+
+Closing a work order does not create an irreversible lock:
+- **72-Hour Citizen Review Envelope**: Residents are notified upon closure and retain a 72-hour dispute window.
+- **Rebuttal Evidence & Priority Escalation**: If a citizen disputes the repair with rebuttal photo evidence, the system automatically transitions the incident to `reopened_disputed`, escalates priority to `P1_CRITICAL`, and dispatches the case to a senior municipal supervisor.
+
+### Cryptographic SHA-256 municipal audit certificates
+
+Civitas generates immutable digital audit certificates for every closed incident:
+- **End-to-End Lifecycle Sealing**: Cryptographically binds the initial citizen report, ML vision detections, retrieved statutory citations, contractor work order, repair photo hash, and verification verdict into a canonical JSON digest.
+- **Tamper-Proof Verification**: Provides a unique certificate identifier and verifiable SHA-256 hash for public municipal accountability and contractor payment clearance.
 
 ---
 

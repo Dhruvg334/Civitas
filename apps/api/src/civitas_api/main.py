@@ -11,8 +11,10 @@ from civitas_api.core.logging_security import install_security_logging
 from civitas_api.core.rate_limit import RateLimitMiddleware
 from civitas_api.routers import (
     auth,
+    certificates,
     clarifications,
     clarification_channels,
+    disputes,
     health,
     incidents,
     incidents_ops,
@@ -146,3 +148,5 @@ app.include_router(open311.router)
 app.include_router(telemetry.router)
 app.include_router(clarification_channels.router)
 app.include_router(work_orders_batch.router)
+app.include_router(disputes.router)
+app.include_router(certificates.router)
