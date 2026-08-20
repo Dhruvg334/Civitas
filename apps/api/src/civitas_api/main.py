@@ -10,6 +10,7 @@ from civitas_api.core.envelope import error_envelope
 from civitas_api.core.logging_security import install_security_logging
 from civitas_api.core.rate_limit import RateLimitMiddleware
 from civitas_api.routers import (
+    analytics,
     auth,
     certificates,
     clarifications,
@@ -28,6 +29,7 @@ from civitas_api.routers import (
     resolutions,
     routing,
     telemetry,
+    transparency,
     work_orders,
     work_orders_batch,
     workflows,
@@ -150,3 +152,5 @@ app.include_router(clarification_channels.router)
 app.include_router(work_orders_batch.router)
 app.include_router(disputes.router)
 app.include_router(certificates.router)
+app.include_router(transparency.router)
+app.include_router(analytics.router)

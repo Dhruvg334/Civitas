@@ -154,6 +154,19 @@ Civitas generates immutable digital audit certificates for every closed incident
 - **End-to-End Lifecycle Sealing**: Cryptographically binds the initial citizen report, ML vision detections, retrieved statutory citations, contractor work order, repair photo hash, and verification verdict into a canonical JSON digest.
 - **Tamper-Proof Verification**: Provides a unique certificate identifier and verifiable SHA-256 hash for public municipal accountability and contractor payment clearance.
 
+### Public open data feeds with differential privacy & PII scrubbing
+
+Civitas balances public civic transparency with strict citizen privacy:
+- **Automated PII Scrubbing**: Strips phone numbers, email addresses, vehicle license plates, and residential door/flat numbers before publishing incident records to open data endpoints.
+- **Differential Privacy Spatial Perturbation**: Applies bounded deterministic Gaussian spatial perturbation ($\pm 25m$) on public feeds, preserving aggregate neighborhood spatial density while preventing residential profiling.
+- **RFC 7946 GeoJSON & Tabular CSV Streams**: Provides `GET /api/v1/public/incidents.geojson` and `GET /api/v1/public/incidents.csv` for urban planners, academic researchers, and civic watchdogs.
+
+### Continuous contractor performance & SLA analytics
+
+To maintain high vendor accountability and optimize future work allocations:
+- **Automated Compliance Tracking**: Computes Mean Time to Resolution (MTTR), Statutory SLA Compliance Rate (%), and Citizen Dispute Rate (%) per department and contractor.
+- **Composite Performance Scorecard**: Ranks contractors on a $0 - 100$ index (`TIER_1_EXCELLENT`, `TIER_2_GOOD`, `TIER_3_UNDERPERFORMING`) via `GET /api/v1/analytics/contractors`.
+
 ---
 
 ## Product experience
@@ -223,6 +236,13 @@ flowchart TB
         CP[(LangGraph Checkpoints)]
     end
 
+    subgraph Outbound[Public Transparency & Vendor Analytics]
+        GEOJSON[RFC 7946 GeoJSON Feed]
+        CSV[Tabular Open Data Export]
+        ANALYTICS[Contractor SLA & Scorecard]
+        CERT[Cryptographic SHA-256 Certificates]
+    end
+
     Intake --> Security
     Security --> FAST
     FAST --> AUTH
@@ -244,6 +264,7 @@ flowchart TB
     OPS --> STORE
     GRAPH --> CP
     GRAPH --> TRACE
+    OPS --> Outbound
 ```
 
 ### Runtime boundaries
