@@ -614,6 +614,10 @@ export function DocsPage({
               <FlatIcon name="workflow" size={14} />
               <span>Workflow & Operations</span>
             </Link>
+            <Link href="/docs/lifecycle" className={activeSlug === "lifecycle" ? "active" : ""}>
+              <FlatIcon name="overview" size={14} />
+              <span>End-to-End Lifecycle</span>
+            </Link>
             <Link href="/docs/safety" className={activeSlug === "safety" ? "active" : ""}>
               <FlatIcon name="shield" size={14} />
               <span>Governance & Safety</span>

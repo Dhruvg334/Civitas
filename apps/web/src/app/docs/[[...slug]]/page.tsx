@@ -118,7 +118,7 @@ PostgreSQL / Supabase (Application Data + LangGraph State)`,
     intro: "The LangGraph orchestration graph turns incoming reports into reviewable work orders through bounded nodes and explicit checkpoints.",
     slug: "workflow",
     prevPage: { label: "← System Architecture", href: "/docs/architecture" },
-    nextPage: { label: "Governance & Safety →", href: "/docs/safety" },
+    nextPage: { label: "End-to-End Lifecycle →", href: "/docs/lifecycle" },
     blocks: [
       {
         heading: "Context Normalization & Evidence Extraction",
@@ -144,11 +144,116 @@ PostgreSQL / Supabase (Application Data + LangGraph State)`,
       },
     ],
   },
+  lifecycle: {
+    title: "Incident Lifecycle & Core Process",
+    intro: "A step-by-step engineering breakdown of how an incident flows from mobile citizen intake to zero-shot ML triage, LangGraph multi-agent reasoning, human supervisor review, and before/after resolution verification.",
+    slug: "lifecycle",
+    prevPage: { label: "← Workflow & Operations", href: "/docs/workflow" },
+    nextPage: { label: "Governance & Safety →", href: "/docs/safety" },
+    blocks: [
+      {
+        heading: "Stage 01: Multimodal Intake & Zero-Trust Ingestion",
+        body: "Citizen reporting begins through the responsive web wizard or public API. To support high-volume mobile submissions over constrained cellular networks, incoming media is optimized and hardened prior to backend storage.",
+        alert: {
+          type: "note",
+          title: "Intake Hardening Rules",
+          content: "Client-side canvas downsampling reduces 40MB photos to <1.2MB in under 200ms. The backend performs binary magic-byte validation (PNG, JPEG, WebP, MP4) and isolates storage under non-enumerable UUIDs with 1-hour signed access URLs.",
+        },
+        bullets: [
+          "WGS84 GPS coordinate capture with offline Google Maps/OSM share link regex parsing.",
+          "Strict 50MB file size ceiling and MIME-type allowlist enforcement.",
+          "Citizen text description, category selection, and timestamp normalization into PostgreSQL.",
+        ],
+        code: `Citizen Device (Web Wizard / Mobile PWA)
+  ├── 1. Canvas Downscaler (≤ 1920x1080 @ 0.85 JPEG)
+  ├── 2. Map-Link / GPS Extraction (WGS84 lat/lon)
+  └── 3. POST /api/v1/reports + POST /reports/{id}/media
+        │
+        ▼
+FastAPI Ingestion Adapter
+  ├── Binary Magic Byte Header Check (\\x89PNG, \\xff\\xd8\\xff, ftyp)
+  └── Isolated Storage Vault (med-<uuid>.<ext>)`,
+      },
+      {
+        heading: "Stage 02: Deterministic Geospatial & Zero-Shot Vision Triage",
+        body: "Before invoking generative agent nodes, incoming reports are processed through fast, deterministic spatial queries and computer vision defect models to establish observable facts.",
+        bullets: [
+          "PostGIS Spatial Clustering: ST_DWithin queries group reports within dynamic radiuses (50m for potholes, 150m for water bursts) over a 72-hour rolling window to eliminate duplicate work orders.",
+          "Zero-Shot Defect Vision: CLIP embeddings categorize visual defects against municipal taxonomies and extract physical attributes (e.g. standing water depth, pavement cavity, tree trunk diameter).",
+          "Landmark Proximity Buffer: Calculates exact distances to schools, hospital emergency bays, and transit corridors to assign deterministic P1/P2/P3 priority ratings.",
+        ],
+        code: `Raw Report (med-0241.jpg, lat=20.29614, lon=85.82451)
+  │
+  ├──► [PostGIS ST_DWithin(50m, 72h)] ──► Clustered to INC-0241 (duplicates: 3)
+  ├──► [CLIP Zero-Shot Vision]         ──► Defect: Water Leakage (Conf: 0.94)
+  └──► [Spatial Buffer Engine]         ──► 14m from DAV School Gate ──► PRIORITY: P1`,
+      },
+      {
+        heading: "Stage 03: LangGraph Checkpointed Multi-Agent Reasoning",
+        body: "The incident enters a deterministic LangGraph state machine. Each agent operates with an isolated system prompt, dedicated schema contracts, and separate LLM calls to prevent cross-contamination.",
+        alert: {
+          type: "important",
+          title: "The 6-Agent Reasoning Pipeline",
+          content: "1. Structure Evidence (triad separation) → 2. Clarification Check (interactive interrupt) → 3. Grounding Retrieval (playbooks) → 4. Policy Routing (jurisdiction) → 5. Operational Planning (SLA & work order) → 6. Adversarial Critic (safety check loop, max 2 revisions).",
+        },
+        code: `[load_context] ──► [ml_intelligence] ──► [structure_evidence]
+                                                 │
+                                                 ▼
+[knowledge_grounding] ◄── [clarification_check] ──► (Missing info? ──► [WAITING_FOR_CLARIFICATION])
+         │
+         ▼
+  [routing_agent] ──► (Cites ROUTE-WATER-02)
+         │
+         ▼
+[operational_planner] ◄──┐
+         │               │ (Critic Rejection, max 2 revisions)
+         ▼               │
+      [critic] ──────────┘
+         │
+         ▼ (Critic Approved)
+[prepare_human_review] ──► [WAITING_FOR_REVIEW]`,
+      },
+      {
+        heading: "Stage 04: Human-in-the-Loop Review Gate & Command Center",
+        body: "Civitas enforces a strict governance standard: AI proposes operational plans, but authorized municipal supervisors hold final decision authority. Work orders are never automatically dispatched without human approval.",
+        bullets: [
+          "Checkpointed Halt: LangGraph freezes execution state to PostgreSQL at WAITING_FOR_REVIEW.",
+          "Supervisor Incident Dossier: Municipal supervisors review GIS hazard buffers, visual evidence triads, and the draft work order in the Command Center.",
+          "5 Canonical Review Actions: Approve (dispatch), Edit Work Order (adjust SLA/equipment), Reroute Department, Reject (dismiss false alarm), or Request Additional Evidence.",
+          "Resumption: Submitting the review resumes the existing thread ID idempotently via POST /api/v1/workflows/{id}/review.",
+        ],
+      },
+      {
+        heading: "Stage 05: Field Dispatch & Citizen Communication",
+        body: "Upon supervisor authorization, the work order is formally dispatched to district field crew leads with exact spatial coordinates, safety protocols, and equipment requirements. Concurrently, the citizen communication agent generates a non-technical status update for residents.",
+        bullets: [
+          "Work Order Dispatch: Assigned to designated crew lead (e.g. Marcus Vance, Ward 12 Water Supply Dept) with required tools (ductile clamp, backhoe, asphalt patch).",
+          "Citizen Status Feed: Reassuring, non-technical notification informing the citizen that crew dispatch is active with an estimated resolution window (e.g. 8–14 hours).",
+        ],
+      },
+      {
+        heading: "Stage 06: Closed-Loop Resolution Verification",
+        body: "An incident cannot be marked RESOLVED based on time elapsed alone. Field crews must submit post-repair photographic evidence, which is verified against pre-repair defect embeddings before closing the ticket.",
+        alert: {
+          type: "note",
+          title: "Resolution Verification Protocol",
+          content: "The ML resolution model evaluates the pre-repair vs post-repair image pair to confirm physical hazard remediation (e.g. 98.4% visual match to resolved standard) and generates a complete audit trail.",
+        },
+        code: `Field Crew Completes Repair ──► Uploads Post-Repair Photo
+                                      │
+                                      ▼
+[Resolution Inspector Engine] ──► Pre/Post CLIP Embedding Delta
+                                      │
+                                      ├── Verification Checklist Passed (Grates clear, asphalt sealed)
+                                      └── Incident Status ──► RESOLVED · Archive Audit Trail`,
+      },
+    ],
+  },
   safety: {
     title: "Governance, Safety and Evaluation",
     intro: "Civitas is engineered to expose uncertainty and preserve human accountability rather than manufacture artificial confidence.",
     slug: "safety",
-    prevPage: { label: "← Operations & Workflow", href: "/docs/workflow" },
+    prevPage: { label: "← End-to-End Lifecycle", href: "/docs/lifecycle" },
     nextPage: { label: "API Reference →", href: "/docs/api" },
     blocks: [
       {
@@ -192,6 +297,9 @@ PostgreSQL / Supabase (Application Data + LangGraph State)`,
 
 const legacySlugs: Record<string, string> = {
   agents: "workflow",
+  process: "lifecycle",
+  pipeline: "lifecycle",
+  stages: "lifecycle",
   ml: "architecture",
   knowledge: "safety",
   evaluation: "safety",
