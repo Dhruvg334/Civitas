@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { Footer, Nav, SectionLabel, Status } from "@/components/site";
-import { FlatIcon } from "@/components/flat-icons";
+import { Footer, Nav, SectionLabel } from "@/components/site";
 import { fetchContractorScorecards, ContractorScorecard } from "@/lib/api";
 
 export default function AnalyticsPage() {

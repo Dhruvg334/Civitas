@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Footer, Nav, SectionLabel, Status } from "@/components/site";
+import { Footer, Nav, SectionLabel } from "@/components/site";
 import { FlatIcon } from "@/components/flat-icons";
 import {
   fetchWorkOrderBatches,
@@ -22,7 +22,6 @@ export default function DispatchPage() {
   const [defectDepthMm, setDefectDepthMm] = useState<number>(60);
   const [isEmergency, setIsEmergency] = useState<boolean>(false);
   const [boqResult, setBoqResult] = useState<BOQEstimateResponse | null>(null);
-  const [calculatingBoq, setCalculatingBoq] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -44,20 +43,16 @@ export default function DispatchPage() {
     };
   }, []);
 
-  const handleCalculateBoq = () => {
-    setCalculatingBoq(true);
+  useEffect(() => {
+    let isMounted = true;
     calculateBoqEstimate(boqCategory, defectAreaCm2, defectDepthMm, isEmergency)
       .then((res) => {
-        setBoqResult(res);
-        setCalculatingBoq(false);
+        if (isMounted) setBoqResult(res);
       })
-      .catch(() => {
-        setCalculatingBoq(false);
-      });
-  };
-
-  useEffect(() => {
-    handleCalculateBoq();
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
   }, [boqCategory, defectAreaCm2, defectDepthMm, isEmergency]);
 
   const selectedBundle = bundles.find((b) => b.bundle_id === selectedBundleId) || bundles[0];

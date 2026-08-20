@@ -452,6 +452,21 @@ export default function Report() {
                   </div>
                 </div>
 
+                {mediaUploadError && (
+                  <div className="report-error-alert" role="alert" style={{ background: "#fef3c7", border: "1px solid #f59e0b", padding: "12px 16px", borderRadius: "8px", color: "#92400e", margin: "16px 0" }}>
+                    <b>Media Upload Notice</b>
+                    <p style={{ margin: "4px 0 8px" }}>{mediaUploadError}</p>
+                    <button
+                      type="button"
+                      className="button small"
+                      onClick={handleRetryMedia}
+                      disabled={isRetryingMedia}
+                    >
+                      {isRetryingMedia ? "Uploading Media..." : "Retry Uploading Media →"}
+                    </button>
+                  </div>
+                )}
+
                 {workflowStartError && (
                   <div className="report-error-alert" role="alert" style={{ background: "#fef3c7", border: "1px solid #f59e0b", padding: "12px 16px", borderRadius: "8px", color: "#92400e", margin: "16px 0" }}>
                     <b>Automated Workflow Start Notice</b>

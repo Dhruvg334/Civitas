@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { Footer, Nav, SectionLabel, Status } from "@/components/site";
+import { Footer, Nav } from "@/components/site";
 import { FlatIcon } from "@/components/flat-icons";
 import { fetchAuditCertificate, MunicipalAuditCertificate } from "@/lib/api";
 
