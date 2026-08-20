@@ -24,6 +24,7 @@ from civitas_api.routers import (
     reports,
     resolutions,
     routing,
+    telemetry,
     work_orders,
     workflows,
 )
@@ -140,3 +141,4 @@ app.include_router(map_extract.router)
 app.include_router(workflows.router)
 app.include_router(intake_channels.router)
 app.include_router(open311.router)
+app.include_router(telemetry.router)

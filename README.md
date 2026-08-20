@@ -72,9 +72,17 @@ Civitas supports high-volume citizen submissions across multiple modern communic
 - **EXIF Geotagging & Zero-Trust Privacy Redaction**: Automatically extracts embedded GPS coordinates and capture timestamps while stripping camera make, model, and device serial identifiers prior to persistent storage.
 - **Binary Magic Byte Verification**: Validates binary headers against declared MIME types to prevent polyglot file execution attacks.
 
-### Multimodal evidence understanding
+### Multimodal evidence understanding & defect metric sizing
 
-Civitas processes citizen text, photographs, selected video frames, GPS coordinates, timestamps, landmarks, and clarification responses. The vision layer produces structured outputs that can be consumed by downstream duplicate, risk, and workflow components without treating free-form model text as an operational contract.
+Civitas processes citizen text, photographs, selected video frames, GPS coordinates, timestamps, landmarks, and clarification responses. The vision layer produces structured outputs—including defect bounding geometry, estimated surface area ($cm^2$), cavity/ponding depth ($mm$), and Pavement Condition Index (PCI) distress scores—that can be consumed by downstream duplicate, risk, and workflow components without treating free-form model text as an operational contract.
+
+### H3 hexagonal spatial indexing & recurrence intelligence
+
+Civitas maps every incident to discrete global hexagonal grid cells (H3 Resolution 8 at ~460m and Resolution 9 at ~174m). The spatial engine tracks 6-month historical recurrence velocity and automatically flags `CHRONIC_FAILURE_ZONE` hotspots where recurring structural degradation (such as aging water mains or unpaved sub-bases) requires capital renewal rather than isolated point patches.
+
+### Environmental & SCADA IoT telemetry fusion
+
+The intelligence layer correlates citizen reports with live meteorological telemetry (freeze-thaw thermal oscillations between -3°C and +4°C, cloudburst precipitation $>25mm/hr$) and municipal SCADA transducer alarms (water distribution pressure drops, acoustic leak loggers, power grid anomalies). This separates acute weather-driven runoff from mechanical infrastructure ruptures.
 
 ### Duplicate and incident clustering
 
