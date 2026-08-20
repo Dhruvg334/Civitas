@@ -12,6 +12,7 @@ from civitas_api.core.rate_limit import RateLimitMiddleware
 from civitas_api.routers import (
     auth,
     clarifications,
+    clarification_channels,
     health,
     incidents,
     incidents_ops,
@@ -142,3 +143,4 @@ app.include_router(workflows.router)
 app.include_router(intake_channels.router)
 app.include_router(open311.router)
 app.include_router(telemetry.router)
+app.include_router(clarification_channels.router)

@@ -92,9 +92,26 @@ Multiple reports can describe the same real-world event. Civitas combines textua
 
 Severity represents the level of harm or hazard. Priority represents response urgency. A moderate issue near a school gate, hospital entrance, or busy transport corridor can require faster action than a more severe issue in a low-exposure area. Civitas keeps these signals separate and records the factors that influence each decision.
 
-### Policy-grounded routing
+### Policy-grounded routing & jurisdictional boundary resolution
 
-Routing is constrained by retrieved municipal policy and operational playbooks rather than left to unconstrained language-model generation. The workflow can identify a primary department, supporting departments, escalation requirements, policy references, and missing knowledge that requires human judgment.
+Routing is strictly constrained by retrieved municipal policy, statutory operating standards, and jurisdictional boundaries:
+- **Multi-Vector Hybrid Retrieval with RRF**: Combines exact BM25 keyword matching with dense semantic embeddings using Reciprocal Rank Fusion ($RRF(d) = \sum \frac{1}{60 + rank_i(d)}$) so specialized equipment names and operational codes are never diluted by broad semantic matches.
+- **Statutory Jurisdictional Resolver**: Resolves legal maintenance boundaries (National Highways Authority, State PWD, Municipal Ward Corporation, Metro Rail Transit, Private Layouts) to prevent inter-agency ping-pong and pin legal SLA mandates.
+- **Departmental Assignment**: Identifies primary dispatch authority, supporting agencies, statutory escalation pathways, and required equipment.
+
+### Dynamic conversational clarification engine
+
+When incoming evidence lacks critical operational parameters (e.g. active water ingress into electrical rooms vs street pooling), LangGraph enters a typed `clarification_needed` interrupt state:
+- Dynamically formats conversational SMS, WhatsApp, and Telegram quick-selection prompts (`1️⃣`, `2️⃣`, `3️⃣`).
+- Ingests citizen replies via `/api/v1/intake/clarify-reply`, parses natural language or digit responses, updates graph state, and resumes execution on the exact same thread without workflow duplication.
+
+### Adversarial hallucination guardrails & citation verification
+
+Civitas deploys an explicit guardrail validation node before work orders or department routes are finalized:
+- **Statutory Entity Verification**: Rejects hallucinated non-existent municipal departments and normalizes aliases to statutory catalog entities.
+- **SLA Boundary Clamping**: Validates SLA targets against statutory policy envelopes ($2\text{h} \le SLA \le 168\text{h}$).
+- **Prompt Injection Defense**: Filters adversarial prompt injections ("ignore previous instructions", "bypass human review") from citizen inputs.
+- **Citation Backing**: Flags ungrounded work orders for mandatory supervisor review.
 
 ### Agentic decision workflow
 
@@ -130,28 +147,43 @@ The live application includes a seeded water-leak scenario that shows how relate
 
 ```mermaid
 flowchart TB
-    subgraph Experience[Product Experience]
-        WEB[Next.js Web Application]
+    subgraph Intake[Omnichannel Intake & Ingestion]
+        WEB[Next.js Web Wizard / PWA]
+        WA[WhatsApp Cloud API Webhook]
+        TG[Telegram Bot Webhook]
+        OPEN[Open311 GeoReport v2 API]
+        AUDIO[Audio Voice Note Ingestion]
+        SCADA_IN[SCADA / IoT Telemetry Ingestion]
     end
 
-    subgraph API[Operational API]
-        FAST[FastAPI]
+    subgraph Security[Zero-Trust Verification]
+        MAGIC[Magic Byte Signature Check]
+        EXIF[EXIF Geotag & Privacy Redactor]
+        INJECT[Prompt Injection & Boundary Filter]
+    end
+
+    subgraph API[Operational API & Persistence]
+        FAST[FastAPI Router]
         AUTH[Supabase Auth / Role Gates]
         OPS[Reports · Incidents · Media · Work Orders]
+        HEX[H3 Hexagonal Spatial Engine]
         TRACE[Workflow + Audit Traces]
     end
 
     subgraph Intelligence[Intelligence Layer]
-        GRAPH[LangGraph Workflow]
-        KNOW[Knowledge Grounding]
+        GRAPH[LangGraph State Workflow]
+        HYBRID[Hybrid BM25 + Dense RRF Retrieval]
+        JURIS[Statutory Jurisdictional Resolver]
+        GUARD[Hallucination Guardrail Node]
         ML[Unified ML Pipeline]
-        GEO[PostGIS Geospatial Context]
     end
 
-    subgraph Models[Model Components]
-        VISION[Vision / CLIP]
-        DUP[Duplicate Detection]
-        RISK[Severity + Priority]
+    subgraph Models[Model & Spatial Components]
+        VISION[Vision Feature Extraction]
+        DEFECT[Defect Area & PCI Metric Sizing]
+        WEATHER[Live Weather Correlation]
+        DUP[Multi-Feature Duplicate Clustering]
+        RISK[Decoupled Severity & Priority]
         RES[Resolution Verification]
     end
 
@@ -162,19 +194,24 @@ flowchart TB
         CP[(LangGraph Checkpoints)]
     end
 
-    WEB --> FAST
+    Intake --> Security
+    Security --> FAST
     FAST --> AUTH
     FAST --> OPS
+    FAST --> HEX
     FAST --> GRAPH
-    GRAPH --> KNOW
+    GRAPH --> HYBRID
+    GRAPH --> JURIS
+    GRAPH --> GUARD
     GRAPH --> ML
-    ML --> GEO
     ML --> VISION
+    ML --> DEFECT
+    ML --> WEATHER
     ML --> DUP
     ML --> RISK
     ML --> RES
     OPS --> PG
-    GEO --> GIS
+    HEX --> GIS
     OPS --> STORE
     GRAPH --> CP
     GRAPH --> TRACE
