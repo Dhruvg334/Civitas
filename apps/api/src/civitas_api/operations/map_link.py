@@ -210,14 +210,17 @@ def extract_coords_with_source(url: str) -> ExtractResult:
 
 
 def _parse_plain_latlon(url: str) -> tuple[float, float] | None:
-    """Plain "lat,lon" string with no scheme. e.g. "28.6139,77.2090"."""
+    """Plain "lat,lon" string with no scheme. e.g. "28.6139, 77.2090" or "28.6139,77.2090"."""
     # Strip trailing junk like / or whitespace.
     candidate = url.strip().rstrip("/").strip()
-    if "," not in candidate or " " in candidate or "/" in candidate or "?" in candidate:
+    if "," not in candidate or "/" in candidate or "?" in candidate or "#" in candidate:
         return None
-    if not re.fullmatch(r"-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?", candidate):
+    cleaned = re.sub(r"\s*,\s*", ",", candidate)
+    if " " in cleaned:
         return None
-    lat_s, lon_s = candidate.split(",", 1)
+    if not re.fullmatch(r"-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?", cleaned):
+        return None
+    lat_s, lon_s = cleaned.split(",", 1)
     try:
         return float(lat_s), float(lon_s)
     except ValueError as exc:

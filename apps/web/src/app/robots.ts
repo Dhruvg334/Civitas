@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://civitas-web.vercel.app";
   return {
     rules: [
       {
@@ -13,6 +14,6 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
       },
     ],
-    sitemap: "https://civitas.civic.local/sitemap.xml",
+    sitemap: `${baseUrl}/sitemap.xml`,
   };
 }

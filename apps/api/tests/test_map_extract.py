@@ -158,6 +158,8 @@ def test_osm_lat_lon_pattern() -> None:
 
 def test_plain_latlon_string() -> None:
     assert _extract(PLAIN) == (28.6139, 77.2090)
+    assert _extract("28.6139, 77.2090") == (28.6139, 77.2090)
+    assert _extract(" 28.6139 , 77.2090 ") == (28.6139, 77.2090)
 
 
 def test_negative_coords() -> None:

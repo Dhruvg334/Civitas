@@ -11,7 +11,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://civitas.civic.local"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://civitas-web.vercel.app"),
   title: {
     default: "Civitas — Evidence-Backed Civic Incident Intelligence",
     template: "%s | Civitas",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     title: "Civitas — Evidence-Backed Civic Incident Intelligence",
     description:
       "Turning citizen-submitted photographs, videos, descriptions, and GPS coordinates into policy-grounded municipal work orders.",
-    url: "https://civitas.civic.local",
+    url: "https://civitas-web.vercel.app",
     siteName: "Civitas Intelligence Platform",
     locale: "en_US",
     type: "website",

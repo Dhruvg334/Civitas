@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://civitas.civic.local";
-  const routes = ["", "/report", "/incidents", "/workspace", "/demo-workflow", "/about", "/privacy", "/terms", "/docs"];
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://civitas-web.vercel.app";
+  const routes = ["", "/report", "/incidents", "/workspace", "/demo-workflow", "/about/app", "/privacy", "/terms", "/docs"];
 
   return routes.map((route) => ({
     url: `${baseUrl}${route}`,
