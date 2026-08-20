@@ -7,80 +7,80 @@ import { AgentTraceVisualizer } from "@/components/agent-trace-visualizer";
 const stages = [
   {
     id: "intake",
-    label: "Intake",
-    title: "Three reports enter one evidence queue.",
+    label: "Multimodal Intake",
+    title: "Omnichannel reports enter with zero-trust EXIF & privacy extraction.",
     summary:
-      "Each report keeps its original category, citizen wording, media type, and approximate proximity. Nothing is merged prematurely just because it looks similar.",
-    output: "3 report contexts loaded",
+      "Reports arrive via WhatsApp, Telegram, Open311 GeoReport v2, or Web. Zero-trust extraction strips device serials, extracts GPS/timestamps, and accepts voice notes without data loss.",
+    output: "3 omnichannel streams ingested",
     facts: [
-      "REPORT-A · Photo uploaded · Water on road near school",
-      "REPORT-B · Text only · Bikes slipping by the gate",
-      "REPORT-C · Video uploaded · Citizen category: pothole",
+      "CHANNEL · WhatsApp Webhook (Location dropped + Photo attached)",
+      "CHANNEL · Telegram Bot (Citizen text: 'Bikes slipping by gate')",
+      "SECURITY · EXIF GPS parsed (20.29614, 85.82451), camera tracking stripped",
     ],
   },
   {
-    id: "evidence",
-    label: "Evidence",
-    title: "Evidence is structured without flattening its source.",
+    id: "geospatial_vision",
+    label: "Geo & Vision Triage",
+    title: "H3 hexagonal indexing and geometric defect sizing classify the site.",
     summary:
-      "The evidence agent separates what media supports from what citizens say, retains contradictions, and leaves the root cause of the water unknown until verified.",
-    output: "Structured evidence validated",
+      "Reports map to discrete global H3 hex cells (Res 8/9). Historical recurrence flags CHRONIC_FAILURE_ZONE hotspots, vision models compute defect area (cm²) & depth (mm), and SCADA IoT telemetry detects water pressure drops.",
+    output: "H3: 8860b29849fffff (Chronic Failure Zone)",
     facts: [
-      "OBSERVED · Standing water across carriageway",
-      "REPORTED · Slippery conditions near school gate",
-      "INFERRED · Category likely water leakage, cause unconfirmed",
+      "H3 CELL · 8860b29849fffff (5 incidents in 6mo → CHRONIC_FAILURE_ZONE)",
+      "DEFECT METRIC · 2,400 cm² surface area, 65mm cavity depth (PCI deduction: 48)",
+      "SCADA TELEMETRY · Distribution zone valve PRV-12 pressure drop: -1.8 bar",
     ],
   },
   {
-    id: "intelligence",
-    label: "ML + geo",
-    title: "Deterministic signals find the operational incident.",
+    id: "grounding_guardrails",
+    label: "Knowledge & Guardrails",
+    title: "Hybrid multi-vector retrieval with reciprocal rank fusion & guardrails.",
     summary:
-      "Duplicate candidate detection, severity scoring, and priority tools contribute their own typed results. School and traffic context increases urgency without altering physical facts.",
-    output: "INC-0241 candidate created",
+      "BM25 sparse keyword matching combines with dense semantic vectors via RRF (k=60). Statutory jurisdiction resolves to Municipal Water Supply (preventing highway ping-pong) and guardrails verify SLA targets.",
+    output: "RRF Score: 0.032 · Guardrail: PASS",
     facts: [
-      "Duplicate candidate · Three reports in candidate window",
-      "Severity · Elevated (2.4m affected width)",
-      "Priority · High (School crossing + morning peak traffic)",
+      "HYBRID RRF · PLAY-WATER-01 (Municipal Main Line Rupture SOP)",
+      "JURISDICTION · Municipal Corporation Ward 12 (Statutory SLA: 24h)",
+      "GUARDRAIL · Validated department against catalog; prompt injection filter clean",
     ],
   },
   {
-    id: "grounding",
-    label: "Grounding",
-    title: "The recommendation has a policy trail.",
+    id: "priority_boq",
+    label: "Priority & BOQ Costing",
+    title: "Vulnerability exposure accelerates SLA; BOQ calculates Schedule of Rates.",
     summary:
-      "Civitas retrieves only policy and playbook material relevant to water leakage, traffic coordination, escalation, and work-order readiness.",
-    output: "SUPPORTED knowledge result",
+      "Proximity to DAV Public School gate (14m) dynamically escalates priority to P1 Critical and compresses statutory SLA from 24h to 4h. The automated BOQ generator estimates repair materials in INR and USD.",
+    output: "P1 CRITICAL · SLA: 4h · BOQ: ₹28,450",
     facts: [
-      "PLAY-WATER-01 · Water leakage response playbook",
-      "ROUTE-WATER-02 · Jurisdiction & traffic coordination",
-      "SAFETY-WATER-01 · Secure affected crossing zone",
+      "VULNERABILITY · School buffer (≤100m) → +25 priority pts, 0.5x SLA multiplier",
+      "DYNAMIC SLA · Accelerated from 24h to 4h emergency dispatch envelope",
+      "MUNICIPAL BOQ · Dense Bituminous Macadam (0.45t) + Ductile Sleeve + Labor = ₹28,450 ($328.9 USD)",
     ],
   },
   {
-    id: "decision",
-    label: "Decision",
-    title: "Routing and planning become reviewable output.",
+    id: "resolution_fraud",
+    label: "Resolution & Anti-Fraud",
+    title: "64-bit dHash perceptual verification and cryptographic SHA-256 certification.",
     summary:
-      "The routing agent recommends the primary and secondary department while the planning agent proposes an operational package. The critic checks unsupported claims and reference validity.",
-    output: "Critic: PASS",
+      "Contractor closure photos undergo perceptual difference hashing (dHash) to prevent recycled photo fraud. Resolution verification classifies outcome as RESOLVED, opening the 72-hour citizen dispute window.",
+    output: "dHash Distance: 28/64 · SHA-256 SEALED",
     facts: [
-      "Primary · Water Department",
-      "Secondary · Traffic Coordination",
-      "Work order · Inspect, isolate leak, secure crossing",
+      "ANTI-FRAUD · dHash Hamming distance 28/64 (Passes identical photo check)",
+      "72H DISPUTE · Citizen review window active with one-click rebuttal re-open",
+      "AUDIT CERTIFICATE · Sealed with SHA-256 digest: e9f4a8c17b5e...9d82ae",
     ],
   },
   {
-    id: "review",
-    label: "Human review",
-    title: "A real pause before operational commitment.",
+    id: "open_data",
+    label: "Public Trust & Open Data",
+    title: "Differential privacy spatial jitter, GeoJSON feeds, and vendor analytics.",
     summary:
-      "The graph reaches its persisted human-review checkpoint. Supervisor approval resumes the workflow thread, after which a safe resident update is generated.",
-    output: "WAITING_FOR_REVIEW",
+      "Automated PII scrubbing redacts citizen phone numbers and addresses. Differential privacy applies bounded ±25m Gaussian spatial perturbation to public RFC 7946 GeoJSON/CSV feeds while contractor scorecards track vendor MTTR.",
+    output: "RFC 7946 GeoJSON · Vendor Score: 92.4/100",
     facts: [
-      "Workflow · WF-DEMO-0241",
-      "Thread · report-demo-water",
-      "Review actions · Approve, Edit, Reroute, Reject",
+      "PRIVACY · PII redacted; ±25m Gaussian spatial jitter applied for open data",
+      "OPEN DATA · Live RFC 7946 GeoJSON and tabular CSV public feeds available",
+      "VENDOR SCORECARD · Apex Dewatering: 93.5% SLA compliance, 6.4h MTTR (Tier 1 Excellent)",
     ],
   },
 ];
@@ -190,77 +190,116 @@ export default function Demo() {
             {active === 0 && (
               <div className="report-evidence-grid">
                 <article className="report-card">
-                  <span className="card-tag">REPORT-A</span>
-                  <b>“Water on road near school.”</b>
-                  <small>Photo uploaded · Category uncertain</small>
+                  <span className="card-tag">WHATSAPP WEBHOOK</span>
+                  <b>“Water gushing near DAV school gate.”</b>
+                  <small>EXIF GPS: 20.29614, 85.82451 · Device tags stripped</small>
                 </article>
                 <article className="report-card">
-                  <span className="card-tag">REPORT-B</span>
+                  <span className="card-tag">TELEGRAM BOT</span>
                   <b>“Bikes are slipping by the gate.”</b>
-                  <small>Text only · Landmark context retained</small>
+                  <small>Inbound text message · Voice note transcribed</small>
                 </article>
                 <article className="report-card">
-                  <span className="card-tag">REPORT-C</span>
-                  <b>Selected: Pothole</b>
-                  <small>Video uploaded · Category remains citizen-reported</small>
+                  <span className="card-tag">OPEN311 GEOMARKER</span>
+                  <b>GeoReport v2 Service Request</b>
+                  <small>Standardized RFC payload · Zero data truncation</small>
+                </article>
+              </div>
+            )}
+
+            {active === 1 && (
+              <div className="signal-board-grid">
+                <article className="signal-card">
+                  <span className="signal-tag">H3 SPATIAL CLUSTER</span>
+                  <b>Cell: 8860b29849fffff</b>
+                  <small>5 incidents in 6mo → CHRONIC_FAILURE_ZONE</small>
+                </article>
+                <article className="signal-card">
+                  <span className="signal-tag">GEOMETRIC DEFECT SIZING</span>
+                  <b>2,400 cm² · 65mm Depth</b>
+                  <small>PCI Deduction: 48 pts (Fair Condition)</small>
+                </article>
+                <article className="signal-card">
+                  <span className="signal-tag">SCADA IOT TRANSDUCER</span>
+                  <b>PRV-12: -1.8 bar drop</b>
+                  <small>Subsurface distribution anomaly confirmed</small>
                 </article>
               </div>
             )}
 
             {active === 2 && (
-              <div className="signal-board-grid">
-                <article className="signal-card">
-                  <span className="signal-tag">SPATIAL DUPLICATE</span>
-                  <b>3 Related Reports</b>
-                  <small>Proximity candidate window: 45m radius</small>
-                </article>
-                <article className="signal-card">
-                  <span className="signal-tag">VISION SEVERITY</span>
-                  <b>Elevated (2.4m)</b>
-                  <small>Retained strictly as ML vision inference</small>
-                </article>
-                <article className="signal-card">
-                  <span className="signal-tag">PRIORITY CALCULATOR</span>
-                  <b>P1 - High Urgency</b>
-                  <small>School crossing + morning peak traffic</small>
-                </article>
+              <div className="knowledge-evidence-grid">
+                <div className="know-card">
+                  <span className="know-tag">HYBRID BM25 + DENSE RRF</span>
+                  <b>PLAY-WATER-01 (RRF: 0.032)</b>
+                  <p>Municipal main line rupture response procedure retrieved with citation verification.</p>
+                </div>
+                <div className="know-card">
+                  <span className="know-tag">STATUTORY JURISDICTION</span>
+                  <b>Municipal Ward 12</b>
+                  <p>Resolved to Urban Water Supply (preventing State PWD ping-pong).</p>
+                </div>
+                <div className="know-card">
+                  <span className="know-tag">HALLUCINATION GUARDRAIL</span>
+                  <b>Verdict: PASS</b>
+                  <p>Verified against official statutory catalog; 0 fabricated token IDs.</p>
+                </div>
               </div>
             )}
 
             {active === 3 && (
-              <div className="knowledge-evidence-grid">
-                <div className="know-card">
-                  <span className="know-tag">RETRIEVED PLAYBOOK</span>
-                  <b>PLAY-WATER-01</b>
-                  <p>Municipal water leakage response procedure.</p>
-                </div>
-                <div className="know-card">
-                  <span className="know-tag">POLICY STATUS</span>
-                  <b>GROUNDED</b>
-                  <p>Operational evidence matches required criteria.</p>
-                </div>
-                <div className="know-card">
-                  <span className="know-tag">CRITIC SANITY CHECK</span>
-                  <b>Passed Validations</b>
-                  <p>No fabricated policy IDs or phantom laws.</p>
-                </div>
+              <div className="signal-board-grid">
+                <article className="signal-card">
+                  <span className="signal-tag">DYNAMIC SLA ACCELERATION</span>
+                  <b>4 Hours (was 24h)</b>
+                  <small>DAV Public School buffer (14m) triggers emergency SLA</small>
+                </article>
+                <article className="signal-card">
+                  <span className="signal-tag">SCHEDULE OF RATES BOQ</span>
+                  <b>₹28,450 ($328.9 USD)</b>
+                  <small>DBM hot mix + ductile sleeve + vibratory compactor</small>
+                </article>
+                <article className="signal-card">
+                  <span className="signal-tag">CREW DISPATCH BUNDLE</span>
+                  <b>BUNDLE-CREW-001</b>
+                  <small>Multi-stop route clustered in H3 hex cell 8860b29849fffff</small>
+                </article>
+              </div>
+            )}
+
+            {active === 4 && (
+              <div className="signal-board-grid">
+                <article className="signal-card">
+                  <span className="signal-tag">PERCEPTUAL ANTI-FRAUD</span>
+                  <b>64-bit dHash Distance: 28</b>
+                  <small>Verified authentic post-repair photo (not recycled)</small>
+                </article>
+                <article className="signal-card">
+                  <span className="signal-tag">72H CITIZEN DISPUTE</span>
+                  <b>Active Countdown</b>
+                  <small>One-click rebuttal submission with auto-escalation</small>
+                </article>
+                <article className="signal-card">
+                  <span className="signal-tag">SHA-256 AUDIT SEAL</span>
+                  <b>e9f4a8c17b5e...9d82ae</b>
+                  <small>Cryptographically sealed immutable municipal certificate</small>
+                </article>
               </div>
             )}
 
             {active === 5 && (
               <div className="review-demo-box">
                 <div className="review-info">
-                  <span className="review-tag">HUMAN APPROVAL REQUIRED</span>
-                  <b>Primary: Water Department · Secondary: Traffic Control</b>
+                  <span className="review-tag">PUBLIC TRUST & CONTINUOUS ANALYTICS</span>
+                  <b>RFC 7946 GeoJSON + Differential Privacy Jitter (±25m)</b>
                   <p>
-                    Inspect and isolate active leak; secure school crossing during field inspection.
-                    No guaranteed resolution timeframe provided to resident.
+                    Citizen PII scrubbed. Contractor scorecards track vendor SLA compliance (93.5%), MTTR (6.4h), and dispute rates (2.1%).
                   </p>
                 </div>
                 <div className="review-actions-row">
-                  <button className="button small">Approve Work Order</button>
-                  <button className="outline small">Edit Operational Plan</button>
-                  <button className="outline small">Reroute Department</button>
+                  <button className="button small" onClick={() => window.open("/open-data", "_blank")}>View Open Data Portal</button>
+                  <button className="outline small" onClick={() => window.open("/analytics", "_blank")}>View Vendor Analytics</button>
+                  <button className="outline small" onClick={() => window.open("/dispatch", "_blank")}>View Crew Dispatch</button>
                 </div>
               </div>
             )}

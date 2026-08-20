@@ -10,6 +10,10 @@ import { CivicUser, getSession, onAuthStateChange } from "@/lib/auth";
 
 const productLinks: Array<[string, string]> = [
   ["Workspace", "/workspace"],
+  ["Dispatch", "/dispatch"],
+  ["Analytics", "/analytics"],
+  ["Open Data", "/open-data"],
+  ["Demo", "/demo-workflow"],
   ["Docs", "/docs"],
 ];
 

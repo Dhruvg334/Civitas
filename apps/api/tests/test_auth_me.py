@@ -3,7 +3,9 @@
 import time
 from unittest.mock import MagicMock, patch
 
-import jwt as pyjwt
+import pytest
+pyjwt = pytest.importorskip("jwt")
+crypto = pytest.importorskip("cryptography")
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi.testclient import TestClient

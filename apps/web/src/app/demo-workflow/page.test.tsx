@@ -7,5 +7,5 @@ it("renders the seeded water-leak workflow evidence", () => {
   const html = renderToStaticMarkup(<Demo />);
   expect(html).toContain("GOLDEN RUNTIME SLICE / BHUBANESWAR DEMO");
   expect(html).toContain("INC-0241");
-  expect(html).toContain("Three reports enter one evidence queue.");
+  expect(html).toContain("Omnichannel reports enter with zero-trust EXIF");
 });

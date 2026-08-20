@@ -1,13 +1,23 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
+import Link from "next/link";
 import { ReviewPanel } from "@/components/review-panel";
 import { ResolutionSlider } from "@/components/resolution-slider";
 import { AgentTraceVisualizer } from "@/components/agent-trace-visualizer";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Nav, Status, Footer } from "@/components/site";
 import { MiniMap } from "@/components/civic-visuals";
-import { ApiError, fetchIncidentDetail, IncidentRecord, isDemoMode } from "@/lib/api";
+import { FlatIcon } from "@/components/flat-icons";
+import {
+  ApiError,
+  fetchIncidentDetail,
+  fetchDisputeStatus,
+  submitCitizenDispute,
+  DisputeWindowStatus,
+  IncidentRecord,
+  isDemoMode,
+} from "@/lib/api";
 
 interface IncidentData {
   title: string;
@@ -197,6 +207,32 @@ export default function Incident({
   }, [demoIncident, incidentId]);
 
   const [activeTab, setActiveTab] = useState<string>("evidence");
+  const [disputeStatus, setDisputeStatus] = useState<DisputeWindowStatus | null>(null);
+  const [showDisputeModal, setShowDisputeModal] = useState<boolean>(false);
+  const [disputeReason, setDisputeReason] = useState<string>("");
+  const [rebuttalPhotoUrl, setRebuttalPhotoUrl] = useState<string>("");
+  const [submittingDispute, setSubmittingDispute] = useState<boolean>(false);
+  const [disputeSuccess, setDisputeSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchDisputeStatus(incidentId).then(setDisputeStatus).catch(() => {});
+  }, [incidentId]);
+
+  const handleDisputeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!disputeReason.trim()) return;
+    setSubmittingDispute(true);
+    try {
+      const res = await submitCitizenDispute(incidentId, disputeReason, rebuttalPhotoUrl || undefined);
+      setDisputeSuccess(`Dispute filed successfully (${res.dispute_ticket_id}). Priority escalated to ${res.priority_escalation}.`);
+      setShowDisputeModal(false);
+      fetchDisputeStatus(incidentId).then(setDisputeStatus).catch(() => {});
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Dispute submission failed");
+    } finally {
+      setSubmittingDispute(false);
+    }
+  };
 
   if (!demoIncident) {
     if (liveLoading) {
@@ -291,6 +327,86 @@ export default function Incident({
             </div>
           </div>
         </header>
+
+        {/* 72-HOUR DISPUTE & AUDIT CERTIFICATE BANNER */}
+        <div className="resolution-audit-banner">
+          <div className="audit-banner-left">
+            <div className="audit-icon-box">
+              <FlatIcon name="shield" size={20} />
+            </div>
+            <div>
+              <div className="audit-title-row">
+                <h3>Resolution Audit & Citizen Dispute Window</h3>
+                {disputeStatus?.is_disputable && (
+                  <span className="badge good small">
+                    <FlatIcon name="clock" size={12} /> {disputeStatus.hours_remaining}h Remaining to Dispute
+                  </span>
+                )}
+              </div>
+              <p>
+                Civitas provides an automated 72-hour dispute window post-closure. If the reported issue remains
+                unresolved or defective, citizens can submit rebuttal photo evidence to automatically reopen the case.
+              </p>
+              {disputeSuccess && <div className="dispute-alert-success">{disputeSuccess}</div>}
+            </div>
+          </div>
+
+          <div className="audit-banner-actions">
+            {disputeStatus?.is_disputable && (
+              <button className="button secondary small" onClick={() => setShowDisputeModal(true)}>
+                <FlatIcon name="alert-triangle" size={14} /> Dispute Resolution
+              </button>
+            )}
+            <Link href={`/incidents/${incidentId}/certificate`} className="button primary small">
+              <FlatIcon name="code" size={14} /> View Audit Certificate
+            </Link>
+          </div>
+        </div>
+
+        {/* CITIZEN DISPUTE MODAL */}
+        {showDisputeModal && (
+          <div className="modal-backdrop">
+            <div className="dispute-modal-card">
+              <div className="modal-header">
+                <h3>Dispute Resolution for {incidentId}</h3>
+                <button className="close-btn" onClick={() => setShowDisputeModal(false)}>✕</button>
+              </div>
+              <form onSubmit={handleDisputeSubmit}>
+                <p className="modal-desc">
+                  Provide concrete details on why this issue is not fully resolved. Your dispute will automatically
+                  re-open the work order and escalate it to the Senior Ward Supervisor.
+                </p>
+                <div className="form-group">
+                  <label>Dispute Reason *</label>
+                  <textarea
+                    required
+                    rows={4}
+                    placeholder="e.g. The leak was patched with temporary sandbags and is still actively leaking onto the road..."
+                    value={disputeReason}
+                    onChange={(e) => setDisputeReason(e.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Rebuttal Photo URL (Optional)</label>
+                  <input
+                    type="url"
+                    placeholder="https://civitas-storage.blob.core.windows.net/..."
+                    value={rebuttalPhotoUrl}
+                    onChange={(e) => setRebuttalPhotoUrl(e.target.value)}
+                  />
+                </div>
+                <div className="modal-actions">
+                  <button type="button" className="button secondary small" onClick={() => setShowDisputeModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="button primary small" disabled={submittingDispute}>
+                    {submittingDispute ? "Submitting Dispute..." : "Submit Rebuttal & Reopen"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* SECTION NAVIGATION TABS */}
         <nav className="incident-subnav-tabs" aria-label="Incident sections">
@@ -885,6 +1001,133 @@ export default function Incident({
           font-size: 0.62rem;
           font-weight: 900;
           letter-spacing: 0.1em;
+        }
+        .resolution-audit-banner {
+          background: linear-gradient(135deg, rgba(37, 99, 235, 0.06), rgba(16, 185, 129, 0.06));
+          border: 1px solid rgba(37, 99, 235, 0.25);
+          border-radius: 12px;
+          padding: 1.25rem 1.5rem;
+          margin-bottom: 1.5rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1.5rem;
+          flex-wrap: wrap;
+        }
+        .audit-banner-left {
+          display: flex;
+          gap: 1rem;
+          align-items: flex-start;
+          max-width: 750px;
+        }
+        .audit-icon-box {
+          color: var(--color-brand, #2563eb);
+          margin-top: 0.15rem;
+        }
+        .audit-title-row {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin-bottom: 0.25rem;
+        }
+        .audit-title-row h3 {
+          font-size: 1.05rem;
+          font-weight: 700;
+          margin: 0;
+          color: #0f172a;
+        }
+        .audit-banner-left p {
+          font-size: 0.85rem;
+          color: #475569;
+          margin: 0;
+          line-height: 1.4;
+        }
+        .audit-banner-actions {
+          display: flex;
+          gap: 0.75rem;
+          align-items: center;
+        }
+        .dispute-alert-success {
+          margin-top: 0.5rem;
+          padding: 0.4rem 0.75rem;
+          background: #ecfdf5;
+          border: 1px solid #10b981;
+          color: #065f46;
+          border-radius: 6px;
+          font-size: 0.8rem;
+          font-weight: 600;
+        }
+        .modal-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          padding: 1.5rem;
+        }
+        .dispute-modal-card {
+          background: #ffffff;
+          border-radius: 12px;
+          padding: 1.75rem;
+          max-width: 550px;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+        .modal-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .modal-header h3 {
+          font-size: 1.15rem;
+          font-weight: 700;
+          margin: 0;
+        }
+        .close-btn {
+          border: none;
+          background: transparent;
+          font-size: 1.25rem;
+          cursor: pointer;
+          color: #64748b;
+        }
+        .modal-desc {
+          font-size: 0.85rem;
+          color: #475569;
+          margin: 0 0 1rem 0;
+          line-height: 1.45;
+        }
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+          margin-bottom: 0.85rem;
+        }
+        .form-group label {
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: #0f172a;
+        }
+        .form-group textarea,
+        .form-group input {
+          border: 1px solid #cbd5e1;
+          border-radius: 6px;
+          padding: 0.5rem 0.75rem;
+          font-size: 0.85rem;
+          font-family: inherit;
+        }
+        .modal-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 0.75rem;
+          margin-top: 0.5rem;
         }
         @media (max-width: 1050px) {
           .incident-two-column-layout {

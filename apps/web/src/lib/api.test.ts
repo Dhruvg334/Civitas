@@ -218,3 +218,60 @@ describe("Map Link Extraction Client", () => {
     await expect(extractMapCoordinates("")).rejects.toThrow("valid map URL");
   });
 });
+
+describe("Civitas Advanced Workflow API Helpers", () => {
+  it("fetches public GeoJSON with differential privacy properties", async () => {
+    const { fetchPublicIncidentsGeoJson } = await import("./api");
+    const geojson = await fetchPublicIncidentsGeoJson(10);
+    expect(geojson.type).toBe("FeatureCollection");
+    expect(Array.isArray(geojson.features)).toBe(true);
+    expect(geojson.features.length).toBeGreaterThan(0);
+    expect(geojson.features[0].properties.privacy_preserved).toBe(true);
+  });
+
+  it("fetches contractor performance scorecards and validates SLA metrics", async () => {
+    const { fetchContractorScorecards } = await import("./api");
+    const res = await fetchContractorScorecards();
+    expect(res.total_contractors).toBeGreaterThan(0);
+    const topSc = res.scorecards[0];
+    expect(topSc.contractor_id).toBeDefined();
+    expect(topSc.sla_compliance_rate_pct).toBeGreaterThan(0);
+    expect(topSc.composite_performance_score).toBeGreaterThan(0);
+  });
+
+  it("fetches H3 hex dispatch bundles and waypoint routes", async () => {
+    const { fetchWorkOrderBatches } = await import("./api");
+    const res = await fetchWorkOrderBatches();
+    expect(res.total_bundles).toBeGreaterThan(0);
+    expect(res.bundles[0].waypoints.length).toBeGreaterThan(0);
+    expect(res.bundles[0].total_cost_inr).toBeGreaterThan(0);
+  });
+
+  it("computes Schedule of Rates BOQ estimate with area and depth parameters", async () => {
+    const { calculateBoqEstimate } = await import("./api");
+    const res = await calculateBoqEstimate("pothole_road_damage", 2500, 75, true);
+    expect(res.total_estimated_cost_inr).toBeGreaterThan(0);
+    expect(res.line_items.length).toBeGreaterThan(0);
+  });
+
+  it("fetches cryptographic SHA-256 municipal audit certificate", async () => {
+    const { fetchAuditCertificate } = await import("./api");
+    const cert = await fetchAuditCertificate("INC-0241");
+    expect(cert.certificate_id).toContain("CERT-CIVITAS");
+    expect(cert.sha256_cryptographic_digest).toHaveLength(64);
+  });
+
+  it("checks 72h dispute window status and submits citizen dispute", async () => {
+    const { fetchDisputeStatus, submitCitizenDispute } = await import("./api");
+    const status = await fetchDisputeStatus("INC-0241");
+    expect(status.is_disputable).toBe(true);
+    expect(status.hours_remaining).toBeGreaterThan(0);
+
+    const disputeResult = await submitCitizenDispute(
+      "INC-0241",
+      "Leak persists near school gate after patch attempt"
+    );
+    expect(disputeResult.new_status).toBe("reopened_disputed");
+    expect(disputeResult.priority_escalation).toContain("CRITICAL");
+  });
+});
