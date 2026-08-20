@@ -88,3 +88,6 @@ datasets/demo_data/images/*
 datasets/demo_data/videos/*
 !datasets/demo_data/images/.gitkeep
 !datasets/demo_data/videos/.gitkeep
+
+# Internal comprehensive upgrade and architecture context guide
+docs/UPGRADES_ARCHITECTURE_GUIDE.md

@@ -5,8 +5,8 @@ services:
     runtime: docker
     dockerfilePath: apps/api/Dockerfile
     dockerContext: .
-    plan: starter
-    healthCheckPath: /ready
+    plan: free
+    healthCheckPath: /live
     envVars:
       - key: CIVITAS_ENV
         value: production

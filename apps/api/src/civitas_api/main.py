@@ -15,9 +15,11 @@ from civitas_api.routers import (
     health,
     incidents,
     incidents_ops,
+    intake_channels,
     map_extract,
     media,
     ml_internal,
+    open311,
     policies,
     reports,
     resolutions,
@@ -136,3 +138,5 @@ app.include_router(resolutions.router)
 app.include_router(policies.router)
 app.include_router(map_extract.router)
 app.include_router(workflows.router)
+app.include_router(intake_channels.router)
+app.include_router(open311.router)

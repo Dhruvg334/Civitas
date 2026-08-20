@@ -222,3 +222,7 @@ def get_media(media_id: str) -> dict[str, Any] | None:
         cur.execute("SELECT * FROM media WHERE media_id = %(m)s", {"m": media_id})
         row = cur.fetchone()
     return dict(row) if row else None
+
+
+create_report = create_incident
+get_report = get_incident

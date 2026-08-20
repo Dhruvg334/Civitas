@@ -35,22 +35,23 @@ The platform is designed for two connected users: residents reporting civic issu
 
 ```mermaid
 flowchart LR
-    A[Citizen Report] --> B[Evidence Structuring]
-    B --> C[Clarification if Needed]
-    C --> D[Vision + Duplicate Analysis]
-    D --> E[Severity + Priority]
-    E --> F[Policy Grounding]
-    F --> G[Department Routing]
-    G --> H[Operational Plan]
-    H --> I[Critic + Human Review]
-    I --> J[Work Order]
-    J --> K[Citizen Update]
-    K --> L[Resolution Verification]
+    A[Omnichannel Intake<br/>Web · WhatsApp · Telegram · Open311] --> B[Zero-Trust Verification<br/>Magic Bytes · EXIF Geo · Privacy Strip]
+    B --> C[Evidence Structuring]
+    C --> D[Clarification if Needed]
+    D --> E[Vision + Duplicate Analysis]
+    E --> F[Severity + Priority]
+    F --> G[Policy Grounding]
+    G --> H[Department Routing]
+    H --> I[Operational Plan]
+    I --> J[Critic + Human Review]
+    J --> K[Work Order]
+    K --> L[Citizen Update]
+    L --> M[Resolution Verification]
 ```
 
 Civitas keeps evidence types distinct throughout this flow:
 
-- **Observed evidence** comes from media and structured signals.
+- **Observed evidence** comes from media, sensor signals, and EXIF coordinates.
 - **Reported claims** come from the citizen and remain attributable to the report.
 - **Retrieved knowledge** comes from municipal policies and operational playbooks.
 - **Inference** is explicitly separated from evidence and policy.
@@ -60,6 +61,16 @@ That separation is central to how routing, escalation, work-order generation, an
 ---
 
 ## Core capabilities
+
+### Omnichannel intake & zero-trust ingestion
+
+Civitas supports high-volume citizen submissions across multiple modern communication channels:
+- **Responsive Web Wizard & PWA**: Features client-side HTML5 canvas downsampling to compress mobile camera photos ($\le 1920\times 1080$ at $0.85$ JPEG quality) from 40MB down to $<1.2\text{MB}$ in $<200\text{ms}$.
+- **WhatsApp & Telegram Webhooks**: Accepts messages, photos, and location pins directly from chat applications.
+- **Open311 GeoReport v2 Standard Adapter**: Full interoperability with standard civic 311 reporting tools and municipal mobile clients.
+- **Voice Note / Audio Intake**: Ingests citizen voice notes (`.ogg`, `.mp3`, `.wav`, `.m4a`) with audio header validation.
+- **EXIF Geotagging & Zero-Trust Privacy Redaction**: Automatically extracts embedded GPS coordinates and capture timestamps while stripping camera make, model, and device serial identifiers prior to persistent storage.
+- **Binary Magic Byte Verification**: Validates binary headers against declared MIME types to prevent polyglot file execution attacks.
 
 ### Multimodal evidence understanding
 

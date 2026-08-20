@@ -128,7 +128,21 @@ async def upload_media(
             ),
         )
 
+    parsed_captured_at: datetime | None = None
+    if captured_at:
+        try:
+            parsed_captured_at = datetime.fromisoformat(captured_at)
+        except ValueError:
+            parsed_captured_at = None
+
     kind = "video" if mime in ALLOWED_VIDEO_MIME else "image"
+    if kind == "image":
+        from civitas_api.operations.exif_extract import extract_and_sanitize_exif
+        exif_res = extract_and_sanitize_exif(data, mime)
+        data = exif_res.cleaned_bytes
+        if not parsed_captured_at and exif_res.captured_at:
+            parsed_captured_at = exif_res.captured_at
+
     ext_map = {
         "image/png": "png", "image/jpeg": "jpg", "image/jpg": "jpg", "image/webp": "webp",
         "video/mp4": "mp4", "video/webm": "webm",
@@ -150,13 +164,6 @@ async def upload_media(
                 retryable=True,
             ),
         ) from exc
-
-    parsed_captured_at: datetime | None = None
-    if captured_at:
-        try:
-            parsed_captured_at = datetime.fromisoformat(captured_at)
-        except ValueError:
-            parsed_captured_at = None
 
     now = _now()
     try:

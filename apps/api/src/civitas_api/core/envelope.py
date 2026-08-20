@@ -28,6 +28,9 @@ def success_envelope(data: Any) -> dict[str, Any]:
     }
 
 
+envelope = success_envelope
+
+
 def error_envelope(
     code: str,
     message: str,
