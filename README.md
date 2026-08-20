@@ -88,9 +88,23 @@ The intelligence layer correlates citizen reports with live meteorological telem
 
 Multiple reports can describe the same real-world event. Civitas combines textual similarity, visual similarity, geospatial distance, temporal proximity, category agreement, and contextual features to determine whether reports should remain separate or contribute to a shared incident cluster.
 
-### Severity and priority as separate decisions
+### Severity and priority decoupling with dynamic SLA acceleration
 
-Severity represents the level of harm or hazard. Priority represents response urgency. A moderate issue near a school gate, hospital entrance, or busy transport corridor can require faster action than a more severe issue in a low-exposure area. Civitas keeps these signals separate and records the factors that influence each decision.
+Severity represents the physical level of harm or infrastructure degradation. Priority represents operational dispatch urgency:
+- **Spatial Vulnerability Weighting**: Proximity to vulnerable POIs—including schools/daycares ($\le 100m$, $+25$ pts, $0.5\times$ SLA), hospitals/emergency corridors ($\le 250m$, $+30$ pts, $0.4\times$ SLA), mass transit stations ($\le 150m$, $+20$ pts), and arterial highways ($+15$ pts)—dynamically accelerates response urgency.
+- **Dynamic SLA Envelope**: Compresses statutory response windows (e.g. 24h baseline reduced to 4h) while clamping to a safe operational minimum ($\ge 2\text{h}$).
+
+### Automated Bill of Quantities (BOQ) & repair cost estimation
+
+Civitas transforms computer vision defect metric sizing ($cm^2$, depth $mm$) into structured municipal construction estimates:
+- **Itemized Material & Labor Costing**: Computes exact asphalt tonnage, bitumen tack coat, ductile iron pipe sleeves, LED drivers, machinery operating hours (vibratory rollers, dewatering pumps, bucket trucks), and certified labor crew hours.
+- **Schedule of Rates (SOR) Generation**: Produces itemized line-item BOQs with standard municipal item codes, unit rates, contingency allowances, and total cost projections in INR and USD.
+
+### Spatial work-order batching & fleet crew route optimization
+
+To eliminate redundant municipal truck rolls and minimize fleet emissions:
+- **Hex-Clustered Bundling**: Automatically clusters open work orders requiring identical crew specialties (e.g. *Hot-Mix Asphalt Compaction Crew*, *Water Main & Dewatering Specialist Crew*) within adjacent H3 hexagonal neighborhoods.
+- **Turn-by-Turn Waypoint Routing**: Provides field supervisors with optimized multi-stop dispatch routes, combined repair durations, and bundled material manifests.
 
 ### Policy-grounded routing & jurisdictional boundary resolution
 
