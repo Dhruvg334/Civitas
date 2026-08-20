@@ -189,3 +189,17 @@ describe("Explicit Demo Mode vs Production Errors", () => {
     });
   });
 });
+
+describe("Client-Side Image Optimization", () => {
+  it("preserves small or non-image files without corruption", async () => {
+    const { compressImageFile } = await import("./image-compress");
+    const smallFile = new File(["fake-image-bytes"], "photo.jpg", { type: "image/jpeg" });
+    const result = await compressImageFile(smallFile);
+    expect(result.name).toBe("photo.jpg");
+    expect(result.size).toBe(smallFile.size);
+
+    const videoFile = new File(["fake-video-bytes"], "clip.mp4", { type: "video/mp4" });
+    const videoResult = await compressImageFile(videoFile);
+    expect(videoResult.name).toBe("clip.mp4");
+  });
+});

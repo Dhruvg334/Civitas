@@ -3,7 +3,8 @@
 import { useState, useEffect, useId } from "react";
 import Link from "next/link";
 import { Footer, Nav, SectionLabel, Status } from "@/components/site";
-import { startWorkflow, submitReport, uploadReportMedia, isDemoMode } from "@/lib/api";
+import { startWorkflow, submitReport, uploadReportMedia, submitWorkflowClarification, isDemoMode } from "@/lib/api";
+import { compressImageFile } from "@/lib/image-compress";
 import { INCIDENT_CATEGORIES } from "@/lib/taxonomy";
 import { FlatIcon } from "@/components/flat-icons";
 
@@ -45,6 +46,10 @@ export default function Report() {
   const [workflowStatus, setWorkflowStatus] = useState<string | null>(null);
   const [isRetryingWorkflow, setIsRetryingWorkflow] = useState(false);
   const [isRetryingMedia, setIsRetryingMedia] = useState(false);
+  const [clarificationText, setClarificationText] = useState("");
+  const [submittingClarification, setSubmittingClarification] = useState(false);
+  const [clarificationSubmitted, setClarificationSubmitted] = useState(false);
+  const [clarificationError, setClarificationError] = useState<string | null>(null);
 
   // Cleanup object URLs to avoid browser memory leaks
   useEffect(() => {
@@ -94,21 +99,40 @@ export default function Report() {
 
   const { score: qualityScore, tips: qualityTips } = calculateQualityScore();
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (mediaFile?.previewUrl && mediaFile.previewUrl.startsWith("blob:")) {
         URL.revokeObjectURL(mediaFile.previewUrl);
       }
-      const url = URL.createObjectURL(file);
+      const processedFile = await compressImageFile(file);
+      const url = URL.createObjectURL(processedFile);
       setMediaFile({
-        file,
-        name: file.name,
-        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+        file: processedFile,
+        name: processedFile.name,
+        size: `${(processedFile.size / (1024 * 1024)).toFixed(1)} MB`,
         previewUrl: url,
         uploadStatus: "selected",
       });
       setMediaUploadError(null);
+    }
+  };
+
+  const handleClarificationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeWorkflowId || !clarificationText.trim()) return;
+    setSubmittingClarification(true);
+    setClarificationError(null);
+    try {
+      const updated = await submitWorkflowClarification(activeWorkflowId, {
+        "q-additional-details": clarificationText.trim(),
+      });
+      setWorkflowStatus(updated.status);
+      setClarificationSubmitted(true);
+    } catch (err) {
+      setClarificationError(err instanceof Error ? err.message : "Failed to submit clarification.");
+    } finally {
+      setSubmittingClarification(false);
     }
   };
 
@@ -373,18 +397,38 @@ export default function Report() {
                   </div>
                 )}
 
-                {mediaUploadError && (
-                  <div className="report-error-alert" role="alert" style={{ background: "#fef3c7", border: "1px solid #f59e0b", padding: "12px 16px", borderRadius: "8px", color: "#92400e", margin: "16px 0" }}>
-                    <b>Media Evidence Upload Notice</b>
-                    <p style={{ margin: "4px 0 8px" }}>{mediaUploadError}</p>
-                    <button
-                      type="button"
-                      className="button small"
-                      onClick={handleRetryMedia}
-                      disabled={isRetryingMedia}
-                    >
-                      {isRetryingMedia ? "Retrying Upload..." : "Retry Uploading Media File →"}
-                    </button>
+                {workflowStatus === "WAITING_FOR_CLARIFICATION" && !clarificationSubmitted && (
+                  <div className="report-clarification-box" style={{ background: "#fffdf8", border: "2px solid #0f5f4f", padding: "20px", borderRadius: "10px", margin: "20px 0" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                      <FlatIcon name="sparkles" size={18} color="#0f5f4f" />
+                      <b style={{ color: "#0f5f4f", fontSize: "0.95rem" }}>Clarification Needed by Intake Agent</b>
+                    </div>
+                    <p style={{ fontSize: "0.88rem", color: "#555e54", margin: "0 0 12px", lineHeight: "1.5" }}>
+                      The automated triage agent requires one quick detail to accurately route this incident: <i>Can you provide any additional landmarks, estimated water depth or road blockage severity?</i>
+                    </p>
+                    <form onSubmit={handleClarificationSubmit}>
+                      <textarea
+                        rows={3}
+                        value={clarificationText}
+                        onChange={(e) => setClarificationText(e.target.value)}
+                        placeholder="e.g. Water is spreading into the bicycle lane, about 2 inches deep. Main valve might be under the pavement."
+                        className="text-input textarea"
+                        style={{ width: "100%", marginBottom: "10px" }}
+                        required
+                      />
+                      {clarificationError && (
+                        <p style={{ color: "#dc2626", fontSize: "0.82rem", margin: "4px 0" }}>{clarificationError}</p>
+                      )}
+                      <button type="submit" className="button small" disabled={submittingClarification}>
+                        {submittingClarification ? "Submitting Clarification..." : "Submit Answer & Resume Workflow →"}
+                      </button>
+                    </form>
+                  </div>
+                )}
+
+                {clarificationSubmitted && (
+                  <div style={{ background: "#f0fdf4", border: "1px solid #86efac", padding: "12px 16px", borderRadius: "8px", color: "#166534", margin: "16px 0", fontSize: "0.9rem" }}>
+                    ✓ Clarification received! Workflow execution has resumed.
                   </div>
                 )}
 
