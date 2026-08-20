@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import json
+import re
 from enum import Enum
 from pathlib import Path
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from civitas_knowledge.contracts import KnowledgeResult
 from pydantic import BaseModel
@@ -24,6 +25,28 @@ from civitas_workflow.workflow_contracts import (
 )
 
 OutputT = TypeVar("OutputT", bound=BaseModel)
+
+
+def sanitize_ai_input_text(text: str, max_chars: int = 10000) -> str:
+    """Sanitize user-provided text for LLM ingestion by stripping control characters and bounding length."""
+    if not isinstance(text, str):
+        return text
+    # Strip null bytes and non-printable control characters (except newline, tab, carriage return)
+    cleaned = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)
+    return cleaned[:max_chars]
+
+
+def sanitize_payload(payload: Any) -> Any:
+    """Recursively sanitize string values in dictionaries, lists, and Pydantic models."""
+    if isinstance(payload, str):
+        return sanitize_ai_input_text(payload)
+    if isinstance(payload, dict):
+        return {k: sanitize_payload(v) for k, v in payload.items()}
+    if isinstance(payload, list):
+        return [sanitize_payload(item) for item in payload]
+    if isinstance(payload, BaseModel):
+        return sanitize_payload(payload.model_dump(mode="json"))
+    return payload
 
 
 class CivitasAgents:
@@ -139,10 +162,11 @@ class CivitasAgents:
         trace_id: str,
     ) -> OutputT:
         prompt = self.prompts.load(prompt_path)
+        sanitized = sanitize_payload(payload)
         result = self.llm.generate_structured(
             [
                 LLMMessage(role="system", content=prompt),
-                LLMMessage(role="user", content=json.dumps(payload, default=_dump, sort_keys=True)),
+                LLMMessage(role="user", content=json.dumps(sanitized, default=_dump, sort_keys=True)),
             ],
             output_type,
             model_tier=tier,

@@ -85,10 +85,10 @@ def get_report(
     if row is None:
         raise HTTPException(status_code=404, detail="report not found")
     reported_at = row.get("reported_at")
-    if hasattr(reported_at, "isoformat"):
+    if reported_at is not None and hasattr(reported_at, "isoformat"):
         reported_at_str = reported_at.isoformat()
     else:
-        reported_at_str = str(reported_at) if reported_at else None
+        reported_at_str = str(reported_at) if reported_at is not None else None
     return success_envelope({
         "report_id": row["incident_id"],
         "category": row.get("category"),

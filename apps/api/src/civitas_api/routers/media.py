@@ -16,6 +16,7 @@ with the existing schema.
 
 from __future__ import annotations
 
+import re
 import uuid as _uuid
 from datetime import UTC, datetime
 from typing import Annotated, Any
@@ -33,6 +34,27 @@ ALLOWED_IMAGE_MIME = {"image/png", "image/jpeg", "image/jpg", "image/webp"}
 ALLOWED_VIDEO_MIME = {"video/mp4", "video/webm", "video/quicktime", "video/x-matroska"}
 ALLOWED_MIME = ALLOWED_IMAGE_MIME | ALLOWED_VIDEO_MIME
 MAX_BYTES = 50 * 1024 * 1024  # 50 MB
+_SAFE_ID_RE = re.compile(r"^[a-zA-Z0-9_\-]+$")
+
+
+def validate_magic_bytes(data: bytes, mime: str) -> bool:
+    """Validate file binary signature (magic bytes) against declared MIME type."""
+    if len(data) < 3:
+        return False
+    if mime == "image/png":
+        return data.startswith(b"\x89PNG\r\n\x1a\n")
+    if mime in {"image/jpeg", "image/jpg"}:
+        return data.startswith(b"\xff\xd8\xff")
+    if mime == "image/webp":
+        return data.startswith(b"RIFF") and len(data) >= 12 and data[8:12] == b"WEBP"
+    if mime in {"video/mp4", "video/quicktime"}:
+        return (
+            (len(data) >= 8 and data[4:8] in {b"ftyp", b"moov", b"mdat", b"wide", b"free", b"skip"})
+            or data.startswith(b"\x00\x00\x00")
+        )
+    if mime in {"video/webm", "video/x-matroska"}:
+        return data.startswith(b"\x1a\x45\xdf\xa3")
+    return False
 
 
 def _now() -> datetime:
@@ -51,6 +73,16 @@ async def upload_media(
     captured_at: Annotated[str | None, Form()] = None,
 ) -> dict[str, Any]:
     """Upload one media file for a report. Returns media_id + signed URL."""
+    if not _SAFE_ID_RE.match(report_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error_envelope(
+                code="INVALID_IDENTIFIER",
+                message="report_id contains invalid characters",
+                retryable=False,
+            ),
+        )
+
     report = reports_ops.get_incident(report_id)
     if report is None:
         raise HTTPException(status_code=404, detail="report not found")
@@ -82,6 +114,16 @@ async def upload_media(
             detail=error_envelope(
                 code="FILE_TOO_LARGE",
                 message=f"file size {len(data)} exceeds limit {MAX_BYTES}",
+                retryable=False,
+            ),
+        )
+
+    if not validate_magic_bytes(data, mime):
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail=error_envelope(
+                code="INVALID_FILE_SIGNATURE",
+                message=f"file content does not match declared MIME type {mime!r}",
                 retryable=False,
             ),
         )

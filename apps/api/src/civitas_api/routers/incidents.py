@@ -60,15 +60,16 @@ def incidents_nearby(
             retryable=False,
         )
     retriever = get_nearby_retriever()
-    spec = {
-        "center": GeoPoint(latitude=lat, longitude=lon),
-        "radius_m": radius_m,
-        "limit": limit,
-        "category_filter": category,
-    }
     from civitas_geo.models import SpatialSearchSpec
 
-    result = retriever.retrieve(SpatialSearchSpec(**spec))
+    result = retriever.retrieve(
+        SpatialSearchSpec(
+            center=GeoPoint(latitude=lat, longitude=lon),
+            radius_m=radius_m,
+            limit=limit,
+            category_filter=category,
+        )
+    )
     return success_envelope(_nearby_result_to_dict(result))
 
 
@@ -140,7 +141,7 @@ def landmarks_nearby(
     from civitas_geo import distance as geo_dist
 
     landmarks = get_landmark_index().landmarks
-    out = []
+    out: list[dict[str, Any]] = []
     for lm in landmarks:
         if kind and lm.kind != kind:
             continue
@@ -156,7 +157,7 @@ def landmarks_nearby(
             "radius_m": lm.radius_m,
             "distance_m": round(d, 2),
         })
-    out.sort(key=lambda x: x["distance_m"])
+    out.sort(key=lambda x: float(str(x["distance_m"])))
     return success_envelope({"landmarks": out[:limit], "mode": "memory"})
 
 

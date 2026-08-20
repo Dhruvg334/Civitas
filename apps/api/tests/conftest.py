@@ -195,6 +195,7 @@ def _isolated_db(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     db = tmp_path / "test.db"
     monkeypatch.setenv("DATABASE_URL", f"sqlite:///{db}")
     monkeypatch.setenv("CIVITAS_POSTGIS_DSN", f"sqlite:///{db}")
+    monkeypatch.setenv("CIVITAS_DISABLE_RATE_LIMITING", "1")
     cfg.get_settings.cache_clear()
 
     conn = sqlite3.connect(db)
