@@ -512,6 +512,58 @@ export async function submitReport(payload: {
 }
 
 /**
+ * Extract GPS coordinates from a Google Maps or OpenStreetMap share link.
+ */
+export async function extractMapCoordinates(
+  url: string
+): Promise<{ latitude: number; longitude: number; source: string }> {
+  if (!url || !url.trim()) {
+    throw new ApiError("A valid map URL or coordinate string is required.", 422);
+  }
+
+  // Handle plain coords locally for instant response
+  const plainMatch = url.trim().match(/^([+-]?\d+(?:\.\d+)?)\s*,\s*([+-]?\d+(?:\.\d+)?)$/);
+  if (plainMatch) {
+    const lat = parseFloat(plainMatch[1]);
+    const lon = parseFloat(plainMatch[2]);
+    if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+      return { latitude: lat, longitude: lon, source: "plain" };
+    }
+  }
+
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/map-extract`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: url.trim() }),
+    });
+
+    if (!res.ok) {
+      let msg = "Could not extract coordinates from map link.";
+      try {
+        const body = await res.json();
+        if (body?.detail?.message) msg = body.detail.message;
+        else if (body?.error?.message) msg = body.error.message;
+      } catch {}
+      throw new ApiError(msg, res.status);
+    }
+
+    const envelope = (await res.json()) as CivitasEnvelope<{
+      latitude: number;
+      longitude: number;
+      source: string;
+      url: string;
+    }>;
+    return unwrapEnvelope(envelope);
+  } catch (err) {
+    if (isDemoMode()) {
+      return { latitude: 20.29614, longitude: 85.82451, source: "demo" };
+    }
+    throw err instanceof ApiError ? err : new ApiError(err instanceof Error ? err.message : "Failed to parse map link", 500);
+  }
+}
+
+/**
  * Upload photographic or video media attached to a report.
  */
 export async function uploadReportMedia(

@@ -196,6 +196,13 @@ def extract_coords_with_source(url: str) -> ExtractResult:
             latitude, longitude = _validate(*coords)
             return ExtractResult(latitude, longitude, source)
 
+    if "maps.app.goo.gl" in decoded or "goo.gl/maps" in decoded:
+        raise MapLinkError(
+            "MAP_LINK_INVALID",
+            "Shortened map URLs (e.g. maps.app.goo.gl) cannot be parsed offline. "
+            "Please open the link in your browser and copy the full URL or coordinates (e.g. '28.6139, 77.2090').",
+        )
+
     raise MapLinkError(
         "MAP_LINK_INVALID",
         "url did not match a supported map-link format (google maps "

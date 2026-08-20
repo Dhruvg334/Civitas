@@ -203,3 +203,18 @@ describe("Client-Side Image Optimization", () => {
     expect(videoResult.name).toBe("clip.mp4");
   });
 });
+
+describe("Map Link Extraction Client", () => {
+  it("parses plain comma-separated coordinates directly without network overhead", async () => {
+    const { extractMapCoordinates } = await import("./api");
+    const res = await extractMapCoordinates("20.29614, 85.82451");
+    expect(res.latitude).toBeCloseTo(20.29614);
+    expect(res.longitude).toBeCloseTo(85.82451);
+    expect(res.source).toBe("plain");
+  });
+
+  it("rejects empty string with validation error", async () => {
+    const { extractMapCoordinates } = await import("./api");
+    await expect(extractMapCoordinates("")).rejects.toThrow("valid map URL");
+  });
+});

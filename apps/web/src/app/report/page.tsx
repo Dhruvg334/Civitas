@@ -3,7 +3,7 @@
 import { useState, useEffect, useId } from "react";
 import Link from "next/link";
 import { Footer, Nav, SectionLabel, Status } from "@/components/site";
-import { startWorkflow, submitReport, uploadReportMedia, submitWorkflowClarification, isDemoMode } from "@/lib/api";
+import { startWorkflow, submitReport, uploadReportMedia, submitWorkflowClarification, extractMapCoordinates, isDemoMode } from "@/lib/api";
 import { compressImageFile } from "@/lib/image-compress";
 import { INCIDENT_CATEGORIES } from "@/lib/taxonomy";
 import { FlatIcon } from "@/components/flat-icons";
@@ -38,6 +38,10 @@ export default function Report() {
   const [mediaUploadError, setMediaUploadError] = useState<string | null>(null);
   const [geoLocating, setGeoLocating] = useState(false);
   const [geoNotice, setGeoNotice] = useState("");
+  const [mapLinkInput, setMapLinkInput] = useState("");
+  const [isExtractingMapLink, setIsExtractingMapLink] = useState(false);
+  const [mapLinkNotice, setMapLinkNotice] = useState("");
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [workflowStartError, setWorkflowStartError] = useState<string | null>(null);
@@ -174,6 +178,35 @@ export default function Report() {
     setLongitude(lng);
     setLandmarkHint(landmark);
     setGeoNotice(`✓ Selected ${landmark}`);
+  };
+
+  const handleExtractMapLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mapLinkInput.trim()) return;
+    setIsExtractingMapLink(true);
+    setMapLinkNotice("");
+    try {
+      const extracted = await extractMapCoordinates(mapLinkInput.trim());
+      const latStr = extracted.latitude.toFixed(5);
+      const lonStr = extracted.longitude.toFixed(5);
+      setLatitude(latStr);
+      setLongitude(lonStr);
+      setLandmarkHint(`Extracted from ${extracted.source}: ${latStr}° N, ${lonStr}° E`);
+      setMapLinkNotice(`✓ Parsed location: ${latStr}, ${lonStr}`);
+      setMapLinkInput("");
+    } catch (err) {
+      setMapLinkNotice(err instanceof Error ? err.message : "Could not parse coordinates from this link.");
+    } finally {
+      setIsExtractingMapLink(false);
+    }
+  };
+
+  const handleCopy = (text: string, fieldName: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedField(fieldName);
+      setTimeout(() => setCopiedField(null), 2000);
+    }
   };
 
   const next = (event: React.FormEvent) => {
@@ -354,7 +387,27 @@ export default function Report() {
                 </div>
                 <h2 className="success-title">Report Submitted Successfully</h2>
                 <p className="success-subtitle">
-                  Assigned reference <b>{submittedReportId}</b>. The report is stored and queued for incident analysis.
+                  Assigned reference <b>{submittedReportId}</b>
+                  {submittedReportId && (
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(submittedReportId, "reportId")}
+                      style={{
+                        marginLeft: "8px",
+                        padding: "2px 8px",
+                        fontSize: "0.75rem",
+                        borderRadius: "4px",
+                        border: "1px solid #d9d7ce",
+                        background: "#f7f5ef",
+                        cursor: "pointer",
+                        color: copiedField === "reportId" ? "#0f5f4f" : "#172019",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {copiedField === "reportId" ? "✓ Copied" : "Copy ID"}
+                    </button>
+                  )}
+                  . The report is stored and queued for incident analysis.
                 </p>
 
                 <div className="success-info-grid">
@@ -367,7 +420,24 @@ export default function Report() {
                   {activeWorkflowId && (
                     <div className="info-tile">
                       <span>WORKFLOW ID</span>
-                      <code>{activeWorkflowId}</code>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <code>{activeWorkflowId}</code>
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(activeWorkflowId, "workflowId")}
+                          style={{
+                            padding: "2px 6px",
+                            fontSize: "0.7rem",
+                            borderRadius: "4px",
+                            border: "1px solid #d9d7ce",
+                            background: "#f7f5ef",
+                            cursor: "pointer",
+                            color: copiedField === "workflowId" ? "#0f5f4f" : "#687067",
+                          }}
+                        >
+                          {copiedField === "workflowId" ? "✓" : "Copy"}
+                        </button>
+                      </div>
                     </div>
                   )}
                   {isDemoMode() && (
@@ -590,6 +660,36 @@ export default function Report() {
                       </div>
 
                       {geoNotice && <div className="geo-notice-bar">{geoNotice}</div>}
+
+                      <div className="map-link-quick-extract-card" style={{ background: "#fbf9f4", border: "1px solid #d9d7ce", padding: "12px 14px", borderRadius: "8px", margin: "14px 0" }}>
+                        <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#172019", marginBottom: "6px" }}>
+                          Or Paste Google Maps Link / Coordinates
+                        </label>
+                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                          <input
+                            type="text"
+                            value={mapLinkInput}
+                            onChange={(e) => setMapLinkInput(e.target.value)}
+                            placeholder="e.g. https://maps.google.com/?q=20.29614,85.82451 or 20.29614, 85.82451"
+                            className="text-input"
+                            style={{ flex: "1 1 240px", fontSize: "0.82rem", padding: "6px 10px" }}
+                          />
+                          <button
+                            type="button"
+                            onClick={handleExtractMapLink}
+                            disabled={isExtractingMapLink || !mapLinkInput.trim()}
+                            className="button small"
+                            style={{ padding: "6px 12px", fontSize: "0.78rem" }}
+                          >
+                            {isExtractingMapLink ? "Parsing..." : "Extract GPS"}
+                          </button>
+                        </div>
+                        {mapLinkNotice && (
+                          <small style={{ display: "block", marginTop: "6px", color: mapLinkNotice.startsWith("✓") ? "#0f5f4f" : "#dc2626", fontWeight: 500 }}>
+                            {mapLinkNotice}
+                          </small>
+                        )}
+                      </div>
 
                       <div className="coord-inputs-row">
                         <div className="coord-field">
