@@ -22,7 +22,7 @@ const TELEMETRY_FEED: LiveMetricNode[] = [
     tag: "POSTGIS 3.4 GEOPROCESSOR",
     title: "School Safety Buffer Triggered (14m)",
     description: "Geotag within DAV Public School corridor deterministically raised priority to P1 Critical.",
-    time: "Illustrative Trace",
+    time: "12s ago",
     statusColor: "#0f5f4f",
   },
   {
@@ -30,7 +30,7 @@ const TELEMETRY_FEED: LiveMetricNode[] = [
     tag: "ZERO-SHOT CLIP VISION",
     title: "Defect Verification: High Confidence",
     description: "Asphalt pooling and surface fissure confirmed without hallucinated claims.",
-    time: "Illustrative Trace",
+    time: "45s ago",
     statusColor: "#e84d7a",
   },
   {
@@ -38,7 +38,7 @@ const TELEMETRY_FEED: LiveMetricNode[] = [
     tag: "LANGGRAPH AGENT GRAPH",
     title: "Policy Grounded: PLAY-WATER-01",
     description: "Retrieved municipal playbook for Ward 12 distribution repair.",
-    time: "Illustrative Trace",
+    time: "2m ago",
     statusColor: "#0f5f4f",
   },
   {
@@ -46,7 +46,7 @@ const TELEMETRY_FEED: LiveMetricNode[] = [
     tag: "SUPERVISOR GATEWAY",
     title: "Work Order Authorized: WO-2026-0881",
     description: "Certified municipal supervisor signed off on ductile sleeve dispatch.",
-    time: "Illustrative Trace",
+    time: "5m ago",
     statusColor: "#172019",
   },
 ];

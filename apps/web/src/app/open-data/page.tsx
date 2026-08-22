@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Footer, Nav, SectionLabel, Status } from "@/components/site";
 import { FlatIcon } from "@/components/flat-icons";
@@ -31,30 +31,38 @@ export default function OpenDataPage() {
     };
   }, []);
 
-  const filteredFeatures = features.filter((f) => {
-    const matchesCat =
-      selectedCategory === "ALL" ||
-      f.properties.category.toLowerCase().includes(selectedCategory.toLowerCase());
-    const matchesSearch =
-      !searchQuery ||
-      f.properties.incident_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      f.properties.description_sanitized.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      f.properties.assigned_department.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCat && matchesSearch;
-  });
+  const filteredFeatures = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    const cat = selectedCategory.toLowerCase();
+    return features.filter((f) => {
+      const matchesCat =
+        selectedCategory === "ALL" ||
+        f.properties.category.toLowerCase().includes(cat);
+      const matchesSearch =
+        !q ||
+        f.properties.incident_id.toLowerCase().includes(q) ||
+        f.properties.description_sanitized.toLowerCase().includes(q) ||
+        f.properties.assigned_department.toLowerCase().includes(q);
+      return matchesCat && matchesSearch;
+    });
+  }, [features, selectedCategory, searchQuery]);
 
-  const mapPins: GisIncidentPin[] = filteredFeatures.map((f) => ({
-    id: f.properties.incident_id,
-    title: f.properties.category.replace(/_/g, " ").toUpperCase(),
-    category: f.properties.category,
-    priority: "P2",
-    status: f.properties.status,
-    lat: f.geometry.coordinates[1],
-    lng: f.geometry.coordinates[0],
-    reportCount: 1,
-    landmarkProximity: `H3 Hex: ${f.properties.h3_hex_cell}`,
-    department: f.properties.assigned_department.replace(/_/g, " "),
-  }));
+  const mapPins: GisIncidentPin[] = useMemo(
+    () =>
+      filteredFeatures.map((f) => ({
+        id: f.properties.incident_id,
+        title: f.properties.category.replace(/_/g, " ").toUpperCase(),
+        category: f.properties.category,
+        priority: "P2",
+        status: f.properties.status,
+        lat: f.geometry.coordinates[1],
+        lng: f.geometry.coordinates[0],
+        reportCount: 1,
+        landmarkProximity: `H3 Hex: ${f.properties.h3_hex_cell}`,
+        department: f.properties.assigned_department.replace(/_/g, " "),
+      })),
+    [filteredFeatures]
+  );
 
   const handleDownloadGeoJson = () => {
     window.open(`${getApiBaseUrl()}/public/incidents.geojson?limit=500`, "_blank");

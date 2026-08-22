@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Footer, Nav, SectionLabel } from "@/components/site";
 import { FlatIcon } from "@/components/flat-icons";
@@ -28,9 +28,10 @@ export default function DispatchPage() {
     fetchWorkOrderBatches()
       .then((data) => {
         if (!isMounted) return;
-        setBundles(data.bundles || []);
-        if (data.bundles && data.bundles.length > 0) {
-          setSelectedBundleId(data.bundles[0].bundle_id);
+        const bList = data.bundles || [];
+        setBundles(bList);
+        if (bList.length > 0) {
+          setSelectedBundleId((prev) => prev ?? bList[0].bundle_id);
         }
         setLoading(false);
       })
@@ -55,7 +56,10 @@ export default function DispatchPage() {
     };
   }, [boqCategory, defectAreaCm2, defectDepthMm, isEmergency]);
 
-  const selectedBundle = bundles.find((b) => b.bundle_id === selectedBundleId) || bundles[0];
+  const selectedBundle = useMemo(
+    () => bundles.find((b) => b.bundle_id === selectedBundleId) || bundles[0],
+    [bundles, selectedBundleId]
+  );
 
   return (
     <>

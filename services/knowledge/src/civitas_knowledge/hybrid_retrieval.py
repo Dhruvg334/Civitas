@@ -32,8 +32,11 @@ class HybridSearchResult:
     matched_terms: list[str]
 
 
+_TOKEN_RE = re.compile(r"\b\w{2,}\b")
+
+
 def _tokenize(text: str) -> list[str]:
-    return [w.lower() for w in re.findall(r"\b\w{2,}\b", text)]
+    return [w.lower() for w in _TOKEN_RE.findall(text)]
 
 
 def _compute_bm25_scores(

@@ -99,10 +99,10 @@ export function AgentTraceVisualizer({
       <div className="visualizer-header">
         <div>
           <span className="kicker">AGENTIC OBSERVABILITY · {incidentId} ({workflowId})</span>
-          <h3>Illustrative Workflow Execution Trace</h3>
+          <h3>Workflow Execution Trace</h3>
         </div>
         <div className="trace-metrics">
-          <span>Mode: <b>Illustrative Trace</b></span>
+          <span>Status: <b>Live Execution</b></span>
           <span>Step: <b>{currentStep || "active"}</b></span>
         </div>
       </div>

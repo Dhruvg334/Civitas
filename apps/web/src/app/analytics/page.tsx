@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Footer, Nav, SectionLabel } from "@/components/site";
 import { fetchContractorScorecards, ContractorScorecard } from "@/lib/api";
 
@@ -26,23 +26,28 @@ export default function AnalyticsPage() {
     };
   }, []);
 
-  const filteredScorecards = scorecards.filter((sc) => {
-    if (selectedDept === "ALL") return true;
-    return sc.department.toLowerCase() === selectedDept.toLowerCase();
-  });
+  const filteredScorecards = useMemo(() => {
+    if (selectedDept === "ALL") return scorecards;
+    const targetDept = selectedDept.toLowerCase();
+    return scorecards.filter((sc) => sc.department.toLowerCase() === targetDept);
+  }, [scorecards, selectedDept]);
 
-  const avgSla =
-    scorecards.length > 0
-      ? (scorecards.reduce((acc, s) => acc + s.sla_compliance_rate_pct, 0) / scorecards.length).toFixed(1)
-      : "0";
+  const { avgSla, avgMttr, totalJobs, totalDisputes } = useMemo(() => {
+    if (scorecards.length === 0) {
+      return { avgSla: "0", avgMttr: "0", totalJobs: 0, totalDisputes: 0 };
+    }
+    const sumSla = scorecards.reduce((acc, s) => acc + s.sla_compliance_rate_pct, 0);
+    const sumMttr = scorecards.reduce((acc, s) => acc + s.mean_time_to_resolution_hours, 0);
+    const jobs = scorecards.reduce((acc, s) => acc + s.completed_jobs, 0);
+    const disputes = scorecards.reduce((acc, s) => acc + s.dispute_count, 0);
 
-  const avgMttr =
-    scorecards.length > 0
-      ? (scorecards.reduce((acc, s) => acc + s.mean_time_to_resolution_hours, 0) / scorecards.length).toFixed(1)
-      : "0";
-
-  const totalJobs = scorecards.reduce((acc, s) => acc + s.completed_jobs, 0);
-  const totalDisputes = scorecards.reduce((acc, s) => acc + s.dispute_count, 0);
+    return {
+      avgSla: (sumSla / scorecards.length).toFixed(1),
+      avgMttr: (sumMttr / scorecards.length).toFixed(1),
+      totalJobs: jobs,
+      totalDisputes: disputes,
+    };
+  }, [scorecards]);
 
   return (
     <>
