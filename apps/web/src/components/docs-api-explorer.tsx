@@ -155,6 +155,293 @@ const ENDPOINTS: Endpoint[] = [
       2
     ),
   },
+  {
+    method: "GET",
+    path: "/api/v1/public/incidents.geojson",
+    title: "Public GeoJSON Transparency Feed",
+    summary: "Publishes real-time RFC 7946 GeoJSON FeatureCollection with bounded ±25m Gaussian spatial perturbation and automated PII scrubbing.",
+    authRequired: false,
+    responseSample: JSON.stringify(
+      {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [85.82472, 20.29621] },
+            properties: {
+              incident_id: "INC-0241",
+              category: "water_leakage",
+              status: "WAITING_FOR_REVIEW",
+              reported_at: "2026-08-20T08:30:00Z",
+              description_sanitized: "High-pressure potable water main leak [ADDRESS_REDACTED] near school gate.",
+              h3_hex_cell: "8860b29849fffff",
+              assigned_department: "water_supply",
+              privacy_preserved: true,
+            },
+          },
+        ],
+      },
+      null,
+      2
+    ),
+    parameters: [
+      { name: "limit", type: "integer", required: false, description: "Maximum number of GeoJSON features to return (default 200, max 1000)" },
+    ],
+  },
+  {
+    method: "GET",
+    path: "/api/v1/public/incidents.csv",
+    title: "Public Open Data CSV Stream",
+    summary: "Exports sanitized civic incident records as a streamable tabular CSV for civic researchers and urban planners.",
+    authRequired: false,
+    responseSample: "incident_id,category,status,reported_at,sanitized_description,h3_hex_cell,assigned_department\nINC-0241,water_leakage,WAITING_FOR_REVIEW,2026-08-20T08:30:00Z,\"High-pressure potable water main leak [ADDRESS_REDACTED]\",8860b29849fffff,water_supply",
+    parameters: [
+      { name: "limit", type: "integer", required: false, description: "Maximum number of rows to export (default 500, max 5000)" },
+    ],
+  },
+  {
+    method: "GET",
+    path: "/api/v1/analytics/contractors",
+    title: "Contractor Performance & SLA Analytics",
+    summary: "Returns municipal vendor performance metrics: Mean Time to Resolution (MTTR), statutory SLA compliance %, dispute %, and composite 0–100 scorecards.",
+    authRequired: false,
+    responseSample: JSON.stringify(
+      {
+        success: true,
+        data: {
+          total_contractors: 4,
+          scorecards: [
+            {
+              contractor_id: "CONT-WAT-01",
+              contractor_name: "Apex Municipal Dewatering & Pipeline Services",
+              department: "water_supply",
+              total_assigned_jobs: 48,
+              completed_jobs: 46,
+              sla_compliant_jobs: 43,
+              sla_compliance_rate_pct: 93.5,
+              mean_time_to_resolution_hours: 6.4,
+              dispute_count: 1,
+              dispute_rate_pct: 2.1,
+              composite_performance_score: 92.4,
+              performance_tier: "TIER_1_EXCELLENT",
+            },
+          ],
+        },
+      },
+      null,
+      2
+    ),
+  },
+  {
+    method: "GET",
+    path: "/api/v1/work-orders/batches",
+    title: "Spatial Work Order Crew Batching",
+    summary: "Clusters open work orders by crew specialty and spatial H3 hexagonal grid cells to optimize travel routes and minimize mobilization costs.",
+    authRequired: false,
+    responseSample: JSON.stringify(
+      {
+        success: true,
+        data: {
+          total_bundles: 2,
+          bundles: [
+            {
+              bundle_id: "BUNDLE-CREW-001",
+              crew_type: "Water Main & Dewatering Specialist Crew",
+              target_hex_cell: "8860b29849fffff",
+              work_order_ids: ["WO-0241-A", "WO-0235-B"],
+              total_duration_hours: 9.0,
+              total_cost_inr: 28450.0,
+              total_cost_usd: 328.9,
+              waypoints: [
+                {
+                  work_order_id: "WO-0241-A",
+                  incident_id: "INC-0241",
+                  latitude: 20.29614,
+                  longitude: 85.82451,
+                  category: "water_leakage",
+                  estimated_hours: 4.5,
+                },
+              ],
+            },
+          ],
+        },
+      },
+      null,
+      2
+    ),
+  },
+  {
+    method: "POST",
+    path: "/api/v1/work-orders/boq-estimate",
+    title: "Schedule of Rates (SOR) BOQ Costing",
+    summary: "Calculates material tonnage, machinery operating hours, labor rates, and total estimated repair costs in INR and USD.",
+    authRequired: false,
+    requestBody: JSON.stringify(
+      {
+        category: "pothole_road_damage",
+        defect_area_cm2: 2500,
+        defect_depth_mm: 75,
+        is_emergency: true,
+      },
+      null,
+      2
+    ),
+    responseSample: JSON.stringify(
+      {
+        success: true,
+        data: {
+          category: "pothole_road_damage",
+          defect_area_m2: 0.25,
+          defect_depth_cm: 7.5,
+          subtotal_inr: 14850.0,
+          contingency_inr: 2227.5,
+          total_estimated_cost_inr: 17077.5,
+          total_estimated_cost_usd: 197.4,
+          estimated_duration_hours: 4.0,
+          line_items: [
+            {
+              item_code: "SOR-RDS-204",
+              description: "Dense Bituminous Macadam (DBM) Hot Mix Compaction",
+              unit: "tonnes",
+              quantity: 0.55,
+              unit_rate_inr: 6500.0,
+              total_cost_inr: 3575.0,
+            },
+          ],
+        },
+      },
+      null,
+      2
+    ),
+  },
+  {
+    method: "GET",
+    path: "/api/v1/resolutions/{incident_id}/certificate",
+    title: "Cryptographic Municipal Audit Certificate",
+    summary: "Fetches official digital audit certificate with verifiable SHA-256 digest sealing the end-to-end incident lifecycle evidence trail.",
+    authRequired: false,
+    responseSample: JSON.stringify(
+      {
+        success: true,
+        data: {
+          certificate_id: "CERT-CIVITAS-0241-E9F4A8C1",
+          incident_id: "INC-0241",
+          issued_at: "2026-08-20T12:00:00Z",
+          governing_municipality: "Civitas Smart Municipal Corporation Digital Evidence Repository",
+          sha256_cryptographic_digest: "e9f4a8c17b5e32049d10a84fb79201ca74319fb9a8321049b78e24c5019d82ae",
+          verification_url: "https://civitas-web.vercel.app/incidents/INC-0241/certificate",
+        },
+      },
+      null,
+      2
+    ),
+  },
+  {
+    method: "GET",
+    path: "/api/v1/resolutions/{incident_id}/dispute-status",
+    title: "72-Hour Citizen Dispute Window Status",
+    summary: "Checks if a resolved incident is within the 72-hour citizen dispute and rebuttal review window.",
+    authRequired: false,
+    responseSample: JSON.stringify(
+      {
+        success: true,
+        data: {
+          incident_id: "INC-0241",
+          status: "resolved",
+          is_disputable: true,
+          resolved_at: "2026-08-20T12:00:00Z",
+          dispute_deadline: "2026-08-23T12:00:00Z",
+          hours_remaining: 64.0,
+        },
+      },
+      null,
+      2
+    ),
+  },
+  {
+    method: "POST",
+    path: "/api/v1/resolutions/{incident_id}/dispute",
+    title: "Submit Citizen Dispute & Reopen Incident",
+    summary: "Allows citizens to submit rebuttal descriptions and photographic evidence within 72 hours of closure, automatically transitioning status to reopened_disputed with P1 escalation.",
+    authRequired: false,
+    requestBody: JSON.stringify(
+      {
+        dispute_reason: "Water is still leaking actively across the road. The patch was only temporary sandbags.",
+        rebuttal_photo_url: "https://civitas-storage.blob.core.windows.net/evidence/rebuttal-0241.jpg",
+      },
+      null,
+      2
+    ),
+    responseSample: JSON.stringify(
+      {
+        success: true,
+        data: {
+          incident_id: "INC-0241",
+          previous_status: "resolved",
+          new_status: "reopened_disputed",
+          dispute_ticket_id: "DISP-0241",
+          priority_escalation: "P1_CRITICAL_SUPERVISOR_REVIEW",
+          reopened_at: "2026-08-20T15:30:00Z",
+        },
+      },
+      null,
+      2
+    ),
+  },
+  {
+    method: "POST",
+    path: "/api/v1/intake/simulate",
+    title: "Omnichannel Intake Simulator",
+    summary: "Simulates incoming multimodal messages from WhatsApp Webhooks, Telegram Bot updates, or recorded voice note audio payloads.",
+    authRequired: false,
+    requestBody: JSON.stringify(
+      {
+        channel: "whatsapp",
+        sender_phone: "+919876543210",
+        message_text: "High-pressure potable water main leak near DAV School Gate.",
+        latitude: 20.29614,
+        longitude: 85.82451,
+        media_url: "https://civitas.local/media/leak_01.jpg",
+      },
+      null,
+      2
+    ),
+    responseSample: JSON.stringify(
+      {
+        success: true,
+        data: {
+          channel: "whatsapp",
+          report_id: "RPT-SIM-0241",
+          status: "ACCEPTED",
+          exif_gps_extracted: true,
+          device_fingerprint_scrubbed: true,
+        },
+      },
+      null,
+      2
+    ),
+  },
+  {
+    method: "GET",
+    path: "/api/v1/open311/v2/services.json",
+    title: "Open311 GeoReport v2 Service Discovery",
+    summary: "Returns standard Open311 service definitions (potable water, road potholes, streetlight outages, tree hazards) for municipal interoperability.",
+    authRequired: false,
+    responseSample: JSON.stringify(
+      [
+        {
+          service_code: "water_leakage",
+          service_name: "Water Main Leakage & Pipe Burst",
+          description: "Subsurface and surface potable water distribution leaks.",
+          metadata: true,
+          type: "realtime",
+          group: "Infrastructure",
+        },
+      ],
+      null,
+      2
+    ),
+  },
 ];
 
 export function DocsApiExplorer() {

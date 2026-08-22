@@ -274,4 +274,20 @@ describe("Civitas Advanced Workflow API Helpers", () => {
     expect(disputeResult.new_status).toBe("reopened_disputed");
     expect(disputeResult.priority_escalation).toContain("CRITICAL");
   });
+
+  it("simulates omnichannel intake and discovers Open311 services", async () => {
+    const { simulateIntakeChannel, fetchOpen311Services } = await import("./api");
+    const sim = await simulateIntakeChannel("whatsapp", {
+      message_text: "Water leak near DAV School Gate",
+      latitude: 20.29614,
+      longitude: 85.82451,
+    });
+    expect(sim.channel).toBe("whatsapp");
+    expect(sim.report_id).toBeDefined();
+    expect(sim.status).toBe("ACCEPTED");
+
+    const services = await fetchOpen311Services();
+    expect(services.length).toBeGreaterThan(0);
+    expect(services[0].service_code).toBeDefined();
+  });
 });

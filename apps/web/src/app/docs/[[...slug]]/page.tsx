@@ -111,6 +111,15 @@ PostgreSQL / Supabase (Application Data + LangGraph State)`,
         heading: "Persistence & State Storage Split",
         body: "Workflow-run metadata records execution IDs, report references, incident associations, trace IDs, and thread IDs in PostgreSQL. Canonical report, assessment, routing, work-order, and human review structures remain owned by the backend persistence layer.",
       },
+      {
+        heading: "H3 Hexagonal Indexing & SCADA IoT Telemetry Fusion",
+        body: "Civitas integrates Uber H3 discrete global grid indexing (Resolution 8 ~0.7km² neighborhoods, Resolution 9 ~0.1km² micro-zones) to detect chronic infrastructure failure zones without arbitrary administrative polygon bias. Real-time municipal SCADA sensor streams (subsurface water main pressure drops) and precipitation forecasts are fused with spatial clusters to distinguish localized leaks from systemic main ruptures.",
+        bullets: [
+          "H3 Res 8/9 hexagonal clustering computes rolling 90-day defect densities to flag systemic chronic failure zones.",
+          "SCADA pressure sensor fusion detects upstream anomalies (>15 PSI sudden drop) correlating with citizen leak reports.",
+          "Spatial crew batching organizes open work orders by H3 hex cell to minimize transit times and vehicle emissions.",
+        ],
+      },
     ],
   },
   workflow: {
@@ -130,8 +139,16 @@ PostgreSQL / Supabase (Application Data + LangGraph State)`,
         ],
       },
       {
-        heading: "Deterministic Intelligence & Geospatial Grounding",
-        body: "Duplicate detection, spatial clustering, severity calculation, and priority assignment are derived using deterministic algorithms and PostGIS queries. The workflow does not rely on an LLM to guess coordinates or compute distance buffers.",
+        heading: "Hybrid Knowledge Retrieval (BM25 + Dense Semantic RRF)",
+        body: "Municipal standard operating procedures, statutory bylaws, and repair playbooks are retrieved using a hybrid Reciprocal Rank Fusion (RRF, k=60) algorithm combining exact BM25 keyword matching with dense embedding vector similarity. Grounding boundaries enforce strict statutory jurisdiction resolution (e.g. state highways vs municipal ward roads).",
+      },
+      {
+        heading: "Automated Schedule of Rates (SOR) BOQ Costing",
+        body: "The operational planner computes an itemized Bill of Quantities (BOQ) conforming to municipal Schedule of Rates. Defect surface area (cm²) and depth (mm) derived from vision models calculate exact asphalt tonnage, machinery operating hours, labor allocations, emergency priority surcharges, and contingency reserves in INR and USD.",
+      },
+      {
+        heading: "Dynamic Vulnerability SLA Acceleration",
+        body: "Static response times are replaced with vulnerability-aware dynamic SLAs. When incidents occur within 500m of schools, hospitals, elder care facilities, or active flood zones, target response windows automatically accelerate (e.g. 24 hours reduced to 4 hours).",
       },
       {
         heading: "Checkpoint Interrupt & Human Resume",
@@ -153,20 +170,20 @@ PostgreSQL / Supabase (Application Data + LangGraph State)`,
     blocks: [
       {
         heading: "Stage 01: Multimodal Intake & Zero-Trust Ingestion",
-        body: "Citizen reporting begins through the responsive web wizard or public API. To support high-volume mobile submissions over constrained cellular networks, incoming media is optimized and hardened prior to backend storage.",
+        body: "Citizen reporting begins through the responsive web wizard, WhatsApp Webhooks, Telegram Bots, or voice note audio submissions. Incoming media undergoes zero-trust sanitization, binary magic-byte validation, and automated EXIF GPS extraction while stripping sensitive hardware fingerprints.",
         alert: {
           type: "note",
           title: "Intake Hardening Rules",
           content: "Client-side canvas downsampling reduces 40MB photos to <1.2MB in under 200ms. The backend performs binary magic-byte validation (PNG, JPEG, WebP, MP4) and isolates storage under non-enumerable UUIDs with 1-hour signed access URLs.",
         },
         bullets: [
-          "WGS84 GPS coordinate capture with offline Google Maps/OSM share link regex parsing.",
+          "Omnichannel ingestion: WhatsApp, Telegram, Audio voice notes, and web reporting.",
+          "EXIF GPS extraction and offline Google Maps/OSM share link regex parsing.",
           "Strict 50MB file size ceiling and MIME-type allowlist enforcement.",
-          "Citizen text description, category selection, and timestamp normalization into PostgreSQL.",
         ],
-        code: `Citizen Device (Web Wizard / Mobile PWA)
+        code: `Citizen Device (Web Wizard / WhatsApp / Audio)
   ├── 1. Canvas Downscaler (≤ 1920x1080 @ 0.85 JPEG)
-  ├── 2. Map-Link / GPS Extraction (WGS84 lat/lon)
+  ├── 2. EXIF / Map-Link Extraction (WGS84 lat/lon)
   └── 3. POST /api/v1/reports + POST /reports/{id}/media
         │
         ▼
@@ -176,17 +193,17 @@ FastAPI Ingestion Adapter
       },
       {
         heading: "Stage 02: Deterministic Geospatial & Zero-Shot Vision Triage",
-        body: "Before invoking generative agent nodes, incoming reports are processed through fast, deterministic spatial queries and computer vision defect models to establish observable facts.",
+        body: "Before invoking generative agent nodes, incoming reports are processed through fast, deterministic spatial queries, H3 hexagonal indexing, and computer vision defect models to establish observable facts.",
         bullets: [
-          "PostGIS Spatial Clustering: ST_DWithin queries group reports within dynamic radiuses (50m for potholes, 150m for water bursts) over a 72-hour rolling window to eliminate duplicate work orders.",
-          "Zero-Shot Defect Vision: CLIP embeddings categorize visual defects against municipal taxonomies and extract physical attributes (e.g. standing water depth, pavement cavity, tree trunk diameter).",
+          "PostGIS Spatial Clustering: ST_DWithin queries group reports within dynamic radiuses (50m for potholes, 150m for water bursts) over a 72-hour rolling window.",
+          "Zero-Shot Defect Vision: CLIP embeddings categorize visual defects against municipal taxonomies and compute defect surface area (cm²) and depth (mm).",
           "Landmark Proximity Buffer: Calculates exact distances to schools, hospital emergency bays, and transit corridors to assign deterministic P1/P2/P3 priority ratings.",
         ],
         code: `Raw Report (med-0241.jpg, lat=20.29614, lon=85.82451)
   │
   ├──► [PostGIS ST_DWithin(50m, 72h)] ──► Clustered to INC-0241 (duplicates: 3)
-  ├──► [CLIP Zero-Shot Vision]         ──► Defect: Water Leakage (Conf: 0.94)
-  └──► [Spatial Buffer Engine]         ──► 14m from DAV School Gate ──► PRIORITY: P1`,
+  ├──► [CLIP Zero-Shot Vision]         ──► Defect: Water Leakage (Area: 2500cm², Depth: 60mm)
+  └──► [Spatial Buffer Engine]         ──► 14m from DAV School Gate ──► PRIORITY: P1 (SLA: 4h)`,
       },
       {
         heading: "Stage 03: LangGraph Checkpointed Multi-Agent Reasoning",
@@ -194,7 +211,7 @@ FastAPI Ingestion Adapter
         alert: {
           type: "important",
           title: "The 6-Agent Reasoning Pipeline",
-          content: "1. Structure Evidence (triad separation) → 2. Clarification Check (interactive interrupt) → 3. Grounding Retrieval (playbooks) → 4. Policy Routing (jurisdiction) → 5. Operational Planning (SLA & work order) → 6. Adversarial Critic (safety check loop, max 2 revisions).",
+          content: "1. Structure Evidence (triad separation) → 2. Clarification Check (interactive numbered prompt) → 3. Grounding Retrieval (hybrid BM25+dense RRF) → 4. Policy Routing (statutory jurisdiction) → 5. Operational Planning (SOR BOQ & dynamic SLA) → 6. Adversarial Critic (hallucination guardrail, max 2 revisions).",
         },
         code: `[load_context] ──► [ml_intelligence] ──► [structure_evidence]
                                                  │
@@ -202,12 +219,12 @@ FastAPI Ingestion Adapter
 [knowledge_grounding] ◄── [clarification_check] ──► (Missing info? ──► [WAITING_FOR_CLARIFICATION])
          │
          ▼
-  [routing_agent] ──► (Cites ROUTE-WATER-02)
+  [routing_agent] ──► (Cites ROUTE-WATER-02 + Statutory Boundary)
          │
          ▼
-[operational_planner] ◄──┐
-         │               │ (Critic Rejection, max 2 revisions)
-         ▼               │
+[operational_planner] ◄──┐ (BOQ: INR 17,077 / USD 197)
+         │               │
+         ▼               │ (Critic Rejection, max 2 revisions)
       [critic] ──────────┘
          │
          ▼ (Critic Approved)
@@ -218,34 +235,39 @@ FastAPI Ingestion Adapter
         body: "Civitas enforces a strict governance standard: AI proposes operational plans, but authorized municipal supervisors hold final decision authority. Work orders are never automatically dispatched without human approval.",
         bullets: [
           "Checkpointed Halt: LangGraph freezes execution state to PostgreSQL at WAITING_FOR_REVIEW.",
-          "Supervisor Incident Dossier: Municipal supervisors review GIS hazard buffers, visual evidence triads, and the draft work order in the Command Center.",
+          "Supervisor Incident Dossier: Municipal supervisors review GIS hazard buffers, visual evidence triads, BOQ repair cost breakdowns, and the draft work order in the Command Center.",
           "5 Canonical Review Actions: Approve (dispatch), Edit Work Order (adjust SLA/equipment), Reroute Department, Reject (dismiss false alarm), or Request Additional Evidence.",
           "Resumption: Submitting the review resumes the existing thread ID idempotently via POST /api/v1/workflows/{id}/review.",
         ],
       },
       {
-        heading: "Stage 05: Field Dispatch & Citizen Communication",
-        body: "Upon supervisor authorization, the work order is formally dispatched to district field crew leads with exact spatial coordinates, safety protocols, and equipment requirements. Concurrently, the citizen communication agent generates a non-technical status update for residents.",
+        heading: "Stage 05: Field Crew Dispatch & Route Optimization",
+        body: "Upon supervisor authorization, the work order is assigned to district field crew leads with exact spatial coordinates, H3 hex route clusters, and equipment requirements. Concurrently, the citizen communication agent generates a non-technical status update for residents.",
         bullets: [
           "Work Order Dispatch: Assigned to designated crew lead (e.g. Marcus Vance, Ward 12 Water Supply Dept) with required tools (ductile clamp, backhoe, asphalt patch).",
-          "Citizen Status Feed: Reassuring, non-technical notification informing the citizen that crew dispatch is active with an estimated resolution window (e.g. 8–14 hours).",
+          "Spatial Crew Batching: Clusters multi-stop work orders in the same H3 hex cell into optimized waypoints to minimize travel time.",
+          "Citizen Status Feed: Reassuring, non-technical notification informing the citizen that crew dispatch is active with an estimated resolution window.",
         ],
       },
       {
-        heading: "Stage 06: Closed-Loop Resolution Verification",
-        body: "An incident cannot be marked RESOLVED based on time elapsed alone. Field crews must submit post-repair photographic evidence, which is verified against pre-repair defect embeddings before closing the ticket.",
+        heading: "Stage 06: Anti-Fraud Verification, Dispute Window & Digital Seal",
+        body: "An incident cannot be marked RESOLVED based on time elapsed alone. Field crews must submit post-repair photographic evidence, which is audited against pre-repair photos and historical completion archives using a 64-bit difference hash (dHash) anti-fraud engine.",
         alert: {
           type: "note",
-          title: "Resolution Verification Protocol",
-          content: "The ML resolution model evaluates the pre-repair vs post-repair image pair to confirm physical hazard remediation (e.g. 98.4% visual match to resolved standard) and generates a complete audit trail.",
+          title: "Cryptographic Resolution & Dispute Protocol",
+          content: "Post-closure triggers an active 72-hour citizen dispute window. If uncontested, a permanent SHA-256 Municipal Audit Certificate is minted, and sanitized differential-privacy records are published to public GeoJSON/CSV open data feeds.",
         },
-        code: `Field Crew Completes Repair ──► Uploads Post-Repair Photo
-                                      │
-                                      ▼
-[Resolution Inspector Engine] ──► Pre/Post CLIP Embedding Delta
-                                      │
-                                      ├── Verification Checklist Passed (Grates clear, asphalt sealed)
-                                      └── Incident Status ──► RESOLVED · Archive Audit Trail`,
+        code: `Field Crew Uploads Post-Repair Photo
+                │
+                ▼
+[64-bit dHash Anti-Fraud Check] ──► Duplicate / Stock Photo? ──► FLAG FRAUD
+                │
+                ▼ (Clean Verification)
+[Resolution Inspector Engine]   ──► Pre/Post Embedding Delta Passed
+                │
+                ├── 72-Hour Citizen Dispute Window Active (Auto Re-Open on Dispute)
+                ├── Cryptographic SHA-256 Municipal Audit Certificate Minted
+                └── Public GeoJSON Feed Updated (Differential Privacy ±25m Jitter)`,
       },
     ],
   },
@@ -267,13 +289,21 @@ FastAPI Ingestion Adapter
         ],
       },
       {
-        heading: "Policy Grounding & Abstention",
-        body: "Every policy-dependent claim in a work order or routing decision must cite a valid retrieved municipal playbook (e.g., PLAY-WATER-01). If no grounding playbook exists, the workflow records INSUFFICIENT_KNOWLEDGE and requests manual human supervisor review.",
+        heading: "Policy Grounding & Adversarial Guardrails",
+        body: "Every policy-dependent claim in a work order or routing decision must cite a valid retrieved municipal playbook (e.g., PLAY-WATER-01). If no grounding playbook exists, the workflow records INSUFFICIENT_KNOWLEDGE and requests manual human supervisor review. Adversarial hallucination guardrails reject fabricated response SLAs or unauthorized repair commitments.",
         alert: {
           type: "warning",
           title: "Zero Hallucination Tolerance",
           content: "Agents are strictly prohibited from inventing municipal jurisdictions, response SLAs, or repair commitments.",
         },
+      },
+      {
+        heading: "Contractor Resolution Anti-Fraud (64-bit dHash)",
+        body: "To prevent contractor payment fraud (such as uploading stock repair photos or recycling past resolution photos), Civitas hashes resolution media using 64-bit perceptual difference hashing (dHash) with a Hamming distance threshold (<= 5 bits). Duplicate attempts are flagged immediately for municipal audit.",
+      },
+      {
+        heading: "Differential Privacy Spatial Perturbation (±25m)",
+        body: "Public transparency feeds and open data exports (/api/v1/public/incidents.geojson) apply differential privacy spatial perturbation. Bounded Gaussian jitter (±25m) and automated regex scrubbing redact residential street numbers and PII while preserving regional geographic trends for urban planners.",
       },
       {
         heading: "Supervisor Review Controls",

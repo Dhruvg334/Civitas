@@ -316,6 +316,83 @@ export default function SignIn() {
                     <span>{notice}</span>
                   </div>
                 )}
+
+                <div className="demo-personas-section" style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px dashed #d9d7ce" }}>
+                  <span style={{ fontSize: "0.68rem", fontWeight: 800, color: "#687067", letterSpacing: "0.08em" }}>
+                    DEMO PERSONAS (PRE-CONFIGURED ROLES)
+                  </span>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", marginTop: "10px" }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmail("supervisor.chen@bhubaneswar.gov.in");
+                        setPassword("SupervisorPass123!");
+                        setName("Sarah Chen");
+                        setIsSignUp(false);
+                      }}
+                      className="demo-persona-chip"
+                      style={{
+                        padding: "8px 10px",
+                        fontSize: "0.75rem",
+                        textAlign: "left",
+                        border: "1px solid #172019",
+                        background: email.includes("supervisor") ? "#e6f4ea" : "#fdfcf9",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                      }}
+                    >
+                      <b>Supervisor</b>
+                      <span style={{ display: "block", fontSize: "0.65rem", color: "#687067" }}>Review gate</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmail("field.dispatch@waterdept.gov.in");
+                        setPassword("FieldDispatch123!");
+                        setName("Marcus Vance");
+                        setIsSignUp(false);
+                      }}
+                      className="demo-persona-chip"
+                      style={{
+                        padding: "8px 10px",
+                        fontSize: "0.75rem",
+                        textAlign: "left",
+                        border: "1px solid #172019",
+                        background: email.includes("field") ? "#e6f4ea" : "#fdfcf9",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                      }}
+                    >
+                      <b>Field Lead</b>
+                      <span style={{ display: "block", fontSize: "0.65rem", color: "#687067" }}>Crew dispatch</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmail("ananya.resident@civic.local");
+                        setPassword("CitizenPass123!");
+                        setName("Ananya Sharma");
+                        setIsSignUp(false);
+                      }}
+                      className="demo-persona-chip"
+                      style={{
+                        padding: "8px 10px",
+                        fontSize: "0.75rem",
+                        textAlign: "left",
+                        border: "1px solid #172019",
+                        background: email.includes("ananya") ? "#e6f4ea" : "#fdfcf9",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                      }}
+                    >
+                      <b>Citizen</b>
+                      <span style={{ display: "block", fontSize: "0.65rem", color: "#687067" }}>Resident</span>
+                    </button>
+                  </div>
+                </div>
               </form>
 
               <div className="auth-terms-footer">
