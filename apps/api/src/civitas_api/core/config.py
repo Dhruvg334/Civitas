@@ -45,6 +45,12 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_production_security(self) -> "Settings":
+        if self.database_url and self.database_url.strip() != "postgresql://localhost/postgres":
+            if not self.civitas_postgis_dsn:
+                self.civitas_postgis_dsn = self.database_url.strip()
+            if not self.workflow_checkpoint_database_url:
+                self.workflow_checkpoint_database_url = self.database_url.strip()
+
         if not self.is_production:
             return self
 
