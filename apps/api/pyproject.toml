@@ -21,6 +21,7 @@ dependencies = [
   "civitas-knowledge>=0.1.0",
   "civitas-ml>=0.1.0",
   "civitas-workflow>=0.1.0",
+  "civitas-evaluation>=0.1.0",
 ]
 
 [project.optional-dependencies]

@@ -26,6 +26,7 @@ RUN python -m pip install --upgrade pip setuptools wheel && \
     python -m pip install "./ml/risk[geo,duplicates]" && \
     python -m pip install "./ml/resolution[vision]" && \
     python -m pip install ./services/knowledge && \
+    python -m pip install ./services/evaluation && \
     python -m pip install "./services/ml[full,video,http]" && \
     python -m pip install "./services/workflow[postgres]" && \
     python -m pip install ./apps/api
