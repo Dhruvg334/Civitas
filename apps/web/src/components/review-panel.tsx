@@ -191,9 +191,9 @@ export function ReviewPanel({
         status: summary.status,
         message:
           fullRequest.action === "approve"
-            ? "Work order approved! LangGraph workflow thread resumed and citizen dispatch authorized."
+            ? "Work order approved! Field crew dispatched and status update published."
             : fullRequest.action === "reject"
-            ? "Incident recommendation rejected and workflow thread terminated."
+            ? "Incident recommendation rejected and work order archived."
             : `Workflow decision '${fullRequest.action}' recorded: status is now ${summary.status}.`,
       });
       setMode("idle");

@@ -218,7 +218,7 @@ export function LiveEvidenceSandbox() {
               disabled={isProcessing}
             >
               {isProcessing ? (
-                "Executing LangGraph Reasoning..."
+                "Analyzing Incident Evidence..."
               ) : (
                 <span className="btn-label-with-icon">
                   <FlatIcon name="workflow" size={14} />

@@ -97,21 +97,20 @@ export default function Demo() {
       <main className="demo-shell rich-demo">
         <header className="demo-header-banner">
           <div>
-            <span className="workspace-kicker">GOLDEN RUNTIME SLICE / BHUBANESWAR DEMO</span>
+            <span className="workspace-kicker">INCIDENT RESOLUTION DEMO · WARD 12 BHUBANESWAR</span>
             <h1>Water near a school is not three separate tickets.</h1>
             <p>
-              Follow the seeded water-leak incident through real workflow steps: intake context,
-              evidence boundaries, deterministic ML, policy grounding, routing, planning, critic checks,
-              and supervisor authorization.
+              Follow an incident through its full lifecycle: citizen intake, duplicate spatial clustering,
+              department routing, municipal policy validation, crew dispatch, and photographic repair audit.
             </p>
           </div>
           <div className="demo-header-actions">
-            <Status tone="good">OFFLINE DEMO RUNTIME</Status>
+            <Status tone="good">INTERACTIVE DEMO</Status>
             <button
               onClick={() => setShowTrace(!showTrace)}
               className="outline small-trace-btn"
             >
-              {showTrace ? "Hide Agent Trace" : "View Agent Trace (LangGraph)"}
+              {showTrace ? "Hide Automated Trace" : "View Automated Trace Steps"}
             </button>
           </div>
         </header>
@@ -163,9 +162,9 @@ export default function Demo() {
 
           <div className="video-window-footer">
             <div className="video-meta-block">
-              <b>Demonstrated System Capabilities:</b>
+              <b>Demonstrated Capabilities:</b>
               <p>
-                Omnichannel WhatsApp / Web intake → PostGIS spatial deduplication → LangGraph critic verification → Policy playbook grounding → Zero-shot photographic repair audit.
+                Omnichannel intake → Spatial deduplication → Multimodal evidence extraction → Municipal policy grounding → Photographic resolution verification.
               </p>
             </div>
           </div>

@@ -400,7 +400,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
               </div>
 
               <div className="field-block">
-                <span className="field-label">PostGIS Proximity Alert Buffer</span>
+                <span className="field-label">Neighborhood Proximity Alert Buffer</span>
                 <div className="radius-pill-group">
                   {["250m (Immediate Block)", "500m (School & Hospital Buffer)", "1km (Full Neighborhood)"].map((rad) => {
                     const value = rad.split(" ")[0];
@@ -536,7 +536,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
                   <b>Spatial Deduplication</b>
                 </div>
                 <p>
-                  PostGIS 3.4 clusters duplicate reports within a 15m radius into 1 consolidated incident dossier. No duplicate work orders.
+                  Automated spatial clustering groups nearby reports into 1 consolidated incident dossier to eliminate duplicate tickets.
                 </p>
               </div>
 
@@ -544,10 +544,10 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
                 <div className="stage-header">
                   <span className="stage-num">02</span>
                   <FlatIcon name="workflow" size={16} color="#0f5f4f" />
-                  <b>LangGraph Orchestration</b>
+                  <b>Policy Playbook Triage</b>
                 </div>
                 <p>
-                  Dual critic models validate facts, match municipal policy playbooks, and compute severity without hallucinating timelines.
+                  Automated validation checks evidence against municipal guidelines and determines priority without speculative estimates.
                 </p>
               </div>
 
@@ -566,10 +566,10 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
                 <div className="stage-header">
                   <span className="stage-num">04</span>
                   <FlatIcon name="check" size={16} color="#0f5f4f" />
-                  <b>Computer Vision Audit</b>
+                  <b>Photo Resolution Audit</b>
                 </div>
                 <p>
-                  Before ticket closure, zero-shot CV verifies the repair photo against initial damage to guarantee physical resolution.
+                  Before ticket closure, photographic verification compares completed repairs against initial damage to guarantee physical resolution.
                 </p>
               </div>
             </div>
@@ -607,7 +607,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
                 </div>
                 <div className="spec-tile">
                   <span>SAFETY GATE CLEARANCE</span>
-                  <b>Active (Critic Gate Passed)</b>
+                  <b>Active (Identity & Geofence Verified)</b>
                 </div>
               </div>
             </div>

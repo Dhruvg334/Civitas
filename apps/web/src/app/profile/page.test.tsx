@@ -16,7 +16,7 @@ describe("Profile Page Component", () => {
     delete process.env.NEXT_PUBLIC_CIVITAS_DEMO_MODE;
 
     const html = renderToStaticMarkup(<Profile />);
-    expect(html).not.toContain("DEMO PERSONA SWITCHER");
+    expect(html).not.toContain("ROLE PREVIEW (DEMO)");
 
     process.env.NEXT_PUBLIC_CIVITAS_DEMO_MODE = originalEnv;
   });

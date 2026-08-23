@@ -20,6 +20,7 @@ export interface CivicUser {
   roleTitle?: string;
   ward?: string;
   avatarInitials?: string;
+  avatarUrl?: string;
 }
 
 export interface UserSession {
@@ -152,13 +153,28 @@ export function userFromSupabaseSession(session: { user?: { id?: string; email?:
   const role: CivicRole = ["citizen", "triage", "supervisor", "reviewer", "admin"].includes(rawRole)
     ? (rawRole as CivicRole)
     : "citizen";
+  const avatarInitials =
+    (typeof sbUser?.user_metadata?.avatar_initials === "string" && sbUser.user_metadata.avatar_initials.trim()) ||
+    displayName.slice(0, 2).toUpperCase();
+  const avatarUrl =
+    (typeof sbUser?.user_metadata?.avatar_url === "string" && sbUser.user_metadata.avatar_url.trim()) ||
+    undefined;
+  const ward =
+    (typeof sbUser?.user_metadata?.ward === "string" && sbUser.user_metadata.ward.trim()) ||
+    undefined;
+  const roleTitle =
+    (typeof sbUser?.user_metadata?.role_title === "string" && sbUser.user_metadata.role_title.trim()) ||
+    getRoleTitle(role);
+
   return {
     id: sbUser?.id || "usr-anon",
     email,
     name: displayName,
     role,
-    roleTitle: getRoleTitle(role),
-    avatarInitials: displayName.slice(0, 2).toUpperCase(),
+    roleTitle,
+    ward,
+    avatarInitials,
+    avatarUrl,
   };
 }
 
@@ -483,12 +499,17 @@ export async function updateUserProfile(updates: Partial<CivicUser>): Promise<Ci
   }
   const name = updates.name !== undefined ? updates.name.trim() : current.name;
   const avatarInitials =
-    updates.avatarInitials || (name ? name.slice(0, 2).toUpperCase() : current.avatarInitials || "CU");
+    updates.avatarInitials !== undefined && updates.avatarInitials.trim() !== ""
+      ? updates.avatarInitials.trim().slice(0, 2).toUpperCase()
+      : current.avatarInitials || (name ? name.slice(0, 2).toUpperCase() : "CU");
+  const avatarUrl = updates.avatarUrl !== undefined ? updates.avatarUrl : current.avatarUrl;
+
   const updatedUser: CivicUser = {
     ...current,
     ...updates,
     name: name || current.name,
-    avatarInitials,
+    avatarInitials: avatarInitials || (name ? name.slice(0, 2).toUpperCase() : "CU"),
+    avatarUrl,
   };
 
   const updatedSession: UserSession = {
@@ -516,6 +537,7 @@ export async function updateUserProfile(updates: Partial<CivicUser>): Promise<Ci
           ward: updatedUser.ward,
           role_title: updatedUser.roleTitle,
           avatar_initials: updatedUser.avatarInitials,
+          avatar_url: updatedUser.avatarUrl || null,
         },
       });
     } catch {

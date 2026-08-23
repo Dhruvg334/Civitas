@@ -161,7 +161,7 @@ export default function Incident({
           <main className="incident-shell">
             <div className="dossier-card" style={{ padding: "40px 24px", textAlign: "center" }}>
               <h2>Loading incident dossier…</h2>
-              <p style={{ color: "#687067", marginTop: "8px" }}>Retrieving the current incident assessment, PostGIS spatial clustering, and LangGraph workflow state.</p>
+              <p style={{ color: "#687067", marginTop: "8px" }}>Retrieving the current incident dossier, spatial clustering, and dispatch workflow state.</p>
             </div>
           </main>
           <Footer />
@@ -523,8 +523,8 @@ export default function Incident({
               <div className="dossier-card-header">
                 <span className="section-pill">06</span>
                 <div>
-                  <h2>LangGraph Agent Workflow Observability</h2>
-                  <p>Inspect node-by-node execution, latency metrics, and critic check states.</p>
+                  <h2>Automated Dispatch Workflow History</h2>
+                  <p>Inspect node-by-node execution, processing timestamps, and safety verification states.</p>
                 </div>
               </div>
               <ErrorBoundary>

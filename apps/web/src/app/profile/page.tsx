@@ -99,6 +99,7 @@ export default function Profile() {
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [editName, setEditName] = useState<string>("");
   const [editAvatarInitials, setEditAvatarInitials] = useState<string>("");
+  const [editAvatarUrl, setEditAvatarUrl] = useState<string>("");
   const [editWard, setEditWard] = useState<string>("");
   const [editRoleTitle, setEditRoleTitle] = useState<string>("");
   const [isSavingProfile, setIsSavingProfile] = useState<boolean>(false);
@@ -168,9 +169,26 @@ export default function Profile() {
   const openEditModal = () => {
     setEditName(user.name);
     setEditAvatarInitials(user.avatarInitials || (user.name ? user.name.slice(0, 2).toUpperCase() : "CU"));
+    setEditAvatarUrl(user.avatarUrl || "");
     setEditWard(user.ward || BHUBANESWAR_LOCALITIES[0].name);
     setEditRoleTitle(user.roleTitle || "Registered Citizen");
     setShowEditModal(true);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file (PNG, JPG, WebP).");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setEditAvatarUrl(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -182,6 +200,7 @@ export default function Profile() {
       const updated = await updateUserProfile({
         name: finalName,
         avatarInitials: finalInitials,
+        avatarUrl: editAvatarUrl || undefined,
         ward: editWard.trim() || user.ward,
         roleTitle: editRoleTitle.trim() || user.roleTitle,
       });
@@ -189,7 +208,7 @@ export default function Profile() {
         setUser(updated);
       });
       setShowEditModal(false);
-      setSavedNotice(`✓ Profile updated successfully for ${updated.name}.`);
+      setSavedNotice(`Profile updated successfully for ${updated.name}.`);
       setTimeout(() => setSavedNotice(""), 4000);
     } catch (err) {
       setSavedNotice(`Failed to update profile: ${err instanceof Error ? err.message : "Save failed"}`);
@@ -229,7 +248,7 @@ export default function Profile() {
         });
       }
       setClarificationSent(true);
-      setSavedNotice("Clarification response submitted to LangGraph workflow runtime.");
+      setSavedNotice("Clarification response submitted to municipal dispatch.");
       setTimeout(() => {
         setClarificationSent(false);
         setSavedNotice("");
@@ -282,15 +301,38 @@ export default function Profile() {
               </div>
 
               <form onSubmit={handleSaveProfile} className="edit-profile-form">
-                <div className="edit-avatar-preview-row">
-                  <div className="preview-avatar-box">
-                    <span>{editAvatarInitials || (editName ? editName.slice(0, 2).toUpperCase() : "CU")}</span>
+                <div className="edit-avatar-preview-row" style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "16px" }}>
+                  <div className="preview-avatar-box" style={{ width: "64px", height: "64px", borderRadius: "50%", border: "2px solid #172019", background: "#0f5f4f", color: "#ffffff", display: "grid", placeItems: "center", fontSize: "1.5rem", fontWeight: 700, overflow: "hidden", flexShrink: 0 }}>
+                    {editAvatarUrl ? (
+                      <img src={editAvatarUrl} alt="Avatar Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <span>{editAvatarInitials || (editName ? editName.slice(0, 2).toUpperCase() : "CU")}</span>
+                    )}
                   </div>
                   <div>
-                    <b>Avatar Badge Preview</b>
-                    <p style={{ margin: "4px 0 0", fontSize: "0.78rem", color: "#687067" }}>
-                      Displayed in navbar pill and municipal review records.
-                    </p>
+                    <b>Profile Photo & Avatar Initials</b>
+                    <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "6px", flexWrap: "wrap" }}>
+                      <label className="button secondary small" style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.75rem" }}>
+                        <FlatIcon name="camera" size={13} />
+                        <span>Upload Photo</span>
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                          style={{ display: "none" }}
+                          onChange={handleImageUpload}
+                        />
+                      </label>
+                      {editAvatarUrl && (
+                        <button
+                          type="button"
+                          className="outline small"
+                          onClick={() => setEditAvatarUrl("")}
+                          style={{ color: "#991b1b", fontSize: "0.75rem" }}
+                        >
+                          Remove Photo
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -303,12 +345,7 @@ export default function Profile() {
                     type="text"
                     required
                     value={editName}
-                    onChange={(e) => {
-                      setEditName(e.target.value);
-                      if (!editAvatarInitials || editAvatarInitials.length <= 2) {
-                        setEditAvatarInitials(e.target.value.trim().slice(0, 2).toUpperCase());
-                      }
-                    }}
+                    onChange={(e) => setEditName(e.target.value)}
                     placeholder="e.g. Alex Morgan"
                     className="modal-text-input"
                   />
@@ -316,18 +353,29 @@ export default function Profile() {
 
                 <div className="edit-field-group">
                   <label className="edit-field-label" htmlFor="edit-avatar-initials">
-                    Avatar Initials (1–2 letters)
+                    Avatar Initials (1–2 letters, shown when no photo uploaded)
                   </label>
-                  <input
-                    id="edit-avatar-initials"
-                    type="text"
-                    maxLength={2}
-                    value={editAvatarInitials}
-                    onChange={(e) => setEditAvatarInitials(e.target.value.toUpperCase())}
-                    placeholder="e.g. AM"
-                    className="modal-text-input"
-                    style={{ width: "120px", textTransform: "uppercase", fontWeight: 800 }}
-                  />
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <input
+                      id="edit-avatar-initials"
+                      type="text"
+                      maxLength={2}
+                      value={editAvatarInitials}
+                      onChange={(e) => setEditAvatarInitials(e.target.value.toUpperCase())}
+                      placeholder="e.g. AM"
+                      className="modal-text-input"
+                      style={{ width: "90px", textTransform: "uppercase", fontWeight: 800, textAlign: "center" }}
+                    />
+                    <button
+                      type="button"
+                      className="outline small"
+                      onClick={() => setEditAvatarInitials(editName ? editName.trim().slice(0, 2).toUpperCase() : "CU")}
+                      title="Derive 2-letter initials from display name"
+                      style={{ fontSize: "0.75rem" }}
+                    >
+                      Auto from Name
+                    </button>
+                  </div>
                 </div>
 
                 <div className="edit-field-group">
@@ -388,16 +436,24 @@ export default function Profile() {
           <div
             className="profile-avatar-box"
             onClick={!isGuest ? openEditModal : undefined}
-            style={{ cursor: !isGuest ? "pointer" : "default" }}
-            title={!isGuest ? "Click to edit avatar icon/initials" : undefined}
+            style={{ cursor: !isGuest ? "pointer" : "default", overflow: "hidden" }}
+            title={!isGuest ? "Click to edit avatar photo or display name" : undefined}
           >
-            <span>{user.avatarInitials}</span>
+            {user.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.name}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              <span>{user.avatarInitials || (user.name ? user.name.slice(0, 2).toUpperCase() : "CU")}</span>
+            )}
             {!isGuest && <small className="edit-avatar-hint">Edit</small>}
           </div>
 
           <div className="profile-hero-info">
             <div className="hero-kicker-row">
-              <span className="profile-kicker">CIVITAS RESIDENT & OPERATIONS IDENTITY</span>
+              <span className="profile-kicker">CIVIC IDENTITY & PROFILE</span>
               <span className={`role-badge ${user.role}`}>
                 {isGuest ? "PUBLIC GUEST" : user.role.toUpperCase()}
               </span>
@@ -422,7 +478,7 @@ export default function Profile() {
             {demoModeActive ? (
               <div className="profile-header-actions">
                 <span className="persona-switcher-kicker">
-                  DEMO PERSONA SWITCHER: <small style={{ fontWeight: "normal", color: "#687067" }}>(Demo-only interface preview. This does not change backend authorization.)</small>
+                  ROLE PREVIEW (DEMO): <small style={{ fontWeight: "normal", color: "#687067" }}>(Switch view to inspect resident or supervisor experience)</small>
                 </span>
                 <div className="persona-pill-group">
                   <button
@@ -659,7 +715,7 @@ export default function Profile() {
               ) : (
                 <div className="empty-reports-panel" style={{ border: "1px solid #172019", background: "#fbf9f4", padding: "32px", borderRadius: "6px", textAlign: "center" }}>
                   <p style={{ margin: "0 0 16px", color: "#555e54", fontSize: "0.95rem" }}>
-                    No citizen reports filed under this account yet. Reports you submit will appear here with live LangGraph execution traces and status tracking.
+                    No citizen reports filed under this account yet. Reports you submit will appear here with live resolution status and dispatch tracking.
                   </p>
                   <Link href="/report" className="button large">
                     Submit New Civic Report →
@@ -673,8 +729,8 @@ export default function Profile() {
           {activeTab === "reports" && (
             <div className="reports-timeline-content">
               <div className="timeline-header">
-                <h2>{demoModeActive ? "Submitted Reports & Verification Trace (Demo Data)" : "Submitted Reports & Audit History"}</h2>
-                <p>Track full auditability: model outputs never overwrite citizen evidence.</p>
+                <h2>{demoModeActive ? "Submitted Reports & Resolution Trace (Demo Data)" : "Submitted Reports & Audit History"}</h2>
+                <p>Track full auditability: official records preserve original resident photos and timeline entries.</p>
               </div>
 
               {demoModeActive ? (
@@ -708,7 +764,7 @@ export default function Profile() {
               ) : (
                 <div className="empty-timeline-box" style={{ border: "1px solid #172019", background: "#fbf9f4", padding: "36px", borderRadius: "6px", textAlign: "center" }}>
                   <p style={{ margin: "0 0 16px", color: "#555e54" }}>
-                    You have not submitted any reports yet. Once submitted, each report receives a persistent PostGIS spatial reference and LangGraph audit trace.
+                    You have not submitted any reports yet. Once submitted, each report receives an official municipal tracking reference and verification audit log.
                   </p>
                   <Link href="/report" className="button large">
                     Report an Issue →
@@ -721,8 +777,8 @@ export default function Profile() {
           {/* TAB 3: WARD BOUNDARIES */}
           {activeTab === "ward" && (
             <div className="ward-boundaries-content">
-              <h2>PostGIS 3.4 Municipal Geofenced Boundaries</h2>
-              <p>Your civic activity is spatially indexed to prevent duplicate ticket sprawl.</p>
+              <h2>Municipal Geofenced Boundaries</h2>
+              <p>Your registered locality helps prevent duplicate reports and ensures faster response times.</p>
 
               {demoModeActive ? (
                 <div className="ward-cards-grid">
@@ -732,7 +788,7 @@ export default function Profile() {
                       <b>Ward 12 · DAV Public School Zone (Demo)</b>
                     </div>
                     <p>Seeded demo zone used to illustrate spatial subscriptions and landmark buffers.</p>
-                    <span className="geofence-status">Demo spatial subscription</span>
+                    <span className="geofence-status">Active ward zone</span>
                   </div>
                 </div>
               ) : (

@@ -106,7 +106,15 @@ export function Nav({ docs = false }: { docs?: boolean } = {}) {
                 title={`Signed in as ${currentUser.name} (${currentUser.roleTitle || currentUser.role})`}
               >
                 <span className="user-avatar-dot">
-                  {currentUser.avatarInitials || (currentUser.name ? currentUser.name.slice(0, 2).toUpperCase() : "U")}
+                  {currentUser.avatarUrl ? (
+                    <img
+                      src={currentUser.avatarUrl}
+                      alt={currentUser.name}
+                      style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    currentUser.avatarInitials || (currentUser.name ? currentUser.name.slice(0, 2).toUpperCase() : "U")
+                  )}
                 </span>
                 <span className="user-nav-meta">
                   <span className="user-nav-name">
