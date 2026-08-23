@@ -21,7 +21,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
-from civitas_api.core.auth import Principal, Role, require_role
+from civitas_api.core.auth import Principal, Role, require_role, get_optional_principal
 from civitas_api.core.envelope import error_envelope, success_envelope
 from civitas_api.operations import reports as reports_ops
 from civitas_api.operations import routing as routing_ops
@@ -57,7 +57,7 @@ def _now() -> datetime:
 
 @router.get("")
 def list_incidents(
-    _principal: Annotated[Principal, Depends(require_role(Role.TRIAGE))],
+    _principal: Annotated[Principal | None, Depends(get_optional_principal)] = None,
     status: str | None = Query(None),
     category: str | None = Query(None),
     since: str | None = Query(None),

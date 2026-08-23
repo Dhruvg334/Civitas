@@ -152,6 +152,26 @@ def get_current_principal(
     return Principal(user_id=str(sub), role=role, email=str(email) if email else None)
 
 
+def get_optional_principal(
+    authorization: Annotated[str | None, Header(alias="Authorization")] = None,
+) -> Principal | None:
+    if not authorization or not authorization.lower().startswith("bearer "):
+        return None
+    try:
+        token = authorization.split(" ", 1)[1].strip()
+        payload = _decode_jwt(token)
+        sub = payload.get("sub")
+        if not sub:
+            return None
+        role = _normalize_role(
+            (payload.get("app_metadata") or {}).get("role") or payload.get("role")
+        )
+        email = payload.get("email")
+        return Principal(user_id=str(sub), role=role, email=str(email) if email else None)
+    except Exception:
+        return None
+
+
 def require_role(minimum: Role):
     def _check(
         principal: Annotated[Principal, Depends(get_current_principal)],
