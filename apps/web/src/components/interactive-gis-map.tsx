@@ -384,7 +384,7 @@ export function InteractiveGisMap({
           <div className="popup-header">
             <div className="popup-id-row">
               <span className={`priority-tag ${activePopupPin.priority.toLowerCase()}`}>
-                {activePopupPin.priority} CRITICAL
+                {activePopupPin.priority === "P1" ? "P1 CRITICAL" : activePopupPin.priority === "P2" ? "P2 MEDIUM" : "P3 LOW"}
               </span>
               <span className="popup-id">{activePopupPin.id}</span>
             </div>

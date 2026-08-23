@@ -11,7 +11,7 @@ interface IncidentItem {
   id: string;
   title: string;
   category: string;
-  priority: "P1" | "P2" | "P3" | "P?";
+  priority: "P1" | "P2" | "P3";
   status: string;
   tone: "neutral" | "good" | "warn" | "danger";
   reportsCount: number;
@@ -19,6 +19,36 @@ interface IncidentItem {
   landmark: string;
   time: string;
   department: string;
+}
+
+function formatIncidentTitle(title?: string, category?: string): string {
+  const raw = title || (category ? `${category.replace(/[_-]/g, " ")} Incident` : "Civic Incident");
+  const words = raw.replace(/[_-]/g, " ").trim().split(/\s+/).filter(Boolean);
+  return words
+    .map((w, idx) => {
+      const lower = w.toLowerCase();
+      if (["and", "or", "of", "in", "near", "at", "to", "for"].includes(lower) && idx > 0) {
+        return lower;
+      }
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join(" ");
+}
+
+function parseIncidentPriority(raw?: string): "P1" | "P2" | "P3" {
+  if (!raw) return "P2";
+  const s = String(raw).toUpperCase();
+  if (s.includes("1") || s.includes("CRIT") || s.includes("HIGH") || s.includes("EMERG")) return "P1";
+  if (s.includes("3") || s.includes("LOW")) return "P3";
+  return "P2";
+}
+
+function formatIncidentId(id: string): string {
+  if (!id) return "INC-UNKNOWN";
+  if (id.length > 18) {
+    return `${id.slice(0, 10)}...${id.slice(-4)}`;
+  }
+  return id;
 }
 
 export default function Workspace() {
@@ -34,17 +64,8 @@ export default function Workspace() {
     fetchIncidents()
       .then((liveRecords) => {
         if (!isMounted) return;
-        const mapped = liveRecords.map((r) => {
-          const prioMap: Record<string, "P1" | "P2" | "P3"> = {
-            High: "P1",
-            Critical: "P1",
-            P1: "P1",
-            Medium: "P2",
-            P2: "P2",
-            Low: "P3",
-            P3: "P3",
-          };
-          const priority: IncidentItem["priority"] = prioMap[r.priority] || "P?";
+        const mapped: IncidentItem[] = liveRecords.map((r) => {
+          const priority = parseIncidentPriority(r.priority);
           let tone: "neutral" | "good" | "warn" | "danger" = "neutral";
           if (r.status === "WAITING_FOR_REVIEW") tone = "warn";
           else if (r.status === "RESOLVED") tone = "good";
@@ -52,7 +73,7 @@ export default function Workspace() {
 
           return {
             id: r.id,
-            title: r.title,
+            title: formatIncidentTitle(r.title, r.category),
             category: r.category,
             priority,
             status: r.status,
@@ -60,7 +81,7 @@ export default function Workspace() {
             reportsCount: r.reportsCount || 1,
             ward: r.location?.landmark ? `Municipal Zone (${r.location.landmark})` : "Municipal Operations Zone",
             landmark: r.location?.landmark || "Location unavailable",
-            time: r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "Time unavailable",
+            time: r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "Live Feed",
             department: r.primaryDepartment || "Unassigned",
           };
         });
@@ -74,7 +95,7 @@ export default function Workspace() {
         if (!isMounted) return;
         const demoMapped: IncidentItem[] = DEMO_SEEDED_INCIDENTS.map((r) => ({
           id: r.id,
-          title: r.title,
+          title: formatIncidentTitle(r.title, r.category),
           category: r.category,
           priority: "P1",
           status: r.status,
@@ -101,17 +122,8 @@ export default function Workspace() {
     setError(null);
     fetchIncidents()
       .then((liveRecords) => {
-        const mapped = liveRecords.map((r) => {
-          const prioMap: Record<string, "P1" | "P2" | "P3"> = {
-            High: "P1",
-            Critical: "P1",
-            P1: "P1",
-            Medium: "P2",
-            P2: "P2",
-            Low: "P3",
-            P3: "P3",
-          };
-          const priority: IncidentItem["priority"] = prioMap[r.priority] || "P?";
+        const mapped: IncidentItem[] = liveRecords.map((r) => {
+          const priority = parseIncidentPriority(r.priority);
           let tone: "neutral" | "good" | "warn" | "danger" = "neutral";
           if (r.status === "WAITING_FOR_REVIEW") tone = "warn";
           else if (r.status === "RESOLVED") tone = "good";
@@ -119,7 +131,7 @@ export default function Workspace() {
 
           return {
             id: r.id,
-            title: r.title,
+            title: formatIncidentTitle(r.title, r.category),
             category: r.category,
             priority,
             status: r.status,
@@ -127,7 +139,7 @@ export default function Workspace() {
             reportsCount: r.reportsCount || 1,
             ward: r.location?.landmark ? `Municipal Zone (${r.location.landmark})` : "Municipal Operations Zone",
             landmark: r.location?.landmark || "Location unavailable",
-            time: r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "Time unavailable",
+            time: r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "Live Feed",
             department: r.primaryDepartment || "Unassigned",
           };
         });
@@ -139,7 +151,7 @@ export default function Workspace() {
       .catch((err) => {
         const demoMapped: IncidentItem[] = DEMO_SEEDED_INCIDENTS.map((r) => ({
           id: r.id,
-          title: r.title,
+          title: formatIncidentTitle(r.title, r.category),
           category: r.category,
           priority: "P1",
           status: r.status,
@@ -286,24 +298,31 @@ export default function Workspace() {
                         <span className={`priority-badge ${incident.priority.toLowerCase()}`}>
                           {incident.priority}
                         </span>
-                        <span className="incident-id-tag">{incident.id}</span>
+                        <span className="incident-id-tag" title={incident.id}>
+                          {formatIncidentId(incident.id)}
+                        </span>
                       </div>
-                      <div className="card-time-status">
-                        <span className="time-tag">{incident.time}</span>
+                      <div className="card-status-pill">
                         <Status tone={incident.tone}>{incident.status}</Status>
                       </div>
                     </div>
 
                     <h3 className="incident-title">{incident.title}</h3>
-                    <div className="incident-landmark">
-                      <FlatIcon name="pin" size={12} color="#0f5f4f" />
-                      <span>{incident.landmark}</span>
+
+                    <div className="incident-meta-row">
+                      <div className="incident-landmark">
+                        <FlatIcon name="pin" size={12} color="#0f5f4f" />
+                        <span>{incident.landmark}</span>
+                      </div>
+                      {incident.time && incident.time !== "Live Feed" && incident.time !== "Time unavailable" && (
+                        <span className="time-tag">{incident.time}</span>
+                      )}
                     </div>
 
                     <div className="card-bottom-row">
                       <span className="cluster-tag">
                         <FlatIcon name="users" size={13} color="#0f5f4f" />
-                        <span><b>{incident.reportsCount}</b> citizen reports clustered</span>
+                        <span><b>{incident.reportsCount}</b> {incident.reportsCount === 1 ? "citizen report" : "citizen reports"} clustered</span>
                       </span>
                       <Link
                         href={`/incidents/${incident.id}`}
@@ -477,12 +496,13 @@ export default function Workspace() {
           padding-right: 4px;
         }
         .incident-queue-card {
-          border: 1px solid #172019;
+          border: 1.5px solid #172019;
           background: #ffffff;
-          padding: 16px;
+          padding: 16px 18px;
           cursor: pointer;
           transition: all 0.15s ease;
           position: relative;
+          border-radius: 4px;
         }
         .incident-queue-card:hover {
           background: #fbf9f4;
@@ -498,17 +518,21 @@ export default function Workspace() {
           justify-content: space-between;
           align-items: center;
           margin-bottom: 8px;
+          gap: 8px;
         }
         .id-prio-group {
           display: flex;
           align-items: center;
           gap: 8px;
+          min-width: 0;
+          flex: 1;
         }
         .priority-badge {
-          font-size: 0.6rem;
+          font-size: 0.62rem;
           font-weight: 900;
-          padding: 2px 6px;
+          padding: 2px 7px;
           border-radius: 3px;
+          flex-shrink: 0;
         }
         .priority-badge.p1 {
           background: #e84d7a;
@@ -523,34 +547,45 @@ export default function Workspace() {
           color: #172019;
         }
         .incident-id-tag {
-          font-size: 0.72rem;
+          font-size: 0.74rem;
           font-weight: 850;
-          color: #687067;
+          color: #172019;
+          font-family: monospace;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
-        .card-time-status {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-        .time-tag {
-          font-size: 0.65rem;
-          color: #687067;
+        .card-status-pill {
+          flex-shrink: 0;
         }
         .incident-title {
-          font-size: 1rem;
+          font-size: 1.05rem;
           font-family: Georgia, serif;
-          margin: 0 0 4px;
+          margin: 0 0 6px;
           color: #172019;
-          line-height: 1.3;
+          line-height: 1.35;
+          font-weight: 700;
+        }
+        .incident-meta-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin: 0 0 12px;
         }
         .incident-landmark {
           display: inline-flex;
           align-items: center;
           gap: 5px;
-          font-size: 0.75rem;
+          font-size: 0.74rem;
           color: #0f5f4f;
           font-weight: 750;
-          margin: 0 0 12px;
+        }
+        .time-tag {
+          font-size: 0.65rem;
+          color: #687067;
+          font-weight: 600;
         }
         .card-bottom-row {
           display: flex;
@@ -558,7 +593,8 @@ export default function Workspace() {
           align-items: center;
           border-top: 1px solid #e2ded4;
           padding-top: 10px;
-          font-size: 0.72rem;
+          font-size: 0.74rem;
+          gap: 8px;
         }
         .cluster-tag {
           display: inline-flex;
@@ -568,12 +604,14 @@ export default function Workspace() {
         }
         .inspect-link {
           font-weight: 800;
-          color: #172019;
+          color: #0f5f4f;
           text-decoration: none;
+          white-space: nowrap;
           transition: color 0.15s ease;
         }
         .inspect-link:hover {
           color: #e84d7a;
+          text-decoration: underline;
         }
         .empty-queue-message {
           padding: 30px;
