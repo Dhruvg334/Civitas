@@ -103,12 +103,17 @@ export function Nav({ docs = false }: { docs?: boolean } = {}) {
               <Link
                 href="/profile"
                 className={`nav-user-pill ${pathname.startsWith("/profile") ? "active" : ""}`}
-                title={`Signed in as ${currentUser.name}`}
+                title={`Signed in as ${currentUser.name} (${currentUser.roleTitle || currentUser.role})`}
               >
                 <span className="user-avatar-dot">
-                  {currentUser.name.slice(0, 2).toUpperCase()}
+                  {currentUser.avatarInitials || (currentUser.name ? currentUser.name.slice(0, 2).toUpperCase() : "U")}
                 </span>
-                <span className="user-nav-name">{currentUser.name.split(" ")[0]}</span>
+                <span className="user-nav-meta">
+                  <span className="user-nav-name">
+                    {currentUser.name ? currentUser.name.split("@")[0].split(" ")[0] : "Profile"}
+                  </span>
+                  <span className="user-nav-role">{currentUser.role || "citizen"}</span>
+                </span>
               </Link>
             ) : (
               <Link
@@ -160,25 +165,33 @@ export function Nav({ docs = false }: { docs?: boolean } = {}) {
         .nav-end {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
         }
         .report-cta-btn {
           white-space: nowrap;
         }
         .sign-in-btn {
-          padding: 7px 14px;
+          padding: 8px 14px;
           font-size: 0.78rem;
           font-weight: 800;
-          border: 1px solid #172019;
+          border: 1.5px solid #172019;
           background: #ffffff;
           color: #172019;
           border-radius: 4px;
           text-decoration: none;
-          transition: all 0.15s ease;
+          transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
           box-shadow: 2px 2px 0 #172019;
           white-space: nowrap;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
         }
-        .sign-in-btn:hover,
+        .sign-in-btn:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 3px 3px 0 #172019;
+          background: #172019;
+          color: #ffffff;
+        }
         .sign-in-btn.active {
           background: #172019;
           color: #ffffff;
@@ -187,32 +200,78 @@ export function Nav({ docs = false }: { docs?: boolean } = {}) {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          padding: 4px 10px;
-          border: 1px solid #172019;
-          background: #fbf9f4;
-          border-radius: 20px;
+          padding: 4px 12px 4px 5px;
+          border: 1.5px solid #172019;
+          background: #ffffff;
+          border-radius: 9999px;
           text-decoration: none;
           color: #172019;
-          font-size: 0.75rem;
-          font-weight: 800;
           box-shadow: 2px 2px 0 #172019;
-          transition: all 0.15s ease;
+          transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+          white-space: nowrap;
+          line-height: 1;
         }
-        .nav-user-pill:hover,
+        .nav-user-pill:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 3px 3px 0 #172019;
+          background: #fbf9f4;
+          color: #172019;
+        }
+        .nav-user-pill:active {
+          transform: translate(1px, 1px);
+          box-shadow: 1px 1px 0 #172019;
+        }
         .nav-user-pill.active {
           background: #172019;
           color: #ffffff;
+          box-shadow: 2px 2px 0 #172019;
         }
         .user-avatar-dot {
-          width: 22px;
-          height: 22px;
+          width: 26px;
+          height: 26px;
           border-radius: 50%;
           background: #0f5f4f;
           color: #ffffff;
-          display: grid;
-          place-items: center;
-          font-size: 0.65rem;
+          border: 1px solid #172019;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.68rem;
           font-weight: 900;
+          letter-spacing: -0.02em;
+          flex-shrink: 0;
+        }
+        .nav-user-pill.active .user-avatar-dot {
+          background: #ffffff;
+          color: #0f5f4f;
+          border-color: #ffffff;
+        }
+        .user-nav-meta {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1px;
+        }
+        .user-nav-name {
+          font-size: 0.74rem;
+          font-weight: 800;
+          color: inherit;
+          max-width: 110px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          line-height: 1.15;
+        }
+        .user-nav-role {
+          font-size: 0.56rem;
+          font-weight: 750;
+          color: #687067;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          line-height: 1;
+        }
+        .nav-user-pill.active .user-nav-role {
+          color: rgba(255, 255, 255, 0.75);
         }
       `}</style>
     </>

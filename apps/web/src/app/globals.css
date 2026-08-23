@@ -42,6 +42,16 @@ h1,h2,.brand{font-family:Georgia,"Times New Roman",serif;font-weight:500;letter-
 .popover-kicker{margin:4px 8px 8px;color:var(--muted);font-size:.64rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
 .about-popover a{padding:10px 8px;border-top:1px solid var(--line);font-size:.85rem;font-weight:650}.about-popover a:hover{color:var(--pink)}
 .nav-end{display:flex;justify-self:end;align-items:center;gap:12px}.nav-back{font-size:.8rem;font-weight:700}.nav-back:hover{color:var(--green)}
+.nav-user-pill{display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 5px;border:1.5px solid var(--ink);background:#ffffff;border-radius:9999px;text-decoration:none;color:var(--ink);box-shadow:2px 2px 0 var(--ink);transition:transform .15s ease,box-shadow .15s ease,background .15s ease,color .15s ease;white-space:nowrap;line-height:1;cursor:pointer}
+.nav-user-pill:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink);background:#fbf9f4;color:var(--ink)}
+.nav-user-pill:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+.nav-user-pill.active{background:var(--ink);color:var(--white);box-shadow:2px 2px 0 var(--ink)}
+.user-avatar-dot{width:26px;height:26px;border-radius:50%;background:#0f5f4f;color:#ffffff;border:1px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:900;letter-spacing:-.02em;flex-shrink:0}
+.nav-user-pill.active .user-avatar-dot{background:#ffffff;color:#0f5f4f;border-color:#ffffff}
+.user-nav-meta{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+.user-nav-name{font-size:.74rem;font-weight:800;color:inherit;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.15}
+.user-nav-role{font-size:.56rem;font-weight:750;color:#687067;text-transform:uppercase;letter-spacing:.06em;line-height:1}
+.nav-user-pill.active .user-nav-role{color:rgba(255,255,255,.75)}
 .mobilemenu{display:none;position:relative}.mobilemenu>summary{width:40px;height:40px;border:1px solid var(--ink);display:grid;place-content:center;gap:5px;list-style:none}.mobilemenu>summary::-webkit-details-marker{display:none}.mobilemenu>summary span{display:block;width:17px;height:1.5px;background:var(--ink)}
 .mobilemenu>div{position:absolute;right:0;top:48px;width:250px;background:var(--white);border:1px solid var(--ink);box-shadow:var(--shadow);padding:8px;display:grid}.mobilemenu a{padding:11px;border-bottom:1px solid var(--line);font-weight:650;font-size:.86rem}
 
