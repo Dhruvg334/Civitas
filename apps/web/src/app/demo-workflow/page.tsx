@@ -126,6 +126,51 @@ export default function Demo() {
           </section>
         )}
 
+        {/* PLAYABLE YOUTUBE VIDEO DEMO WINDOW */}
+        <section className="demo-video-window-card" aria-label="Official Video Demonstration">
+          <div className="video-window-header">
+            <div className="window-dots-group">
+              <span className="dot dot-red" />
+              <span className="dot dot-yellow" />
+              <span className="dot dot-green" />
+              <span className="window-header-title">CIVITAS SYSTEM ARCHITECTURE & END-TO-END DEMO</span>
+            </div>
+            <div className="window-header-actions">
+              <span className="video-badge">
+                <FlatIcon name="sparkles" size={11} color="#0f5f4f" /> OFFICIAL 1080P WALKTHROUGH
+              </span>
+              <a
+                href="https://youtu.be/jqiI4XmeBBs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="open-yt-link"
+                title="Open video on YouTube in new tab"
+              >
+                <FlatIcon name="explore" size={12} /> Open in YouTube ↗
+              </a>
+            </div>
+          </div>
+
+          <div className="video-iframe-container">
+            <iframe
+              src="https://www.youtube-nocookie.com/embed/jqiI4XmeBBs?rel=0"
+              title="Civitas Autonomous Civic Intelligence & Dispatch Walkthrough"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="demo-video-iframe"
+            />
+          </div>
+
+          <div className="video-window-footer">
+            <div className="video-meta-block">
+              <b>Demonstrated System Capabilities:</b>
+              <p>
+                Omnichannel WhatsApp / Web intake → PostGIS spatial deduplication → LangGraph critic verification → Policy playbook grounding → Zero-shot photographic repair audit.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <section className="demo-casebar">
           <div>
             <span>INCIDENT ID</span>
@@ -380,6 +425,106 @@ export default function Demo() {
           margin: 20px 0;
           border: 1px solid #172019;
           box-shadow: 4px 4px 0 #172019;
+        }
+        .demo-video-window-card {
+          margin: 24px 0;
+          border: 2px solid #172019;
+          background: #ffffff;
+          box-shadow: 6px 6px 0 #172019;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        .video-window-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px 16px;
+          background: #fbf9f4;
+          border-bottom: 2px solid #172019;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .window-dots-group {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          border: 1px solid #172019;
+          display: inline-block;
+        }
+        .dot-red { background: #f87171; }
+        .dot-yellow { background: #fde047; }
+        .dot-green { background: #4ade80; }
+        .window-header-title {
+          font-size: 0.68rem;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          color: #172019;
+          margin-left: 6px;
+        }
+        .window-header-actions {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .video-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 0.62rem;
+          font-weight: 850;
+          color: #0f5f4f;
+          background: #dce8dd;
+          padding: 3px 8px;
+          border-radius: 3px;
+          border: 1px solid #0f5f4f;
+        }
+        .open-yt-link {
+          font-size: 0.72rem;
+          font-weight: 750;
+          color: #172019;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          text-decoration: none;
+        }
+        .open-yt-link:hover {
+          text-decoration: underline;
+        }
+        .video-iframe-container {
+          position: relative;
+          width: 100%;
+          padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+          height: 0;
+          background: #172019;
+        }
+        .demo-video-iframe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border: 0;
+        }
+        .video-window-footer {
+          padding: 12px 18px;
+          background: #fbf9f4;
+          border-top: 1px solid #e2ded4;
+        }
+        .video-meta-block b {
+          font-size: 0.78rem;
+          color: #172019;
+          display: block;
+        }
+        .video-meta-block p {
+          font-size: 0.74rem;
+          color: #555e54;
+          margin: 2px 0 0;
+          line-height: 1.4;
         }
         .demo-casebar {
           display: grid;
