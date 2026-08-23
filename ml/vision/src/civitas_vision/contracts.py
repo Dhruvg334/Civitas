@@ -30,7 +30,7 @@ CIVITAS_CATEGORIES: tuple[str, ...] = (
 )
 
 # The real-media (zero-shot CLIP) classifier additionally recognises these
-# categories; the deterministic k-NN stays on the five MVP classes so the
+# categories; the deterministic k-NN stays on the five core classes so the
 # frozen synthetic evaluation is untouched.
 REAL_MEDIA_CATEGORIES: tuple[str, ...] = CIVITAS_CATEGORIES + (
     "other_infrastructure_damage",

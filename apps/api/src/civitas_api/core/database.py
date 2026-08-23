@@ -1,11 +1,10 @@
 """Database connection + RowExecutor for the Civitas backend.
 
-Implements the `RowExecutor` protocol expected by Pavit's geospatial package:
+Implements the `RowExecutor` protocol expected by the geospatial package:
     def execute(self, sql: str, params: dict | None) -> list[dict]
 
 Connection lifecycle uses a per-request psycopg connection, opened lazily via
-a context manager.  This is simple and matches the hackathon traffic profile;
-we can swap to a pool later without touching the call sites.
+a context manager for clean transaction and connection lifecycle management.
 
 For local testing, a `sqlite:///path` URL is transparently swapped to a sqlite3
 connection so the api can run without a real Postgres instance.
@@ -151,7 +150,7 @@ def get_connection():
 
 
 class PostgresExecutor:
-    """Adapter that lets Pavit's `RowExecutor` protocol hit PostgreSQL/PostGIS.
+    """Adapter that lets the `RowExecutor` protocol hit PostgreSQL/PostGIS.
 
     `geospatial.queries` returns `(sql, params)` tuples; psycopg binds them
     directly.  For SQLite URLs we fall back to the SQLite executor so the

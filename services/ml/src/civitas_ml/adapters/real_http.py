@@ -1,16 +1,11 @@
-"""Real backend adapter (Phase 10): thin HTTP client for Utkarsh's API.
+"""Real backend adapter: HTTP client for the operational backend API.
 
-This adapter is the ONLY code that changes when the real backend ships.
-It implements exactly the `BackendAdapter` interface, talking HTTP to
+Implements the `BackendAdapter` interface, communicating via HTTP to
 endpoints derived from `CIVITAS_BACKEND_BASE_URL`; authentication, timeouts
 and endpoint paths are configuration, never hard-coded credentials or URLs.
 
-The endpoint contract (what Utkarsh must implement) is documented in
-`services/ml/docs/CONTRACT.md`; this client is the reference consumer.
-
-`httpx` is an optional extra (`pip install -e "services/ml[http]"`): a
-clear structured error is raised if it is missing, and no local execution
-path requires a live backend.
+The endpoint contract is defined in shared service schemas; this client
+is the reference consumer.
 """
 
 from __future__ import annotations

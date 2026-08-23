@@ -223,9 +223,7 @@ def update_work_order(
 def approve_work_order(work_order_id: str, reviewer_id: str) -> dict[str, Any]:
     """Reviewer action: move WO from awaiting_review -> approved.
 
-    Side effects on the incident: status -> 'approved', then to 'assigned'
-    (the assignment is the supervisor's separate concern but the seed data
-    assumes auto-assignment on approval for the MVP)."""
+    Side effects on the incident: status -> 'approved', then to 'assigned'."""
     wo = get_work_order(work_order_id)
     if wo is None:
         from fastapi import HTTPException
@@ -242,9 +240,7 @@ def approve_work_order(work_order_id: str, reviewer_id: str) -> dict[str, Any]:
 
     incident_status = incident.get("status") or "submitted"
     assert_incident_transition(incident_status, "approved")
-    # Auto-progress to assigned on approval — MVP simplification. Ref/03 §3
-    # assigns the assignment to the supervisor; we treat approval as
-    # implicit-assignment for the 13 Aug demo.
+    # Progress incident to assigned upon successful work-order approval
     assert_incident_transition("approved", "assigned")
 
     now = _now()

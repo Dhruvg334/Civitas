@@ -32,7 +32,7 @@ def test_exact_category_retrieval(service: KnowledgeService) -> None:
         ("fallen_tree", "PLAY-TREE-01"),
     ],
 )
-def test_all_mvp_categories_have_exact_retrieval(
+def test_all_core_categories_have_exact_retrieval(
     service: KnowledgeService, category: str, reference_id: str
 ) -> None:
     result = service.retrieve(KnowledgeQuery(category=category))

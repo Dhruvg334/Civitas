@@ -8,7 +8,7 @@ installed and the checkpoint can be loaded (skipped otherwise, like the
 video tests' cv2 guard).
 
 The design contract under test: inference is deterministic, probabilities
-cover the nine real-media categories (the five Civitas MVP categories plus
+cover the nine real-media categories (the five core Civitas categories plus
 `other_infrastructure_damage`, `drainage_damage`, `no_incident`,
 `pest_infestation`), confidence is the top-1/top-2 softmax margin, the
 out-of-distribution ratio is

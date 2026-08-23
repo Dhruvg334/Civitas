@@ -3,7 +3,7 @@
 Single endpoint: POST /api/v1/reports/{report_id}/media
 
 Accepts multipart/form-data with one file. The MIME type is validated
-against the allowlist in Pavit's ML contracts (image/png, image/jpeg,
+against the allowlist in ML contracts (image/png, image/jpeg,
 image/webp, video/mp4, video/webm, video/quicktime, video/x-matroska).
 The file is uploaded to the configured storage backend and a row is
 written to the `media` table. Returns a signed URL the workflow can

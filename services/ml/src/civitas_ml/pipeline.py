@@ -1,20 +1,19 @@
-"""The single Phase 10 ML integration entry point.
+"""The unified ML integration pipeline.
 
-`run_report` drives the whole Member 2 pipeline for one citizen report:
+`run_report` coordinates the complete ML pipeline for one citizen report:
 
-    media validation -> vision -> embeddings -> backend retrieval
+    media validation -> vision -> embeddings -> spatial retrieval
       -> duplicate scoring -> incident clustering -> geospatial features
       -> severity -> priority -> structured ReportAnalysis
 
-`run_resolution` drives the after-action check the same way. Both
-retrieve all *backend-owned* data through the `BackendAdapter` interface
-(mock now, Utkarsh's real API later), so switching backends is a
-configuration change, never an ML rewrite.
+`run_resolution` coordinates the after-action verification check. Both
+retrieve backend-owned data through the `BackendAdapter` interface,
+so switching backends is a configuration change, never an ML rewrite.
 
-Boundaries honoured here:
+Boundaries honored:
 - ML produces signals (categories, scores, verdicts with evidence) and
   never approves work orders, changes workflow state, closes/reopens
-  incidents or performs policy reasoning — those belong to Dhruv/Utkarsh.
+  incidents or performs policy reasoning — those belong to the workflow and operations layers.
 - Hard backend/contract failures raise structured `MLServiceError`s;
   everything else degrades to uncertainty recorded in `basis`.
 """

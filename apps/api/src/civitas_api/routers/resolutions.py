@@ -18,15 +18,6 @@ from civitas_api.operations import resolutions as res_ops
 router = APIRouter(prefix="/api/v1/incidents", tags=["resolutions"])
 
 
-def _drive_incident_to_in_progress(rid: str, auth: dict[str, str]) -> None:
-    """Helper for tests/dev: advance an incident through the lifecycle so a
-    resolution submission is valid. In production, the agent workflow drives
-    this — we expose it as a side-effect of approve + an implicit transition
-    that I haven't built into a route yet. For the MVP we leave this as a
-    caller-side helper."""
-    raise NotImplementedError
-
-
 @router.post(
     "/{incident_id}/resolution-submissions",
     status_code=status.HTTP_201_CREATED,

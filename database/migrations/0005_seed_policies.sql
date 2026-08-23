@@ -1,8 +1,7 @@
 -- 0005_seed_policies.sql
--- Seeds the policies + playbooks derived from
--- ref/08_MUNICIPAL_POLICIES_AND_PLAYBOOKS_V1.md. Idempotent: safe to re-run.
+-- Seeds the municipal policies + operational playbooks. Idempotent: safe to re-run.
 --
--- Owner: Utkarsh (backend)
+-- Module: Knowledge & Policy Layer
 -- Pre-requisite: 0004_workflow_core.sql applied
 
 -- ---------------------------------------------------------------------------

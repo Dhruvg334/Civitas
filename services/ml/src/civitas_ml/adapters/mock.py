@@ -1,8 +1,8 @@
-"""Deterministic mock backend adapter (Phase 10).
+"""Deterministic mock backend adapter.
 
 Simulates the backend contract (nearby-candidate retrieval, landmarks,
 media bytes) entirely from local JSON fixtures plus deterministic
-seeded image generation — no network, no database, no Utkarsh.
+seeded image generation — no network or external database dependencies required.
 
 Design rules:
 - returns only schema-valid payloads that the pipeline validates anyway;

@@ -1,8 +1,8 @@
-"""Vision classifier evaluation over the frozen 50-image test set (Phase 11/12).
+"""Vision classifier evaluation over the frozen 50-image test set.
 
 Reports accuracy, macro-F1 and class-wise precision/recall/F1 plus the
-confusion matrix so a judge sees whether performance is balanced across
-the five Civitas MVP categories. The model is the committed k-NN
+confusion matrix to evaluate performance balance across
+the five Civitas core categories. The model is the committed k-NN
 classifier inside `civitas_vision` (model edition `vision-knn-v1`, k=3,
 T=2.0) - no training, no threshold changes, no parameter search here.
 """

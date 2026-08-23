@@ -1,8 +1,7 @@
 -- 0003_incident_operations.sql
--- Tier-1 schema for 12 Aug integration: incident lifecycle + cluster
--- persistence + audit trail + assessments + media.
+-- Incident lifecycle + cluster persistence + audit trail + assessments + media schema.
 --
--- Owner: Utkarsh (backend)
+-- Module: Backend Operations
 -- Pre-requisites: 0001_spatial_core.sql, 0002_incident_description.sql applied
 -- Effect: 4 new tables + 3 new columns on incidents; all nullable or
 --         default-populated; no row rewrites; no constraint violations

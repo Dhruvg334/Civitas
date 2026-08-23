@@ -522,7 +522,7 @@ def collect_models(
                 "low_confidence_floor": LOW_VISION_CONFIDENCE,
             },
             note=(
-                f"{vision_model_version or _VISION_MODEL_VERSION}; five frozen MVP categories only"
+                f"{vision_model_version or _VISION_MODEL_VERSION}; core category taxonomy"
             ),
         ),
         ModelReference(

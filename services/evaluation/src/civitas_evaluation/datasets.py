@@ -99,7 +99,7 @@ REPO_ROOT = PACKAGE_DIR.parents[3]
 TEST_DATA_DIR = REPO_ROOT / "services" / "evaluation" / "test_data"
 RESULTS_DIR = REPO_ROOT / "services" / "evaluation" / "results"
 
-# Vision: 5 Civitas MVP categories x 10 images = 50 untouched examples.
+# Vision: 5 Civitas core categories x 10 images = 50 untouched examples.
 VISION_CATEGORIES = [
     "pothole_road_damage",
     "water_leakage",

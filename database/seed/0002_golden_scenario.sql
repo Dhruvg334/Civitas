@@ -1,9 +1,8 @@
 -- 0002_golden_scenario.sql
--- Pre-populated dataset matching ref/07_GOLDEN_SCENARIO_SPECIFICATION.md.
+-- Pre-populated golden scenario dataset.
 -- Three reports describing one water-leak incident near a school gate.
--- All seeded with deterministic IDs so the integration test can rely on them.
+-- All seeded with deterministic IDs for reproducible integration testing.
 --
--- Owner: Utkarsh (backend)
 -- Pre-requisites: 0001, 0002, 0003, 0004, 0005 applied.
 -- Idempotent: ON CONFLICT DO NOTHING everywhere.
 

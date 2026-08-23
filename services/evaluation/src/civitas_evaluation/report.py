@@ -104,7 +104,7 @@ def build_report(
     md.append("")
     md.append("| dataset | size | labels | source / provenance | split |")
     md.append("|---|---|---|---|---|")
-    md.append("| vision | 50 images (5 x 10) | 5 Civitas MVP categories | synthetic procedural scenes (civitas_vision.benchmark), seeds 2000-2049 disjoint from train (<=16/class) and dev (>=1000) | final test set, frozen |")
+    md.append("| vision | 50 images (5 x 10) | 5 Civitas core categories | synthetic procedural scenes (civitas_vision.benchmark), seeds 2000-2049 disjoint from train (<=16/class) and dev (>=1000) | final test set, frozen |")
     md.append("| media quality | 14 cases | usable / blurred-file-tiny-dark-bright-ambiguous-unsupported-missing-video-no-media | synthetic + hand-authored binaries | final test set, frozen |")
     md.append("| duplicates | 15 pairs | 6 same-incident, 5 clearly different, 4 hard negatives | hand-authored record pairs (text/gps/time/category) | final test set, frozen |")
     md.append("| clusters | 4 scenarios / 16 reports | expected incident membership | hand-authored multi-report scenarios | final test set, frozen |")

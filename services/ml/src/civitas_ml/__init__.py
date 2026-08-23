@@ -1,11 +1,11 @@
-"""Civitas ML/CV intelligence service (Phases 9-10).
+"""Civitas ML/CV intelligence service.
 
-The stable, schema-validated surface Dhruv's agents and Utkarsh's API
+The stable, schema-validated surface workflow agents and the backend API
 consume. Two entry styles:
 
-    analyze_report(...) / verify_resolution(...)   Phase 9 offline calls
+    analyze_report(...) / verify_resolution(...)   Offline / programmatic calls
     run_report(ReportInput, backend) / run_resolution(ResolutionInput, backend)
-                                                   Phase 10 adapter-driven pipeline
+                                                   Adapter-driven pipeline
 
 Backend switching is configuration (CIVITAS_BACKEND_MODE=mock|real) —
 the ML models never depend on how the backend is implemented.

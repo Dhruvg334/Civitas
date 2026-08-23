@@ -1,6 +1,6 @@
 """Spatial layer adapters for the FastAPI backend.
 
-Wraps Pavit's `civitas_geo` library with the backend's `PostgresExecutor`,
+Wraps the `civitas_geo` library with the backend's `PostgresExecutor`,
 and exposes typed dataclasses/result handlers for HTTP routes.
 """
 

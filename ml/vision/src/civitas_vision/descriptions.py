@@ -25,7 +25,7 @@ _DESCRIPTIONS: dict[tuple[str, str | None], str] = {
         None,
     ): "A large section of wall/plaster has been removed or damaged, exposing the "
     "underlying concrete surface. This is visible building/wall damage, but it does "
-    "not clearly belong to the five current Civitas MVP categories.",
+    "not clearly belong to the five core Civitas categories.",
     (
         "garbage_overflow",
         None,
@@ -104,7 +104,7 @@ _FALLBACK_BY_CATEGORY: dict[str, str] = {
     ),
     "other_infrastructure_damage": (
         "Visible building/wall infrastructure damage that does not clearly "
-        "belong to the five current Civitas MVP categories."
+        "belong to the five core Civitas categories."
     ),
     "drainage_damage": (
         "Visible roadside drainage infrastructure damage with displaced or "

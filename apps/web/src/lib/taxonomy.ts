@@ -13,7 +13,7 @@ export interface IncidentCategoryDef {
   label: string;
   desc: string;
   icon: string;
-  isMvpCore: boolean;
+  isCore: boolean;
 }
 
 export const INCIDENT_CATEGORIES: readonly IncidentCategoryDef[] = [
@@ -23,7 +23,7 @@ export const INCIDENT_CATEGORIES: readonly IncidentCategoryDef[] = [
     label: "Water Leak / Pipe Burst",
     desc: "Pipeline rupture, standing puddle, or flooded street surface",
     icon: "water",
-    isMvpCore: true,
+    isCore: true,
   },
   {
     id: "Pothole or road damage",
@@ -31,7 +31,7 @@ export const INCIDENT_CATEGORIES: readonly IncidentCategoryDef[] = [
     label: "Pothole / Road Damage",
     desc: "Deep asphalt cavity, road erosion, or sunken manhole",
     icon: "pothole",
-    isMvpCore: true,
+    isCore: true,
   },
   {
     id: "Broken streetlight",
@@ -39,7 +39,7 @@ export const INCIDENT_CATEGORIES: readonly IncidentCategoryDef[] = [
     label: "Broken Streetlight & Power",
     desc: "Dark luminaire, exposed wiring, or damaged lamp post",
     icon: "streetlight",
-    isMvpCore: true,
+    isCore: true,
   },
   {
     id: "Fallen tree",
@@ -47,7 +47,7 @@ export const INCIDENT_CATEGORIES: readonly IncidentCategoryDef[] = [
     label: "Fallen Tree & Branches",
     desc: "Snapped branch, fallen trunk, or sidewalk blockage",
     icon: "tree",
-    isMvpCore: true,
+    isCore: true,
   },
   {
     id: "Garbage overflow",
@@ -55,7 +55,7 @@ export const INCIDENT_CATEGORIES: readonly IncidentCategoryDef[] = [
     label: "Garbage & Waste Dumping",
     desc: "Uncollected municipal solid waste or debris mound",
     icon: "garbage",
-    isMvpCore: true,
+    isCore: true,
   },
   {
     id: "Drain blockage",
@@ -63,7 +63,7 @@ export const INCIDENT_CATEGORIES: readonly IncidentCategoryDef[] = [
     label: "Drain Blockage & Sewage",
     desc: "Clogged stormwater grate, overflow, or refuse backflow",
     icon: "drain",
-    isMvpCore: false,
+    isCore: false,
   },
   {
     id: "Pests and mold",
@@ -71,7 +71,7 @@ export const INCIDENT_CATEGORIES: readonly IncidentCategoryDef[] = [
     label: "Pests & Vector Hazards",
     desc: "Standing stagnant water vector breeding or public health hazard",
     icon: "hazard",
-    isMvpCore: false,
+    isCore: false,
   },
   {
     id: "Traffic signal damage",
@@ -79,7 +79,7 @@ export const INCIDENT_CATEGORIES: readonly IncidentCategoryDef[] = [
     label: "Traffic Signal & Signs",
     desc: "Flickering traffic signals or damaged pedestrian signage",
     icon: "crossing",
-    isMvpCore: false,
+    isCore: false,
   },
 ] as const;
 

@@ -1,16 +1,14 @@
-"""The backend adapter interface (Phase 10).
+"""The backend adapter interface.
 
-The ML module depends only on this interface — never on database
-tables, PostGIS details or Utkarsh's internal API. Two interchangeable
-implementations exist:
+The ML module depends only on this interface — never directly on raw database
+tables or internal endpoints. Two interchangeable implementations exist:
 
   - `MockBackendAdapter`  deterministic, runs fully offline on fixtures;
-  - `RealBackendAdapter`  thin HTTP client for Utkarsh's future API.
+  - `RealBackendAdapter`  HTTP client for the backend API service.
 
-Contract proofs: `tests/test_phase10_adapters.py` proves both
+Contract verification: `tests/test_phase10_adapters.py` validates both
 implementations conform to this interface and produce identical
-schema-valid answers (the real adapter exercised through an injected
-HTTP transport, no live backend required).
+schema-valid answers (exercised through an injected HTTP transport).
 """
 
 from __future__ import annotations

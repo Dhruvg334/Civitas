@@ -3,15 +3,13 @@
 Two endpoints:
 
 1. POST /incidents/{id}/resolution-submissions
-   Stores Pavit's resolution-verification model output and advances the
+   Stores resolution-verification model output and advances the
    incident to ``verification_pending``.
 
 2. POST /incidents/{id}/resolve
    Reviewer close action. ``payload.action`` is one of
    ``resolved | partially_resolved | reopened``. Advances the incident
    accordingly and writes an audit row.
-
-See ref/04 §14 + ref/08 §9.
 """
 
 from __future__ import annotations

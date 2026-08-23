@@ -1,11 +1,9 @@
 """Routing-decision persistence.
 
-Dhruv's workflow generates the routing decision (which department, what
+The agent workflow generates the routing decision (which department, what
 policy refs); this module persists it and updates incident status. The
 incident advances to ``approved`` if the routing does NOT require review,
 else stays at ``awaiting_review`` (typical path).
-
-See ref/04 §11 for the routing payload contract.
 """
 
 from __future__ import annotations

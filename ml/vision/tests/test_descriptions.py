@@ -13,7 +13,7 @@ class TestExactTemplates:
     def test_wall_damage_template(self):
         text, basis = build_precise_description("other_infrastructure_damage", None)
         assert "wall/plaster" in text
-        assert "does not clearly belong to the five current Civitas MVP categories" in text
+        assert "does not clearly belong to the five core Civitas categories" in text
         assert "template for" in basis[0]
 
     def test_open_drain_subcategory_template(self):

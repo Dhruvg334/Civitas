@@ -260,8 +260,7 @@ def test_source_is_plain_for_bare_latlon() -> None:
 
 
 def test_priority_pin_beats_at_when_both_present_and_differ() -> None:
-    """Pavit's core case: in ~60% of share links, ``/@lat,lon`` and
-    ``!3d/!4d`` disagree. The pin must win."""
+    """Core case: in share links where ``/@lat,lon`` and ``!3d/!4d`` disagree, the pin must win."""
     assert _extract(GMAPS_PIN_DIFFERS_FROM_AT) == (PIN_LAT, PIN_LON)
     assert _extract(GMAPS_PIN_DIFFERS_FROM_AT) != (CENTER_LAT, CENTER_LON)
 

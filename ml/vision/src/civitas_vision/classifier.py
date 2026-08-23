@@ -130,7 +130,7 @@ def merge_media_probs(per_frame: list[ClassificationProbs]) -> ClassificationPro
     honest signal of ambiguity instead of a saturated softmax.
 
     The category set is the union of the per-frame probability keys, so the
-    deterministic k-NN (five MVP classes) and the zero-shot CLIP classifier
+    deterministic k-NN (five core classes) and the zero-shot CLIP classifier
     (extended real-media set) both merge correctly. The secondary label
     (subcategory) is the averaged best subcategory similarity across frames.
     """

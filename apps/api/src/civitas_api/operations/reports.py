@@ -1,7 +1,7 @@
 """Report and incident persistence for the Civitas backend.
 
-Persists into the `incidents` table defined by Pavit's migration
-`database/migrations/0001_spatial_core.sql`.  The schema is intentionally
+Persists into the `incidents` table defined by the spatial core migration
+`database/migrations/0001_spatial_core.sql`. The schema is intentionally
 minimal:
 
     incidents(incident_id text PK, category text, reported_at timestamptz,

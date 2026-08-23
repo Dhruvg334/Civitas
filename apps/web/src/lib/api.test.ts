@@ -139,8 +139,8 @@ describe("Media Upload Validation", () => {
 });
 
 describe("Incident Taxonomy Contract", () => {
-  it("defines the 5 core MVP categories plus extensions", () => {
-    const core = INCIDENT_CATEGORIES.filter((c) => c.isMvpCore);
+  it("defines the 5 core categories plus extensions", () => {
+    const core = INCIDENT_CATEGORIES.filter((c) => c.isCore);
     expect(core.length).toBe(5);
     expect(core.map((c) => c.slug)).toEqual([
       "water_leakage",

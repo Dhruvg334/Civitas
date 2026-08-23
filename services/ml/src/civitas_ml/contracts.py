@@ -96,11 +96,10 @@ class ResolutionInput(BaseModel):
 
 
 class NearbyCandidatesRequest(BaseModel):
-    """What the ML module needs back from the backend (PostGIS layer).
+    """What the ML module requests from the backend (PostGIS layer).
 
-    The retrieval *implementation* lives in the backend (Utkarsh's
-    PostGIS); the ML module only defines the window and consumes the
-    schema-valid answer.
+    The retrieval implementation lives in the backend (PostGIS);
+    the ML module defines the search window and consumes the schema-valid answer.
     """
 
     report_id: str

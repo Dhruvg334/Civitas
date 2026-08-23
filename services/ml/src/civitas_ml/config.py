@@ -1,4 +1,4 @@
-"""Backend adapter configuration (Phase 10).
+"""Backend adapter configuration.
 
 The ML module never hard-codes backend URLs, credentials or endpoint
 paths. Mode and connection settings come from the environment:
@@ -10,8 +10,7 @@ paths. Mode and connection settings come from the environment:
     CIVITAS_BACKEND_TIMEOUT_SECONDS 10                 (per-request timeout)
 
 The safe default is `mock`: the full pipeline runs locally against
-deterministic fixtures with no backend service at all. Switching to
-Utkarsh's backend later is a configuration change — no ML code changes.
+deterministic fixtures with no backend service at all.
 """
 
 from __future__ import annotations
@@ -76,7 +75,7 @@ class BackendSettings:
         if not self.base_url:
             raise MLServiceError(
                 "CIVITAS_BACKEND_MODE=real requires CIVITAS_BACKEND_BASE_URL "
-                "to be set (the endpoint base of Utkarsh's API)",
+                "to be set (the endpoint base of the backend API)",
                 code=CODE_CONFIG_ERROR,
             )
         return self.base_url

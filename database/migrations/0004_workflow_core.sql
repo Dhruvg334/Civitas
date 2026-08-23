@@ -1,8 +1,7 @@
 -- 0004_workflow_core.sql
--- Tier-2 schema for 13 Aug Phase E (full E2E): work-orders, clarifications,
--- routing decisions, resolution submissions, and policies.
+-- Work-orders, clarifications, routing decisions, resolution submissions, and policies schema.
 --
--- Owner: Utkarsh (backend)
+-- Module: Backend Operations
 -- Pre-requisites: 0001_spatial_core.sql, 0002_incident_description.sql,
 --                 0003_incident_operations.sql applied
 -- Effect: 5 new tables + 3 new columns on incidents. All additive.

@@ -306,7 +306,7 @@ def assess_incident(
 ) -> dict[str, Any]:
     """Persist a severity + priority verdict for this incident.
 
-    The caller supplies the verdicts (produced by Pavit's risk model).
+    The caller supplies the verdicts (produced by the risk assessment model).
     We persist + trace + update `incidents.last_assessment_model`.
     """
     payload = payload or {}
