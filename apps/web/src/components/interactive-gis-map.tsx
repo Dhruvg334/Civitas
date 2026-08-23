@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
+import { FlatIcon } from "@/components/flat-icons";
 import type L from "leaflet";
 
 export interface GisIncidentPin {
@@ -387,13 +388,16 @@ export function InteractiveGisMap({
               </span>
               <span className="popup-id">{activePopupPin.id}</span>
             </div>
-            <button className="close-popup-btn" onClick={() => setIsPopupClosed(true)}>
-              ✕
+            <button className="close-popup-btn" onClick={() => setIsPopupClosed(true)} aria-label="Close popup">
+              <FlatIcon name="cross" size={12} />
             </button>
           </div>
 
           <h4 className="popup-title">{activePopupPin.title}</h4>
-          <p className="popup-landmark">📍 {activePopupPin.landmarkProximity}</p>
+          <p className="popup-landmark" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <FlatIcon name="pin" size={12} color="#0f5f4f" />
+            <span>{activePopupPin.landmarkProximity}</span>
+          </p>
 
           <div className="popup-meta-row">
             <div className="meta-item">

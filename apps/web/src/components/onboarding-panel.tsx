@@ -203,7 +203,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
             <span className="onboard-sub-kicker">CITIZEN PROFILE ONBOARDING</span>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close onboarding">
-            ✕
+            <FlatIcon name="cross" size={14} />
           </button>
         </div>
 
@@ -319,8 +319,9 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
                       type="button"
                       className="clear-search-x"
                       onClick={() => setLocalitySearch("")}
+                      aria-label="Clear search"
                     >
-                      ✕
+                      <FlatIcon name="cross" size={11} />
                     </button>
                   )}
                 </div>
@@ -345,10 +346,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
                           </span>
                         </div>
                         <b className="loc-title">{loc.name}</b>
-                        <small className="loc-landmarks">
-                          <FlatIcon name="pin" size={11} color="#687067" />
-                          <span>{loc.landmarks}</span>
-                        </small>
+                        <small className="loc-landmarks">Near: {loc.landmarks}</small>
                       </div>
                     );
                   })}
@@ -519,17 +517,64 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
           </form>
         )}
 
-        {/* STEP 4: CIVIC PASSPORT CONFIRMATION */}
+        {/* STEP 4: HOW CIVITAS WORKS & CIVIC PASSPORT */}
         {step === 4 && (
           <div className="onboard-step-body">
             <div className="step-title-group">
-              <h2 id="onboard-title" className="step-main-title">Your Civic Passport is Ready</h2>
+              <h2 id="onboard-title" className="step-main-title">How Civitas Operates</h2>
               <p className="step-subtitle">
-                Your profile has been registered on the Bhubaneswar municipal geofence.
+                Civitas is an evidence-backed civic intelligence system. Here is the operational lifecycle from citizen report to verified physical repair:
               </p>
             </div>
 
-            {/* CIVIC PASSPORT CARD */}
+            {/* HOW THE APP WORKS 4-STAGE PIPELINE */}
+            <div className="civitas-how-it-works-grid">
+              <div className="how-stage-card">
+                <div className="stage-header">
+                  <span className="stage-num">01</span>
+                  <FlatIcon name="map" size={16} color="#0f5f4f" />
+                  <b>Spatial Deduplication</b>
+                </div>
+                <p>
+                  PostGIS 3.4 clusters duplicate reports within a 15m radius into 1 consolidated incident dossier. No duplicate work orders.
+                </p>
+              </div>
+
+              <div className="how-stage-card">
+                <div className="stage-header">
+                  <span className="stage-num">02</span>
+                  <FlatIcon name="workflow" size={16} color="#0f5f4f" />
+                  <b>LangGraph Orchestration</b>
+                </div>
+                <p>
+                  Dual critic models validate facts, match municipal policy playbooks, and compute severity without hallucinating timelines.
+                </p>
+              </div>
+
+              <div className="how-stage-card">
+                <div className="stage-header">
+                  <span className="stage-num">03</span>
+                  <FlatIcon name="shield" size={16} color="#0f5f4f" />
+                  <b>Supervisor Sign-Off</b>
+                </div>
+                <p>
+                  Human supervisors review high-impact work orders before field crews dispatch. 1-click photo queries resolve missing details.
+                </p>
+              </div>
+
+              <div className="how-stage-card">
+                <div className="stage-header">
+                  <span className="stage-num">04</span>
+                  <FlatIcon name="check" size={16} color="#0f5f4f" />
+                  <b>Computer Vision Audit</b>
+                </div>
+                <p>
+                  Before ticket closure, zero-shot CV verifies the repair photo against initial damage to guarantee physical resolution.
+                </p>
+              </div>
+            </div>
+
+            {/* CIVIC PASSPORT CONFIRMATION CARD */}
             <div className="civic-passport-badge-card">
               <div className="passport-top-row">
                 <div className="passport-avatar">
@@ -537,10 +582,12 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
                 </div>
                 <div className="passport-meta">
                   <div className="passport-kicker-row">
-                    <span className="passport-verified-tag">✓ VERIFIED RESIDENT</span>
+                    <span className="passport-verified-tag" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <FlatIcon name="check" size={10} color="#0f5f4f" /> VERIFIED RESIDENT
+                    </span>
                     <span className="passport-ward-tag">BHUBANESWAR BMC</span>
                   </div>
-                  <b className="passport-name">{name}</b>
+                  <b className="passport-name">{name || "Registered Resident"}</b>
                   <p className="passport-email">{email} · {phone}</p>
                 </div>
               </div>
@@ -555,18 +602,21 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
                   <b>{alertChannel.toUpperCase()} ({alertRadius})</b>
                 </div>
                 <div className="spec-tile">
-                  <span>SAFETY GATE CLEARANCE</span>
-                  <b>Active (Citizen Review)</b>
+                  <span>ROLE AFFILIATION</span>
+                  <b>{role === "community_lead" ? "Ward Volunteer" : role === "business_owner" ? "Facility Lead" : "Registered Citizen"}</b>
                 </div>
                 <div className="spec-tile">
-                  <span>CLARIFICATION ROUTE</span>
-                  <b>{allowClarifications ? "Enabled" : "Disabled"}</b>
+                  <span>SAFETY GATE CLEARANCE</span>
+                  <b>Active (Critic Gate Passed)</b>
                 </div>
               </div>
             </div>
 
-            <div className="modal-actions-footer single-action">
-              <button type="button" className="button large launch-workspace-btn" onClick={handleFinish}>
+            <div className="modal-actions-footer">
+              <button type="button" className="outline" onClick={() => setStep(3)}>
+                ← Back
+              </button>
+              <button type="button" className="button large continue-btn" onClick={handleFinish}>
                 Complete Onboarding & Enter Command Center →
               </button>
             </div>
@@ -979,6 +1029,44 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
           cursor: pointer;
           accent-color: #0f5f4f;
         }
+        .civitas-how-it-works-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+          margin-bottom: 6px;
+        }
+        .how-stage-card {
+          border: 1px solid #172019;
+          background: #fbf9f4;
+          padding: 12px 14px;
+          border-radius: 6px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .stage-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .stage-num {
+          font-size: 0.65rem;
+          font-weight: 900;
+          color: #ffffff;
+          background: #0f5f4f;
+          padding: 2px 5px;
+          border-radius: 3px;
+        }
+        .stage-header b {
+          font-size: 0.8rem;
+          color: #172019;
+        }
+        .how-stage-card p {
+          font-size: 0.73rem;
+          color: #555e54;
+          margin: 0;
+          line-height: 1.35;
+        }
         .civic-passport-badge-card {
           border: 2px solid #172019;
           background: #fbf9f4;
@@ -1077,6 +1165,7 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
           width: 100%;
         }
         @media (max-width: 600px) {
+          .civitas-how-it-works-grid,
           .locality-scroll-grid,
           .channel-cards-row,
           .sensitivity-selector,

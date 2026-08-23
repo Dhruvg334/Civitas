@@ -288,7 +288,9 @@ export default function Incident({
             <div className="dispute-modal-card">
               <div className="modal-header">
                 <h3>Dispute Resolution for {incidentId}</h3>
-                <button className="close-btn" onClick={() => setShowDisputeModal(false)}>✕</button>
+                <button className="close-btn" onClick={() => setShowDisputeModal(false)} aria-label="Close modal">
+                  <FlatIcon name="cross" size={14} />
+                </button>
               </div>
               <form onSubmit={handleDisputeSubmit}>
                 <p className="modal-desc">

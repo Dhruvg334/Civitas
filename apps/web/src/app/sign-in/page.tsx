@@ -326,8 +326,8 @@ export default function SignIn() {
                     <span style={{ fontSize: "0.68rem", fontWeight: 800, color: "#687067", letterSpacing: "0.08em" }}>
                       DEMO PERSONAS (PRE-CONFIGURED ROLES)
                     </span>
-                    <span style={{ fontSize: "0.64rem", color: "#0f5f4f", fontWeight: 700 }}>
-                      ⚡ Instant Access
+                    <span style={{ fontSize: "0.64rem", color: "#0f5f4f", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <FlatIcon name="dispatch" size={12} color="#0f5f4f" /> Instant Access
                     </span>
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", marginTop: "10px" }}>

@@ -192,7 +192,7 @@ export default function Profile() {
       setSavedNotice(`✓ Profile updated successfully for ${updated.name}.`);
       setTimeout(() => setSavedNotice(""), 4000);
     } catch (err) {
-      setSavedNotice(`⚠️ Failed to update profile: ${err instanceof Error ? err.message : "Save failed"}`);
+      setSavedNotice(`Failed to update profile: ${err instanceof Error ? err.message : "Save failed"}`);
     } finally {
       setIsSavingProfile(false);
     }
@@ -207,7 +207,7 @@ export default function Profile() {
     setSession(session);
     setUser(selected);
     setIsGuest(false);
-    setSavedNotice(`✓ Switched demo preview to ${selected.name} (${selected.roleTitle})`);
+    setSavedNotice(`Switched demo preview to ${selected.name} (${selected.roleTitle})`);
     setTimeout(() => setSavedNotice(""), 4000);
   };
 
@@ -215,7 +215,7 @@ export default function Profile() {
     await signOut();
     setUser(GUEST_PERSONA);
     setIsGuest(true);
-    setSavedNotice("✓ Signed out. Viewing public resident profile.");
+    setSavedNotice("Signed out. Viewing public resident profile.");
     setTimeout(() => setSavedNotice(""), 4000);
   };
 
@@ -229,7 +229,7 @@ export default function Profile() {
         });
       }
       setClarificationSent(true);
-      setSavedNotice("✓ Clarification response submitted to LangGraph workflow runtime.");
+      setSavedNotice("Clarification response submitted to LangGraph workflow runtime.");
       setTimeout(() => {
         setClarificationSent(false);
         setSavedNotice("");
@@ -277,7 +277,7 @@ export default function Profile() {
                   onClick={() => setShowEditModal(false)}
                   aria-label="Close modal"
                 >
-                  ✕
+                  <FlatIcon name="cross" size={14} />
                 </button>
               </div>
 
@@ -405,7 +405,10 @@ export default function Profile() {
 
             <h1 className="profile-name-heading">{user.name}</h1>
             <p className="profile-role-sub">{user.roleTitle}</p>
-            <p className="profile-ward-text">📍 Profile Area: <b>{user.ward || "Not provided"}</b></p>
+            <p className="profile-ward-text" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+              <FlatIcon name="pin" size={13} color="#0f5f4f" />
+              <span>Profile Area: <b>{user.ward || "Not provided"}</b></span>
+            </p>
 
             {isGuest && (
               <div className="guest-banner-row">
@@ -460,15 +463,17 @@ export default function Profile() {
                   type="button"
                   className="button small"
                   onClick={openEditModal}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                 >
-                  ✏️ Edit Profile
+                  <FlatIcon name="edit" size={13} /> Edit Profile
                 </button>
                 <button
                   type="button"
                   className="outline small"
                   onClick={() => setShowOnboarding(true)}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                 >
-                  🧭 Onboarding Setup Wizard
+                  <FlatIcon name="compass" size={13} /> Onboarding Setup Wizard
                 </button>
                 <button
                   type="button"
@@ -592,8 +597,9 @@ export default function Profile() {
                   ) : (
                     <form onSubmit={handleSendClarification} className="clarification-form">
                       {clarificationError && (
-                        <div className="clarification-error-box" role="alert" style={{ background: "#fee2e2", border: "1px solid #f87171", padding: "8px 12px", borderRadius: "6px", color: "#991b1b", marginBottom: "8px", fontSize: "0.875rem" }}>
-                          ⚠️ {clarificationError}
+                        <div className="clarification-error-box" role="alert" style={{ display: "flex", alignItems: "center", gap: "6px", background: "#fee2e2", border: "1px solid #f87171", padding: "8px 12px", borderRadius: "6px", color: "#991b1b", marginBottom: "8px", fontSize: "0.875rem" }}>
+                          <FlatIcon name="alert" size={14} color="#991b1b" />
+                          <span>{clarificationError}</span>
                         </div>
                       )}
                       <input
@@ -631,7 +637,9 @@ export default function Profile() {
 
                       <div className="rpt-info-col">
                         <b className="rpt-title">{rpt.title}</b>
-                        <p className="rpt-loc">📍 {rpt.location}</p>
+                        <p className="rpt-loc" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                          <FlatIcon name="pin" size={12} color="#0f5f4f" /> {rpt.location}
+                        </p>
                         <small className="rpt-action">{rpt.actionNeeded}</small>
                       </div>
 
@@ -684,7 +692,9 @@ export default function Profile() {
                           </div>
                           <Status tone={rpt.tone}>{rpt.status}</Status>
                         </div>
-                        <p className="timeline-meta">📍 Coordinates: {rpt.location}</p>
+                        <p className="timeline-meta" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                          <FlatIcon name="pin" size={12} color="#0f5f4f" /> Coordinates: {rpt.location}
+                        </p>
                         <p className="timeline-detail">{rpt.actionNeeded}</p>
                         <div className="timeline-actions">
                           <Link href={`/incidents/${rpt.incidentId}`} className="button small">
@@ -751,16 +761,18 @@ export default function Profile() {
                         type="button"
                         className="button small"
                         onClick={openEditModal}
+                        style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                       >
-                        ✏️ Edit Profile Details
+                        <FlatIcon name="edit" size={13} /> Edit Profile Details
                       </button>
                     )}
                     <button
                       type="button"
                       className="outline small"
                       onClick={() => setShowOnboarding(true)}
+                      style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
                     >
-                      🧭 Launch Setup Wizard
+                      <FlatIcon name="compass" size={13} /> Launch Setup Wizard
                     </button>
                   </div>
                 </div>
@@ -770,7 +782,9 @@ export default function Profile() {
                     <b>Active Account Email</b>
                     <p>{user.email}</p>
                   </div>
-                  <span className="verified-pill">✓ Verified Session</span>
+                  <span className="verified-pill" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <FlatIcon name="check" size={11} color="#0f5f4f" /> Verified Session
+                  </span>
                 </div>
 
                 <div className="settings-row">
@@ -778,7 +792,9 @@ export default function Profile() {
                     <b>Registered Ward / Neighborhood</b>
                     <p>{user.ward || "Ward 12 · Nayapalli / Unit 8"}</p>
                   </div>
-                  <span className="verified-pill">📍 Geofenced</span>
+                  <span className="verified-pill" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <FlatIcon name="pin" size={11} color="#0f5f4f" /> Geofenced
+                  </span>
                 </div>
 
                 <div className="settings-row">

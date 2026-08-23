@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FlatIcon } from "@/components/flat-icons";
 
 export interface TraceNode {
   id: string;
@@ -143,7 +144,9 @@ export function AgentTraceVisualizer({
 
         {selectedNode.criticValidation && (
           <div className="critic-banner">
-            <b>🛡️ Critic Gate Verdict</b>
+            <b style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              <FlatIcon name="shield" size={14} color="#0f5f4f" /> Critic Gate Verdict
+            </b>
             <p>{selectedNode.criticValidation.confidenceBasis}</p>
             <div className="critic-checks">
               <span>Unsupported Claims: <b>{selectedNode.criticValidation.unsupportedClaims ? "YES (Rejected)" : "NO (Clean)"}</b></span>

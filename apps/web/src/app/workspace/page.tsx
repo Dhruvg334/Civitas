@@ -228,8 +228,8 @@ export default function Workspace() {
                   style={{ flex: 1 }}
                 />
                 {searchQuery && (
-                  <button className="clear-search-btn" onClick={() => setSearchQuery("")}>
-                    ✕
+                  <button className="clear-search-btn" onClick={() => setSearchQuery("")} aria-label="Clear search">
+                    <FlatIcon name="cross" size={11} />
                   </button>
                 )}
                 <button

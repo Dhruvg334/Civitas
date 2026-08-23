@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FlatIcon } from "@/components/flat-icons";
 
 interface Endpoint {
   method: "GET" | "POST" | "PATCH";
@@ -525,8 +526,17 @@ export function DocsApiExplorer() {
                     <button
                       className="copy-curl-btn"
                       onClick={() => handleCopyCurl(ep, index)}
+                      style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}
                     >
-                      {copiedIndex === index ? "✓ Copied cURL" : "📋 Copy cURL"}
+                      {copiedIndex === index ? (
+                        <>
+                          <FlatIcon name="check" size={12} color="#0f5f4f" /> Copied cURL
+                        </>
+                      ) : (
+                        <>
+                          <FlatIcon name="copy" size={12} /> Copy cURL
+                        </>
+                      )}
                     </button>
                   </div>
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Footer, Nav } from "@/components/site";
+import { FlatIcon } from "@/components/flat-icons";
 import { LandingExplorer } from "@/components/landing-explorer";
 import { LiveEvidenceSandbox } from "@/components/live-evidence-sandbox";
 import { ResolutionSlider } from "@/components/resolution-slider";
@@ -260,19 +261,19 @@ export default function Home() {
               </div>
               <ul className="comp-list">
                 <li>
-                  <span className="icon-cross">✕</span>
+                  <span className="icon-cross"><FlatIcon name="cross" size={12} color="#dc2626" /></span>
                   <span>50 citizens report same water burst → creates 50 duplicate work orders.</span>
                 </li>
                 <li>
-                  <span className="icon-cross">✕</span>
+                  <span className="icon-cross"><FlatIcon name="cross" size={12} color="#dc2626" /></span>
                   <span>Citizen opinion treated as ground truth (&quot;it is a pothole&quot; when it is a water burst).</span>
                 </li>
                 <li>
-                  <span className="icon-cross">✕</span>
+                  <span className="icon-cross"><FlatIcon name="cross" size={12} color="#dc2626" /></span>
                   <span>LLM produces ungrounded delivery promises (&quot;fixed in 2 hours&quot;) causing resident anger.</span>
                 </li>
                 <li>
-                  <span className="icon-cross">✕</span>
+                  <span className="icon-cross"><FlatIcon name="cross" size={12} color="#dc2626" /></span>
                   <span>Tickets closed automatically without photographic repair verification.</span>
                 </li>
               </ul>
@@ -285,19 +286,19 @@ export default function Home() {
               </div>
               <ul className="comp-list">
                 <li>
-                  <span className="icon-check">✓</span>
+                  <span className="icon-check"><FlatIcon name="check" size={12} color="#0f5f4f" /></span>
                   <span><b>PostGIS 3.4 Clustering:</b> Merges 50 duplicate reports into 1 consolidated incident dossier.</span>
                 </li>
                 <li>
-                  <span className="icon-check">✓</span>
+                  <span className="icon-check"><FlatIcon name="check" size={12} color="#0f5f4f" /></span>
                   <span><b>Evidence Separation:</b> Verifiable media strictly separated from citizen assertions.</span>
                 </li>
                 <li>
-                  <span className="icon-check">✓</span>
+                  <span className="icon-check"><FlatIcon name="check" size={12} color="#0f5f4f" /></span>
                   <span><b>Strict Policy Grounding:</b> Work orders grounded in verified municipal playbooks (e.g. PLAY-WATER-01).</span>
                 </li>
                 <li>
-                  <span className="icon-check">✓</span>
+                  <span className="icon-check"><FlatIcon name="check" size={12} color="#0f5f4f" /></span>
                   <span><b>Computer Vision Audit:</b> Before / after photo diff prevents fraudulent ticket closures.</span>
                 </li>
               </ul>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Footer, Nav, Status } from "@/components/site";
+import { FlatIcon } from "@/components/flat-icons";
 import { AgentTraceVisualizer } from "@/components/agent-trace-visualizer";
 
 const stages = [
@@ -155,8 +156,16 @@ export default function Demo() {
                 <span className="step-badge-num">{String(index + 1).padStart(2, "0")}</span>
                 <div>
                   <b>{item.label}</b>
-                  <small>
-                    {index < active ? "✓ Complete" : index === active ? "Active Step" : "Queued"}
+                  <small style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    {index < active ? (
+                      <>
+                        <FlatIcon name="check" size={10} color="#0f5f4f" /> Complete
+                      </>
+                    ) : index === active ? (
+                      "Active Step"
+                    ) : (
+                      "Queued"
+                    )}
                   </small>
                 </div>
               </button>

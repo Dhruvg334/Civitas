@@ -368,7 +368,9 @@ export default function Report() {
                   key={s.num}
                   className={`stepper-card ${isCurrent ? "current" : ""} ${isDone ? "done" : ""}`}
                 >
-                  <span className="stepper-circle">{isDone ? "✓" : `0${s.num}`}</span>
+                  <span className="stepper-circle">
+                    {isDone ? <FlatIcon name="check" size={13} color="#0f5f4f" /> : `0${s.num}`}
+                  </span>
                   <div className="stepper-labels">
                     <b>{s.label}</b>
                     <small>{s.subtitle}</small>
@@ -766,7 +768,12 @@ export default function Report() {
                         </div>
                       )}
 
-                      {landmarkHint && <p className="landmark-detected">📍 {landmarkHint}</p>}
+                      {landmarkHint && (
+                        <p className="landmark-detected" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                          <FlatIcon name="pin" size={12} color="#0f5f4f" />
+                          <span>{landmarkHint}</span>
+                        </p>
+                      )}
                     </div>
 
                     <div className="step-actions-footer">

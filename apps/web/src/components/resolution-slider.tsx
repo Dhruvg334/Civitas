@@ -166,7 +166,7 @@ export function ResolutionSlider({
             </text>
 
             <text x="450" y="340" fill="#dce8dd" fontSize="13" fontWeight="bold" textAnchor="middle">
-              ✓ Water Main Pressure Normal (4.2 Bar) · Zero Surface Leakage
+              Water Main Pressure Normal (4.2 Bar) · Zero Surface Leakage
             </text>
           </svg>
           <span className="panel-badge after-badge">
@@ -208,7 +208,7 @@ export function ResolutionSlider({
             <g transform="translate(260, 165)">
               <rect width="360" height="38" rx="6" fill="#e84d7a" />
               <text x="180" y="25" fill="#ffffff" fontSize="13" fontWeight="900" letterSpacing="0.06em" textAnchor="middle">
-                ⚠️ ACTIVE WATER MAIN BURST (INC-0241)
+                ACTIVE WATER MAIN BURST (INC-0241)
               </text>
             </g>
 
