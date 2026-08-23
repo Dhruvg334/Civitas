@@ -16,14 +16,14 @@ interface Developer {
 const developers: Developer[] = [
   {
     name: "Dhruv Gupta",
-    role: "Team Lead, System Architecture & Agentic Decision Platform",
+    role: "Team Lead · System & Agentic Architecture",
     techStack: ["LangGraph", "FastAPI", "Groq", "PostgreSQL", "Next.js 16"],
     bio: "Leads Civitas end to end: product workflow, agentic analysis and decision orchestration, policy-grounded reasoning, frontend, cross-module contracts, final integration, deployment, and system validation.",
     github: "https://github.com/Dhruvg334",
   },
   {
     name: "Pavit Aggarwal",
-    role: "Computer Vision, ML & Geospatial Intelligence",
+    role: "Computer Vision & Geospatial ML",
     techStack: ["CLIP Zero-Shot", "PostGIS 3.4", "DBSCAN", "Python 3.12", "Scikit-Learn"],
     bio: "Engineered the multimodal vision pipeline, Before/After resolution verification model, spatial clustering algorithms, and risk calculation engines.",
     github: "https://github.com/pavitagrawal",
@@ -440,7 +440,7 @@ function AboutStyles() {
       .dev-profile-card {
         border: 2px solid #172019;
         background: #ffffff;
-        padding: 28px;
+        padding: 24px;
         border-radius: 8px;
         box-shadow: 5px 5px 0 #172019;
         display: flex;
@@ -449,21 +449,27 @@ function AboutStyles() {
       .dev-card-top {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
+        gap: 10px;
         margin-bottom: 16px;
       }
       .dev-index {
-        font-size: 0.75rem;
+        font-size: 0.78rem;
         font-weight: 900;
         color: #e84d7a;
+        flex-shrink: 0;
+        padding-top: 3px;
       }
       .dev-role-badge {
-        font-size: 0.62rem;
+        font-size: 0.65rem;
         font-weight: 850;
-        padding: 3px 8px;
+        padding: 4px 8px;
         background: #fbf9f4;
         border: 1px solid #172019;
         border-radius: 4px;
+        line-height: 1.35;
+        text-align: right;
+        max-width: calc(100% - 32px);
       }
       .dev-name {
         font-size: 1.6rem;
