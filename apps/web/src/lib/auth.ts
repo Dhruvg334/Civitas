@@ -144,7 +144,17 @@ export const DEMO_CREDENTIALS: Record<string, { password: string; user: CivicUse
 export function userFromSupabaseSession(session: { user?: { id?: string; email?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown> } }): CivicUser {
   const sbUser = session?.user;
   const email = sbUser?.email || "";
+  let storedUser: Partial<CivicUser> | null = null;
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem("civitas_current_user");
+      if (stored) storedUser = JSON.parse(stored);
+    } catch {
+      // ignore
+    }
+  }
   const displayName =
+    storedUser?.name ||
     (typeof sbUser?.user_metadata?.display_name === "string" && sbUser.user_metadata.display_name.trim()) ||
     (typeof sbUser?.user_metadata?.name === "string" && sbUser.user_metadata.name.trim()) ||
     email.split("@")[0] ||
@@ -153,18 +163,22 @@ export function userFromSupabaseSession(session: { user?: { id?: string; email?:
   const role: CivicRole = ["citizen", "triage", "supervisor", "reviewer", "admin"].includes(rawRole)
     ? (rawRole as CivicRole)
     : "citizen";
-  const avatarInitials =
-    (typeof sbUser?.user_metadata?.avatar_initials === "string" && sbUser.user_metadata.avatar_initials.trim()) ||
-    displayName.slice(0, 2).toUpperCase();
   const avatarUrl =
+    storedUser?.avatarUrl ||
     (typeof sbUser?.user_metadata?.avatar_url === "string" && sbUser.user_metadata.avatar_url.trim()) ||
     undefined;
   const ward =
+    storedUser?.ward ||
     (typeof sbUser?.user_metadata?.ward === "string" && sbUser.user_metadata.ward.trim()) ||
     undefined;
   const roleTitle =
+    storedUser?.roleTitle ||
     (typeof sbUser?.user_metadata?.role_title === "string" && sbUser.user_metadata.role_title.trim()) ||
     getRoleTitle(role);
+  const avatarInitials =
+    (typeof sbUser?.user_metadata?.avatar_initials === "string" && sbUser.user_metadata.avatar_initials.trim()) ||
+    (displayName || "CU").split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase() ||
+    "CU";
 
   return {
     id: sbUser?.id || "usr-anon",

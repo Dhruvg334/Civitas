@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useRef, useTransition } from "react";
 import Link from "next/link";
 import { Footer, Nav, Status } from "@/components/site";
 import { FlatIcon } from "@/components/flat-icons";
@@ -98,11 +98,11 @@ export default function Profile() {
   const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [editName, setEditName] = useState<string>("");
-  const [editAvatarInitials, setEditAvatarInitials] = useState<string>("");
   const [editAvatarUrl, setEditAvatarUrl] = useState<string>("");
   const [editWard, setEditWard] = useState<string>("");
   const [editRoleTitle, setEditRoleTitle] = useState<string>("");
   const [isSavingProfile, setIsSavingProfile] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [, startTransition] = useTransition();
 
   useEffect(() => {
@@ -116,19 +116,22 @@ export default function Profile() {
 
   useEffect(() => {
     const syncUser = async () => {
+      let storedUser: Partial<CivicUser> | null = null;
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("civitas_current_user");
+        if (stored) {
+          try {
+            storedUser = JSON.parse(stored);
+          } catch {
+            // ignore
+          }
+        }
+      }
       const session = await restoreSession();
       if (session && session.user) {
         let finalUser = session.user;
-        if (typeof window !== "undefined") {
-          const stored = localStorage.getItem("civitas_current_user");
-          if (stored) {
-            try {
-              const parsed = JSON.parse(stored);
-              finalUser = { ...finalUser, ...parsed };
-            } catch {
-              // ignore
-            }
-          }
+        if (storedUser) {
+          finalUser = { ...finalUser, ...storedUser };
         }
         startTransition(() => {
           setUser(finalUser);
@@ -142,14 +145,22 @@ export default function Profile() {
                 ...prev,
                 id: verified.user_id,
                 email: verified.email,
-                role: verified.role as CivicUser["role"],
-                name: verified.display_name || prev.name,
+                role: (verified.role as CivicUser["role"]) || prev.role,
+                name: storedUser?.name || prev.name || verified.display_name,
+                avatarUrl: storedUser?.avatarUrl !== undefined ? storedUser.avatarUrl : prev.avatarUrl,
+                ward: storedUser?.ward || prev.ward,
+                roleTitle: storedUser?.roleTitle || prev.roleTitle,
               }));
             });
           }
         } catch {
           // Keep active session user
         }
+      } else if (storedUser && storedUser.email) {
+        startTransition(() => {
+          setUser((prev) => ({ ...prev, ...storedUser }));
+          setIsGuest(false);
+        });
       } else {
         startTransition(() => {
           setUser(GUEST_PERSONA);
@@ -168,7 +179,6 @@ export default function Profile() {
 
   const openEditModal = () => {
     setEditName(user.name);
-    setEditAvatarInitials(user.avatarInitials || (user.name ? user.name.slice(0, 2).toUpperCase() : "CU"));
     setEditAvatarUrl(user.avatarUrl || "");
     setEditWard(user.ward || BHUBANESWAR_LOCALITIES[0].name);
     setEditRoleTitle(user.roleTitle || "Registered Citizen");
@@ -179,16 +189,18 @@ export default function Profile() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      alert("Please select a valid image file (PNG, JPG, WebP).");
+      alert("Please select a valid image file (PNG, JPG, or WebP).");
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        setEditAvatarUrl(reader.result);
+    reader.onload = (event) => {
+      const result = event.target?.result;
+      if (typeof result === "string") {
+        setEditAvatarUrl(result);
       }
     };
     reader.readAsDataURL(file);
+    e.target.value = "";
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -196,7 +208,12 @@ export default function Profile() {
     setIsSavingProfile(true);
     try {
       const finalName = editName.trim() || user.name;
-      const finalInitials = editAvatarInitials.trim().slice(0, 2).toUpperCase() || finalName.slice(0, 2).toUpperCase();
+      const finalInitials = (finalName || "CU")
+        .split(/\s+/)
+        .map((w) => w[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase() || "CU";
       const updated = await updateUserProfile({
         name: finalName,
         avatarInitials: finalInitials,
@@ -301,33 +318,48 @@ export default function Profile() {
               </div>
 
               <form onSubmit={handleSaveProfile} className="edit-profile-form">
-                <div className="edit-avatar-preview-row" style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "16px" }}>
-                  <div className="preview-avatar-box" style={{ width: "64px", height: "64px", borderRadius: "50%", border: "2px solid #172019", background: "#0f5f4f", color: "#ffffff", display: "grid", placeItems: "center", fontSize: "1.5rem", fontWeight: 700, overflow: "hidden", flexShrink: 0 }}>
+                {/* PHOTO UPLOAD CARD */}
+                <div className="avatar-upload-card">
+                  <div className="avatar-preview-circle">
                     {editAvatarUrl ? (
-                      <img src={editAvatarUrl} alt="Avatar Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img src={editAvatarUrl} alt="Avatar Preview" className="preview-img" />
                     ) : (
-                      <span>{editAvatarInitials || (editName ? editName.slice(0, 2).toUpperCase() : "CU")}</span>
+                      <span>
+                        {(editName.trim() || user.name || "CU")
+                          .split(/\s+/)
+                          .map((w) => w[0])
+                          .slice(0, 2)
+                          .join("")
+                          .toUpperCase()}
+                      </span>
                     )}
                   </div>
-                  <div>
-                    <b>Profile Photo & Avatar Initials</b>
-                    <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "6px", flexWrap: "wrap" }}>
-                      <label className="button secondary small" style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "0.75rem" }}>
+                  <div className="avatar-upload-info">
+                    <b className="upload-heading">Profile Photo</b>
+                    <p className="upload-subtext">
+                      Upload a photo (PNG, JPG, WebP) for your civic card and navbar.
+                    </p>
+                    <div className="upload-btn-row">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        style={{ display: "none" }}
+                        onChange={handleImageUpload}
+                      />
+                      <button
+                        type="button"
+                        className="button secondary small upload-action-btn"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
                         <FlatIcon name="camera" size={13} />
-                        <span>Upload Photo</span>
-                        <input
-                          type="file"
-                          accept="image/png,image/jpeg,image/webp"
-                          style={{ display: "none" }}
-                          onChange={handleImageUpload}
-                        />
-                      </label>
+                        <span>{editAvatarUrl ? "Change Photo" : "Upload Photo"}</span>
+                      </button>
                       {editAvatarUrl && (
                         <button
                           type="button"
-                          className="outline small"
+                          className="outline small remove-photo-btn"
                           onClick={() => setEditAvatarUrl("")}
-                          style={{ color: "#991b1b", fontSize: "0.75rem" }}
                         >
                           Remove Photo
                         </button>
@@ -352,33 +384,6 @@ export default function Profile() {
                 </div>
 
                 <div className="edit-field-group">
-                  <label className="edit-field-label" htmlFor="edit-avatar-initials">
-                    Avatar Initials (1–2 letters, shown when no photo uploaded)
-                  </label>
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <input
-                      id="edit-avatar-initials"
-                      type="text"
-                      maxLength={2}
-                      value={editAvatarInitials}
-                      onChange={(e) => setEditAvatarInitials(e.target.value.toUpperCase())}
-                      placeholder="e.g. AM"
-                      className="modal-text-input"
-                      style={{ width: "90px", textTransform: "uppercase", fontWeight: 800, textAlign: "center" }}
-                    />
-                    <button
-                      type="button"
-                      className="outline small"
-                      onClick={() => setEditAvatarInitials(editName ? editName.trim().slice(0, 2).toUpperCase() : "CU")}
-                      title="Derive 2-letter initials from display name"
-                      style={{ fontSize: "0.75rem" }}
-                    >
-                      Auto from Name
-                    </button>
-                  </div>
-                </div>
-
-                <div className="edit-field-group">
                   <label className="edit-field-label" htmlFor="edit-profile-ward">
                     Registered Bhubaneswar Ward / Locality
                   </label>
@@ -389,7 +394,7 @@ export default function Profile() {
                     className="modal-text-input"
                   >
                     {BHUBANESWAR_LOCALITIES.map((loc: LocalityItem) => (
-                      <option key={loc.id} value={loc.id}>
+                      <option key={loc.id} value={loc.name}>
                         {loc.name} ({loc.zone})
                       </option>
                     ))}
@@ -410,7 +415,7 @@ export default function Profile() {
                   />
                 </div>
 
-                <div className="modal-actions-footer" style={{ marginTop: "24px", display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                <div className="modal-actions-footer">
                   <button
                     type="button"
                     className="outline"
@@ -957,31 +962,84 @@ export default function Profile() {
           background: #172019;
           color: #ffffff;
         }
-        .edit-avatar-preview-row {
+        .avatar-upload-card {
           display: flex;
           align-items: center;
-          gap: 16px;
-          padding: 14px 16px;
+          gap: 18px;
+          padding: 16px 20px;
           background: #fbf9f4;
-          border: 1px solid #172019;
+          border: 1.5px solid #172019;
           border-radius: 6px;
           margin-bottom: 20px;
+          box-shadow: 2px 2px 0 #172019;
         }
-        .preview-avatar-box {
-          width: 52px;
-          height: 52px;
+        .avatar-preview-circle {
+          width: 64px;
+          height: 64px;
           border-radius: 50%;
           background: #0f5f4f;
           color: #ffffff;
-          border: 1.5px solid #172019;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.25rem;
-          font-weight: 850;
+          border: 2px solid #172019;
+          display: grid;
+          place-items: center;
+          font-size: 1.5rem;
+          font-weight: 700;
           font-family: Georgia, serif;
+          overflow: hidden;
           flex-shrink: 0;
           box-shadow: 2px 2px 0 #172019;
+        }
+        .preview-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .avatar-upload-info {
+          flex: 1;
+          min-width: 0;
+        }
+        .upload-heading {
+          font-size: 0.9rem;
+          color: #172019;
+          display: block;
+        }
+        .upload-subtext {
+          font-size: 0.76rem;
+          color: #555e54;
+          margin: 2px 0 10px;
+          line-height: 1.4;
+        }
+        .upload-btn-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+        .upload-action-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          font-size: 0.78rem;
+          cursor: pointer;
+        }
+        .remove-photo-btn {
+          padding: 6px 12px;
+          font-size: 0.78rem;
+          color: #991b1b;
+          border-color: #991b1b;
+          cursor: pointer;
+        }
+        .remove-photo-btn:hover {
+          background: #fef2f2;
+        }
+        .modal-actions-footer {
+          margin-top: 24px;
+          padding-top: 18px;
+          border-top: 1px solid #e2ded4;
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
         }
         .edit-field-group {
           display: flex;
