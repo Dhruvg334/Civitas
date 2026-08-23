@@ -72,6 +72,35 @@ def _decode_jwt(token: str) -> dict[str, Any]:
     issuer = f"{settings.supabase_url.rstrip('/')}/auth/v1" if settings.supabase_url else None
 
     try:
+        header = pyjwt.get_unverified_header(token)
+        algorithm = str(header.get("alg") or "HS256")
+
+        if settings.supabase_jwt_secret.strip() and algorithm == "HS256":
+            payload = pyjwt.decode(
+                token,
+                settings.supabase_jwt_secret,
+                algorithms=["HS256"],
+                audience="authenticated",
+                options={"require": ["exp", "sub"]},
+            )
+            if issuer and payload.get("iss") and payload["iss"].rstrip("/").lower() != issuer.rstrip("/").lower():
+                raise pyjwt.InvalidIssuerError("Invalid issuer")
+            return payload
+
+        if settings.supabase_url.strip() and algorithm in {"RS256", "ES256"}:
+            jwks_url = f"{settings.supabase_url.rstrip('/')}/auth/v1/.well-known/jwks.json"
+            signing_key = pyjwt.PyJWKClient(jwks_url).get_signing_key_from_jwt(token)
+            payload = pyjwt.decode(
+                token,
+                signing_key.key,
+                algorithms=[algorithm],
+                audience="authenticated",
+                options={"require": ["exp", "sub"]},
+            )
+            if issuer and payload.get("iss") and payload["iss"].rstrip("/").lower() != issuer.rstrip("/").lower():
+                raise pyjwt.InvalidIssuerError("Invalid issuer")
+            return payload
+
         if settings.supabase_jwt_secret.strip():
             payload = pyjwt.decode(
                 token,
@@ -80,33 +109,12 @@ def _decode_jwt(token: str) -> dict[str, Any]:
                 audience="authenticated",
                 options={"require": ["exp", "sub"]},
             )
-            if issuer and payload.get("iss") and payload["iss"] != issuer:
-                raise pyjwt.InvalidIssuerError("Invalid issuer")
-            return payload
-
-        header = pyjwt.get_unverified_header(token)
-        algorithm = str(header.get("alg") or "")
-
-        if settings.supabase_url.strip() and (settings.is_production or algorithm in {"RS256", "ES256"}):
-            jwks_url = f"{settings.supabase_url.rstrip('/')}/auth/v1/.well-known/jwks.json"
-            signing_key = pyjwt.PyJWKClient(jwks_url).get_signing_key_from_jwt(token)
-            if algorithm not in {"RS256", "ES256"}:
-                raise pyjwt.InvalidAlgorithmError(
-                    f"unsupported Supabase JWT algorithm: {algorithm}"
-                )
-            payload = pyjwt.decode(
-                token,
-                signing_key.key,
-                algorithms=[algorithm],
-                audience="authenticated",
-                options={"require": ["exp", "sub"]},
-            )
-            if issuer and payload.get("iss") and payload["iss"] != issuer:
+            if issuer and payload.get("iss") and payload["iss"].rstrip("/").lower() != issuer.rstrip("/").lower():
                 raise pyjwt.InvalidIssuerError("Invalid issuer")
             return payload
 
         if settings.is_production:
-            raise pyjwt.InvalidTokenError("no production JWT verifier is configured")
+            raise pyjwt.InvalidTokenError("no production JWT verifier is configured or token algorithm mismatch")
 
         # Explicit local-development fallback only.
         return pyjwt.decode(

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Footer, Nav } from "@/components/site";
 import { FlatIcon } from "@/components/flat-icons";
-import { signInWithPassword, signUpWithPassword } from "@/lib/auth";
+import { signInWithPassword, signUpWithPassword, signInAsPersona } from "@/lib/auth";
 
 interface LiveMetricNode {
   id: string;
@@ -318,9 +318,14 @@ export default function SignIn() {
                 )}
 
                 <div className="demo-personas-section" style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px dashed #d9d7ce" }}>
-                  <span style={{ fontSize: "0.68rem", fontWeight: 800, color: "#687067", letterSpacing: "0.08em" }}>
-                    DEMO PERSONAS (PRE-CONFIGURED ROLES)
-                  </span>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "0.68rem", fontWeight: 800, color: "#687067", letterSpacing: "0.08em" }}>
+                      DEMO PERSONAS (PRE-CONFIGURED ROLES)
+                    </span>
+                    <span style={{ fontSize: "0.64rem", color: "#0f5f4f", fontWeight: 700 }}>
+                      ⚡ Instant Access
+                    </span>
+                  </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", marginTop: "10px" }}>
                     <button
                       type="button"
@@ -329,6 +334,9 @@ export default function SignIn() {
                         setPassword("SupervisorPass123!");
                         setName("Sarah Chen");
                         setIsSignUp(false);
+                        const user = signInAsPersona("supervisor");
+                        setNotice(`Signed in as ${user.name} (${user.roleTitle}).`);
+                        setTimeout(() => router.push("/workspace"), 400);
                       }}
                       className="demo-persona-chip"
                       style={{
@@ -343,7 +351,7 @@ export default function SignIn() {
                       }}
                     >
                       <b>Supervisor</b>
-                      <span style={{ display: "block", fontSize: "0.65rem", color: "#687067" }}>Review gate</span>
+                      <span style={{ display: "block", fontSize: "0.65rem", color: "#687067" }}>Review gate ↗</span>
                     </button>
                     <button
                       type="button"
@@ -352,6 +360,9 @@ export default function SignIn() {
                         setPassword("FieldDispatch123!");
                         setName("Marcus Vance");
                         setIsSignUp(false);
+                        const user = signInAsPersona("field");
+                        setNotice(`Signed in as ${user.name} (${user.roleTitle}).`);
+                        setTimeout(() => router.push("/profile"), 400);
                       }}
                       className="demo-persona-chip"
                       style={{
@@ -366,7 +377,7 @@ export default function SignIn() {
                       }}
                     >
                       <b>Field Lead</b>
-                      <span style={{ display: "block", fontSize: "0.65rem", color: "#687067" }}>Crew dispatch</span>
+                      <span style={{ display: "block", fontSize: "0.65rem", color: "#687067" }}>Crew dispatch ↗</span>
                     </button>
                     <button
                       type="button"
@@ -375,6 +386,9 @@ export default function SignIn() {
                         setPassword("CitizenPass123!");
                         setName("Ananya Sharma");
                         setIsSignUp(false);
+                        const user = signInAsPersona("resident");
+                        setNotice(`Signed in as ${user.name} (${user.roleTitle}).`);
+                        setTimeout(() => router.push("/profile"), 400);
                       }}
                       className="demo-persona-chip"
                       style={{
@@ -389,7 +403,7 @@ export default function SignIn() {
                       }}
                     >
                       <b>Citizen</b>
-                      <span style={{ display: "block", fontSize: "0.65rem", color: "#687067" }}>Resident</span>
+                      <span style={{ display: "block", fontSize: "0.65rem", color: "#687067" }}>Resident ↗</span>
                     </button>
                   </div>
                 </div>

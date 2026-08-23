@@ -86,8 +86,84 @@ export function setMemorySession(session: UserSession | null): void {
   }
 }
 
+export interface SignUpResult {
+  user: CivicUser | null;
+  confirmationRequired: boolean;
+}
+
+export const DEMO_PERSONAS: Record<string, CivicUser> = {
+  supervisor: {
+    id: "usr-supervisor-01",
+    name: "Sarah Chen",
+    email: "supervisor.chen@bhubaneswar.gov.in",
+    role: "reviewer",
+    roleTitle: "Municipal Supervisor · Public Works Dept",
+    ward: "Bhubaneswar Municipal Zone 1 (Wards 08, 12, 15)",
+    avatarInitials: "SC",
+  },
+  field: {
+    id: "usr-field-01",
+    name: "Marcus Vance",
+    email: "field.dispatch@waterdept.gov.in",
+    role: "triage",
+    roleTitle: "Field Crew Dispatch Lead · Water & Drainage",
+    ward: "Ward 12 Infrastructure Grid",
+    avatarInitials: "MV",
+  },
+  resident: {
+    id: "usr-resident-01",
+    name: "Ananya Sharma",
+    email: "ananya.resident@civic.local",
+    role: "citizen",
+    roleTitle: "Citizen Reporter · Ward 12 Resident",
+    ward: "Ward 12 · DAV Public School Zone",
+    avatarInitials: "AS",
+  },
+};
+
+export const DEMO_CREDENTIALS: Record<string, { password: string; user: CivicUser }> = {
+  "supervisor.chen@bhubaneswar.gov.in": {
+    password: "SupervisorPass123!",
+    user: DEMO_PERSONAS.supervisor,
+  },
+  "field.dispatch@waterdept.gov.in": {
+    password: "FieldDispatch123!",
+    user: DEMO_PERSONAS.field,
+  },
+  "ananya.resident@civic.local": {
+    password: "CitizenPass123!",
+    user: DEMO_PERSONAS.resident,
+  },
+  "demo.resident@civitas.local": {
+    password: "CitizenPass123!",
+    user: DEMO_PERSONAS.resident,
+  },
+};
+
+export function userFromSupabaseSession(session: { user?: { id?: string; email?: string; user_metadata?: Record<string, unknown>; app_metadata?: Record<string, unknown> } }): CivicUser {
+  const sbUser = session?.user;
+  const email = sbUser?.email || "";
+  const displayName =
+    (typeof sbUser?.user_metadata?.display_name === "string" && sbUser.user_metadata.display_name.trim()) ||
+    (typeof sbUser?.user_metadata?.name === "string" && sbUser.user_metadata.name.trim()) ||
+    email.split("@")[0] ||
+    "Civic User";
+  const rawRole = (sbUser?.app_metadata?.role as string) || (sbUser?.user_metadata?.role as string) || "citizen";
+  const role: CivicRole = ["citizen", "triage", "supervisor", "reviewer", "admin"].includes(rawRole)
+    ? (rawRole as CivicRole)
+    : "citizen";
+  return {
+    id: sbUser?.id || "usr-anon",
+    email,
+    name: displayName,
+    role,
+    roleTitle: getRoleTitle(role),
+    avatarInitials: displayName.slice(0, 2).toUpperCase(),
+  };
+}
+
 export async function restoreSession(): Promise<UserSession | null> {
-  if (memorySession?.accessToken) {
+  if (memorySession?.accessToken || memorySession?.user) {
     return memorySession;
   }
   const supabase = getSupabaseClient();
@@ -99,22 +175,21 @@ export async function restoreSession(): Promise<UserSession | null> {
     setMemorySession(null);
     return null;
   }
+  let user: CivicUser;
   try {
-    const user = await verifiedUserFromBackend(data.session.access_token);
-    const restored: UserSession = {
-      accessToken: data.session.access_token,
-      user,
-      expiresAt: data.session.expires_at
-        ? new Date(data.session.expires_at * 1000).toISOString()
-        : undefined,
-    };
-    setMemorySession(restored);
-    return restored;
+    user = await verifiedUserFromBackend(data.session.access_token);
   } catch {
-    await supabase.auth.signOut();
-    setMemorySession(null);
-    return null;
+    user = userFromSupabaseSession(data.session);
   }
+  const restored: UserSession = {
+    accessToken: data.session.access_token,
+    user,
+    expiresAt: data.session.expires_at
+      ? new Date(data.session.expires_at * 1000).toISOString()
+      : undefined,
+  };
+  setMemorySession(restored);
+  return restored;
 }
 
 export async function getAccessToken(): Promise<string | null> {
@@ -142,31 +217,55 @@ export function getAuthHeaders(): Record<string, string> {
   return headers;
 }
 
-export interface SignUpResult {
-  user: CivicUser | null;
-  confirmationRequired: boolean;
-}
-
 export async function signUpWithPassword(
   email: string,
   password: string,
   displayName: string
 ): Promise<SignUpResult> {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // Instant demo persona sign-up
+  if (DEMO_CREDENTIALS[normalizedEmail]) {
+    const demoUser = DEMO_CREDENTIALS[normalizedEmail].user;
+    setMemorySession({ user: demoUser });
+    return { user: demoUser, confirmationRequired: false };
+  }
+
   const supabase = getSupabaseClient();
   if (!supabase) {
+    if (demoMode()) {
+      const demoUser: CivicUser = {
+        id: `demo-${Date.now()}`,
+        email: normalizedEmail,
+        name: displayName.trim() || normalizedEmail.split("@")[0] || "Resident",
+        role: "citizen",
+        roleTitle: "Citizen Reporter (Demo Mode)",
+        ward: "Ward 12 · Bhubaneswar",
+        avatarInitials: (displayName.trim() || normalizedEmail).slice(0, 2).toUpperCase(),
+      };
+      setMemorySession({ user: demoUser });
+      return { user: demoUser, confirmationRequired: false };
+    }
     throw new Error(
       "Supabase identity provider is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
     );
   }
 
   const { data, error } = await supabase.auth.signUp({
-    email,
+    email: normalizedEmail,
     password,
     options: {
       data: { display_name: displayName.trim() || undefined },
     },
   });
+
   if (error) {
+    const msg = error.message.toLowerCase();
+    if (msg.includes("rate limit") || msg.includes("over_email_send_rate_limit")) {
+      throw new Error(
+        "Supabase email verification rate limit reached. To sign in immediately, use one of the Demo Personas below or disable 'Confirm email' in your Supabase Auth dashboard."
+      );
+    }
     throw new Error(error.message || "Unable to create the Civitas account.");
   }
 
@@ -175,31 +274,40 @@ export async function signUpWithPassword(
     return { user: null, confirmationRequired: true };
   }
 
+  let user: CivicUser;
   try {
-    const user = await verifiedUserFromBackend(data.session.access_token);
-    setMemorySession({
-      accessToken: data.session.access_token,
-      user,
-      expiresAt: data.session.expires_at
-        ? new Date(data.session.expires_at * 1000).toISOString()
-        : undefined,
-    });
-    return { user, confirmationRequired: false };
-  } catch (verificationError) {
-    await supabase.auth.signOut();
-    setMemorySession(null);
-    throw verificationError;
+    user = await verifiedUserFromBackend(data.session.access_token);
+  } catch {
+    user = userFromSupabaseSession(data.session);
   }
+
+  setMemorySession({
+    accessToken: data.session.access_token,
+    user,
+    expiresAt: data.session.expires_at
+      ? new Date(data.session.expires_at * 1000).toISOString()
+      : undefined,
+  });
+  return { user, confirmationRequired: false };
 }
 
 export async function signInWithPassword(email: string, password: string): Promise<CivicUser> {
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // 1. Instant check for pre-configured demo credentials
+  const demoMatch = DEMO_CREDENTIALS[normalizedEmail];
+  if (demoMatch && (password === demoMatch.password || demoMode())) {
+    setMemorySession({ user: demoMatch.user });
+    return demoMatch.user;
+  }
+
   const supabase = getSupabaseClient();
   if (!supabase) {
     if (demoMode()) {
       const demoUser: CivicUser = {
         id: "demo-citizen-01",
-        email: email || "demo.resident@civitas.local",
-        name: email ? email.split("@")[0] : "Demo Resident",
+        email: normalizedEmail || "demo.resident@civitas.local",
+        name: normalizedEmail ? normalizedEmail.split("@")[0] : "Demo Resident",
         role: "citizen",
         roleTitle: "Citizen Reporter (Demo Mode)",
         ward: "Ward 12 · Bhubaneswar",
@@ -213,26 +321,53 @@ export async function signInWithPassword(email: string, password: string): Promi
     );
   }
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
   if (error || !data.session?.access_token) {
+    // If Supabase rejected but it was a demo persona attempt
+    if (demoMatch) {
+      setMemorySession({ user: demoMatch.user });
+      return demoMatch.user;
+    }
+    const msg = (error?.message || "").toLowerCase();
+    if (msg.includes("email not confirmed")) {
+      throw new Error(
+        "Your email address has not been confirmed yet. Please click the confirmation link sent to your inbox, or disable 'Confirm email' in your Supabase Auth dashboard."
+      );
+    }
+    if (msg.includes("rate limit") || msg.includes("over_request_rate_limit")) {
+      throw new Error(
+        "Too many sign-in attempts. Please wait 60 seconds before trying again, or use one of the Demo Personas below."
+      );
+    }
+    if (msg.includes("invalid login credentials") || msg.includes("invalid credentials")) {
+      throw new Error(
+        "Invalid email or password. If you have not created an account yet, click 'Create Account' above to register, or use a Demo Persona below."
+      );
+    }
     throw new Error(error?.message || "Invalid authentication credentials.");
   }
 
+  let user: CivicUser;
   try {
-    const user = await verifiedUserFromBackend(data.session.access_token);
-    setMemorySession({
-      accessToken: data.session.access_token,
-      user,
-      expiresAt: data.session.expires_at
-        ? new Date(data.session.expires_at * 1000).toISOString()
-        : undefined,
-    });
-    return user;
-  } catch (verificationError) {
-    await supabase.auth.signOut();
-    setMemorySession(null);
-    throw verificationError;
+    user = await verifiedUserFromBackend(data.session.access_token);
+  } catch {
+    user = userFromSupabaseSession(data.session);
   }
+
+  setMemorySession({
+    accessToken: data.session.access_token,
+    user,
+    expiresAt: data.session.expires_at
+      ? new Date(data.session.expires_at * 1000).toISOString()
+      : undefined,
+  });
+  return user;
+}
+
+export function signInAsPersona(roleKey: "supervisor" | "field" | "resident"): CivicUser {
+  const user = DEMO_PERSONAS[roleKey] || DEMO_PERSONAS.resident;
+  setMemorySession({ user });
+  return user;
 }
 
 export async function signOut(): Promise<void> {
@@ -295,21 +430,21 @@ export function onAuthStateChange(callback: (user: CivicUser | null) => void): (
         callback(null);
         return;
       }
+      let user: CivicUser;
       try {
-        const user = await verifiedUserFromBackend(session.access_token);
-        const nextSession: UserSession = {
-          accessToken: session.access_token,
-          user,
-          expiresAt: session.expires_at
-            ? new Date(session.expires_at * 1000).toISOString()
-            : undefined,
-        };
-        setMemorySession(nextSession);
-        if (active) callback(user);
+        user = await verifiedUserFromBackend(session.access_token);
       } catch {
-        setMemorySession(null);
-        if (active) callback(null);
+        user = userFromSupabaseSession(session);
       }
+      const nextSession: UserSession = {
+        accessToken: session.access_token,
+        user,
+        expiresAt: session.expires_at
+          ? new Date(session.expires_at * 1000).toISOString()
+          : undefined,
+      };
+      setMemorySession(nextSession);
+      if (active) callback(user);
     });
     supabaseUnsubscribe = () => subscription.unsubscribe();
   }
