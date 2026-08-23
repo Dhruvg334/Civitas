@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FlatIcon } from "@/components/flat-icons";
+import { updateUserProfile } from "@/lib/auth";
 
 interface OnboardingProps {
   onClose: () => void;
@@ -18,7 +19,7 @@ export interface LocalityItem {
   riskLevel: "Low" | "Moderate" | "High" | "Critical";
 }
 
-const BHUBANESWAR_LOCALITIES: LocalityItem[] = [
+export const BHUBANESWAR_LOCALITIES: LocalityItem[] = [
   {
     id: "Ward 12 · Nayapalli / Unit 8",
     name: "Nayapalli · Unit 8 & DAV Zone",
@@ -175,7 +176,15 @@ export function OnboardingPanel({ onClose, initialEmail = "", initialName = "" }
 
     try {
       localStorage.setItem("civitas_current_user", JSON.stringify(userData));
+      localStorage.setItem("civitas_onboarding_completed", "true");
+      void updateUserProfile({
+        name: name || "Resident Citizen",
+        ward: finalWardLocation,
+        roleTitle: userData.roleTitle,
+        avatarInitials: (name || "RC").slice(0, 2).toUpperCase(),
+      });
       window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new Event("civitas_auth_changed"));
     } catch {
       // ignore
     }

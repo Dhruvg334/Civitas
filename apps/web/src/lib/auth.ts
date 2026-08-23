@@ -476,6 +476,56 @@ export function isAuthenticated(): boolean {
   return memorySession !== null;
 }
 
+export async function updateUserProfile(updates: Partial<CivicUser>): Promise<CivicUser> {
+  const current = memorySession?.user;
+  if (!current) {
+    throw new Error("No active user session.");
+  }
+  const name = updates.name !== undefined ? updates.name.trim() : current.name;
+  const avatarInitials =
+    updates.avatarInitials || (name ? name.slice(0, 2).toUpperCase() : current.avatarInitials || "CU");
+  const updatedUser: CivicUser = {
+    ...current,
+    ...updates,
+    name: name || current.name,
+    avatarInitials,
+  };
+
+  const updatedSession: UserSession = {
+    ...memorySession,
+    user: updatedUser,
+  };
+  setMemorySession(updatedSession);
+
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem("civitas_current_user", JSON.stringify(updatedUser));
+      localStorage.setItem("civitas_onboarding_completed", "true");
+      window.dispatchEvent(new Event("storage"));
+    } catch {
+      // ignore
+    }
+  }
+
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    try {
+      await supabase.auth.updateUser({
+        data: {
+          display_name: updatedUser.name,
+          ward: updatedUser.ward,
+          role_title: updatedUser.roleTitle,
+          avatar_initials: updatedUser.avatarInitials,
+        },
+      });
+    } catch {
+      // ignore
+    }
+  }
+
+  return updatedUser;
+}
+
 export function getCurrentUser(): CivicUser | null {
   return memorySession?.user || null;
 }

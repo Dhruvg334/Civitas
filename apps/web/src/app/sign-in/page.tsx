@@ -86,7 +86,11 @@ export default function SignIn() {
         } else if (result.user) {
           setNotice(`Welcome to Civitas, ${result.user.name}. Your account is active.`);
           setTimeout(() => {
-            router.push(result.user?.role === "reviewer" || result.user?.role === "supervisor" ? "/workspace" : "/profile");
+            router.push(
+              result.user?.role === "reviewer" || result.user?.role === "supervisor"
+                ? "/workspace"
+                : "/profile?onboarding=true"
+            );
           }, 600);
         }
       } else {

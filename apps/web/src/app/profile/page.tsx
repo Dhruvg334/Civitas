@@ -4,8 +4,9 @@ import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { Footer, Nav, Status } from "@/components/site";
 import { FlatIcon } from "@/components/flat-icons";
-import { restoreSession, setSession, signOut, CivicUser, UserSession } from "@/lib/auth";
+import { restoreSession, setSession, signOut, CivicUser, UserSession, updateUserProfile } from "@/lib/auth";
 import { submitWorkflowClarification, fetchMe, isDemoMode } from "@/lib/api";
+import { OnboardingPanel, BHUBANESWAR_LOCALITIES, LocalityItem } from "@/components/onboarding-panel";
 
 const DEFAULT_PERSONAS: Record<string, CivicUser> = {
   resident: {
@@ -94,14 +95,42 @@ export default function Profile() {
   const [clarificationError, setClarificationError] = useState<string | null>(null);
   const [savedNotice, setSavedNotice] = useState<string>("");
   const [demoModeActive] = useState<boolean>(() => isDemoMode());
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(false);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [editName, setEditName] = useState<string>("");
+  const [editAvatarInitials, setEditAvatarInitials] = useState<string>("");
+  const [editWard, setEditWard] = useState<string>("");
+  const [editRoleTitle, setEditRoleTitle] = useState<string>("");
+  const [isSavingProfile, setIsSavingProfile] = useState<boolean>(false);
   const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("onboarding") === "true") {
+        setShowOnboarding(true);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const syncUser = async () => {
       const session = await restoreSession();
       if (session && session.user) {
+        let finalUser = session.user;
+        if (typeof window !== "undefined") {
+          const stored = localStorage.getItem("civitas_current_user");
+          if (stored) {
+            try {
+              const parsed = JSON.parse(stored);
+              finalUser = { ...finalUser, ...parsed };
+            } catch {
+              // ignore
+            }
+          }
+        }
         startTransition(() => {
-          setUser(session.user);
+          setUser(finalUser);
           setIsGuest(false);
         });
         try {
@@ -135,6 +164,39 @@ export default function Profile() {
       window.removeEventListener("civitas_auth_changed", syncUser);
     };
   }, []);
+
+  const openEditModal = () => {
+    setEditName(user.name);
+    setEditAvatarInitials(user.avatarInitials || (user.name ? user.name.slice(0, 2).toUpperCase() : "CU"));
+    setEditWard(user.ward || BHUBANESWAR_LOCALITIES[0].name);
+    setEditRoleTitle(user.roleTitle || "Registered Citizen");
+    setShowEditModal(true);
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingProfile(true);
+    try {
+      const finalName = editName.trim() || user.name;
+      const finalInitials = editAvatarInitials.trim().slice(0, 2).toUpperCase() || finalName.slice(0, 2).toUpperCase();
+      const updated = await updateUserProfile({
+        name: finalName,
+        avatarInitials: finalInitials,
+        ward: editWard.trim() || user.ward,
+        roleTitle: editRoleTitle.trim() || user.roleTitle,
+      });
+      startTransition(() => {
+        setUser(updated);
+      });
+      setShowEditModal(false);
+      setSavedNotice(`✓ Profile updated successfully for ${updated.name}.`);
+      setTimeout(() => setSavedNotice(""), 4000);
+    } catch (err) {
+      setSavedNotice(`⚠️ Failed to update profile: ${err instanceof Error ? err.message : "Save failed"}`);
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
 
   const handleSwitchPersona = (roleKey: "resident" | "supervisor" | "field") => {
     if (!demoModeActive) return;
@@ -189,10 +251,148 @@ export default function Profile() {
           </div>
         )}
 
+        {/* ONBOARDING MODAL POPUP */}
+        {showOnboarding && (
+          <OnboardingPanel
+            onClose={() => setShowOnboarding(false)}
+            initialEmail={user.email}
+            initialName={user.name}
+          />
+        )}
+
+        {/* EDIT PROFILE MODAL */}
+        {showEditModal && (
+          <div className="edit-profile-modal-backdrop" role="dialog" aria-modal="true">
+            <div className="edit-profile-modal-card">
+              <div className="modal-header-row">
+                <div>
+                  <span className="profile-kicker">IDENTITY CONFIGURATION</span>
+                  <h2 style={{ margin: "4px 0 0", fontFamily: "Georgia, serif", fontSize: "1.6rem" }}>
+                    Edit Civic Profile
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  className="modal-close-btn"
+                  onClick={() => setShowEditModal(false)}
+                  aria-label="Close modal"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveProfile} className="edit-profile-form">
+                <div className="edit-avatar-preview-row">
+                  <div className="preview-avatar-box">
+                    <span>{editAvatarInitials || (editName ? editName.slice(0, 2).toUpperCase() : "CU")}</span>
+                  </div>
+                  <div>
+                    <b>Avatar Badge Preview</b>
+                    <p style={{ margin: "4px 0 0", fontSize: "0.78rem", color: "#687067" }}>
+                      Displayed in navbar pill and municipal review records.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="edit-field-group">
+                  <label className="edit-field-label" htmlFor="edit-profile-name">
+                    Display Name / Full Name
+                  </label>
+                  <input
+                    id="edit-profile-name"
+                    type="text"
+                    required
+                    value={editName}
+                    onChange={(e) => {
+                      setEditName(e.target.value);
+                      if (!editAvatarInitials || editAvatarInitials.length <= 2) {
+                        setEditAvatarInitials(e.target.value.trim().slice(0, 2).toUpperCase());
+                      }
+                    }}
+                    placeholder="e.g. Alex Morgan"
+                    className="modal-text-input"
+                  />
+                </div>
+
+                <div className="edit-field-group">
+                  <label className="edit-field-label" htmlFor="edit-avatar-initials">
+                    Avatar Initials (1–2 letters)
+                  </label>
+                  <input
+                    id="edit-avatar-initials"
+                    type="text"
+                    maxLength={2}
+                    value={editAvatarInitials}
+                    onChange={(e) => setEditAvatarInitials(e.target.value.toUpperCase())}
+                    placeholder="e.g. AM"
+                    className="modal-text-input"
+                    style={{ width: "120px", textTransform: "uppercase", fontWeight: 800 }}
+                  />
+                </div>
+
+                <div className="edit-field-group">
+                  <label className="edit-field-label" htmlFor="edit-profile-ward">
+                    Registered Bhubaneswar Ward / Locality
+                  </label>
+                  <select
+                    id="edit-profile-ward"
+                    value={editWard}
+                    onChange={(e) => setEditWard(e.target.value)}
+                    className="modal-text-input"
+                  >
+                    {BHUBANESWAR_LOCALITIES.map((loc: LocalityItem) => (
+                      <option key={loc.id} value={loc.id}>
+                        {loc.name} ({loc.zone})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="edit-field-group">
+                  <label className="edit-field-label" htmlFor="edit-role-title">
+                    Role Title / Affiliation Description
+                  </label>
+                  <input
+                    id="edit-role-title"
+                    type="text"
+                    value={editRoleTitle}
+                    onChange={(e) => setEditRoleTitle(e.target.value)}
+                    placeholder="e.g. Citizen Reporter · Ward 12 Resident"
+                    className="modal-text-input"
+                  />
+                </div>
+
+                <div className="modal-actions-footer" style={{ marginTop: "24px", display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                  <button
+                    type="button"
+                    className="outline"
+                    onClick={() => setShowEditModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="button large"
+                    disabled={isSavingProfile}
+                  >
+                    {isSavingProfile ? "Saving..." : "Save Profile Changes →"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {/* PROFILE HEADER CARD */}
         <section className="profile-hero-card">
-          <div className="profile-avatar-box">
+          <div
+            className="profile-avatar-box"
+            onClick={!isGuest ? openEditModal : undefined}
+            style={{ cursor: !isGuest ? "pointer" : "default" }}
+            title={!isGuest ? "Click to edit avatar icon/initials" : undefined}
+          >
             <span>{user.avatarInitials}</span>
+            {!isGuest && <small className="edit-avatar-hint">Edit</small>}
           </div>
 
           <div className="profile-hero-info">
@@ -255,11 +455,26 @@ export default function Profile() {
                 </div>
               </div>
             ) : !isGuest ? (
-              <div className="profile-header-actions" style={{ marginTop: "16px" }}>
+              <div className="profile-header-actions" style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "16px" }}>
                 <button
                   type="button"
                   className="button small"
+                  onClick={openEditModal}
+                >
+                  ✏️ Edit Profile
+                </button>
+                <button
+                  type="button"
+                  className="outline small"
+                  onClick={() => setShowOnboarding(true)}
+                >
+                  🧭 Onboarding Setup Wizard
+                </button>
+                <button
+                  type="button"
+                  className="outline small"
                   onClick={handleSignOut}
+                  style={{ borderColor: "#b91c1c", color: "#b91c1c" }}
                 >
                   Sign Out of Session
                 </button>
@@ -527,10 +742,43 @@ export default function Profile() {
               <div className="settings-box">
                 <div className="settings-row">
                   <div>
+                    <b>Civic Identity & Profile Customization</b>
+                    <p>Change your display name, avatar initials, and primary registered Bhubaneswar ward.</p>
+                  </div>
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                    {!isGuest && (
+                      <button
+                        type="button"
+                        className="button small"
+                        onClick={openEditModal}
+                      >
+                        ✏️ Edit Profile Details
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="outline small"
+                      onClick={() => setShowOnboarding(true)}
+                    >
+                      🧭 Launch Setup Wizard
+                    </button>
+                  </div>
+                </div>
+
+                <div className="settings-row">
+                  <div>
                     <b>Active Account Email</b>
                     <p>{user.email}</p>
                   </div>
                   <span className="verified-pill">✓ Verified Session</span>
+                </div>
+
+                <div className="settings-row">
+                  <div>
+                    <b>Registered Ward / Neighborhood</b>
+                    <p>{user.ward || "Ward 12 · Nayapalli / Unit 8"}</p>
+                  </div>
+                  <span className="verified-pill">📍 Geofenced</span>
                 </div>
 
                 <div className="settings-row">
@@ -593,6 +841,100 @@ export default function Profile() {
           border-radius: 4px;
           margin-bottom: 24px;
         }
+        .edit-profile-modal-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 100;
+          display: grid;
+          place-items: center;
+          padding: 20px;
+          background: rgba(23, 32, 25, 0.55);
+          backdrop-filter: blur(6px);
+        }
+        .edit-profile-modal-card {
+          position: relative;
+          width: min(100%, 540px);
+          max-height: calc(100vh - 40px);
+          overflow-y: auto;
+          padding: 32px;
+          background: #ffffff;
+          border: 2px solid #172019;
+          box-shadow: 8px 8px 0 #172019;
+          border-radius: 8px;
+        }
+        .modal-header-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 20px;
+          padding-bottom: 14px;
+          border-bottom: 1px solid #e2ded4;
+        }
+        .modal-close-btn {
+          width: 32px;
+          height: 32px;
+          border: 1px solid #172019;
+          background: #fbf9f4;
+          display: grid;
+          place-items: center;
+          font-size: 1rem;
+          cursor: pointer;
+          border-radius: 4px;
+        }
+        .modal-close-btn:hover {
+          background: #172019;
+          color: #ffffff;
+        }
+        .edit-avatar-preview-row {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 14px 16px;
+          background: #fbf9f4;
+          border: 1px solid #172019;
+          border-radius: 6px;
+          margin-bottom: 20px;
+        }
+        .preview-avatar-box {
+          width: 52px;
+          height: 52px;
+          border-radius: 50%;
+          background: #0f5f4f;
+          color: #ffffff;
+          border: 1.5px solid #172019;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.25rem;
+          font-weight: 850;
+          font-family: Georgia, serif;
+          flex-shrink: 0;
+          box-shadow: 2px 2px 0 #172019;
+        }
+        .edit-field-group {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          margin-bottom: 16px;
+        }
+        .edit-field-label {
+          font-size: 0.76rem;
+          font-weight: 800;
+          color: #172019;
+        }
+        .modal-text-input {
+          padding: 10px 12px;
+          border: 1.5px solid #172019;
+          background: #ffffff;
+          border-radius: 4px;
+          font-size: 0.85rem;
+          color: #172019;
+          outline: none;
+        }
+        .modal-text-input:focus {
+          border-color: #0f5f4f;
+          box-shadow: 0 0 0 2px rgba(15, 95, 79, 0.2);
+        }
         .profile-hero-card {
           display: grid;
           grid-template-columns: 100px minmax(0, 1fr);
@@ -606,6 +948,7 @@ export default function Profile() {
           margin-bottom: 28px;
         }
         .profile-avatar-box {
+          position: relative;
           width: 96px;
           height: 96px;
           border: 2px solid #172019;
@@ -618,6 +961,25 @@ export default function Profile() {
           font-weight: 700;
           box-shadow: 4px 4px 0 #172019;
           border-radius: 6px;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .profile-avatar-box:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 5px 5px 0 #172019;
+        }
+        .edit-avatar-hint {
+          position: absolute;
+          bottom: -8px;
+          right: -8px;
+          padding: 2px 6px;
+          background: #ffffff;
+          color: #172019;
+          border: 1px solid #172019;
+          border-radius: 3px;
+          font-size: 0.60rem;
+          font-weight: 850;
+          text-transform: uppercase;
+          box-shadow: 1px 1px 0 #172019;
         }
         .hero-kicker-row {
           display: flex;
